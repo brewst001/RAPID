@@ -10,12 +10,10 @@ from django.contrib.auth.tokens import default_token_generator
 from .models import RegistrationToken
 from core.tasks import deliver_email
 
-
 User = get_user_model()
 
 
 class ProfileRequirements(object):
-
     def __init__(self):
         self.password_error = ""
 
@@ -35,6 +33,7 @@ class LoginForm(forms.Form):
     """
     Form for authenticating users
     """
+    print("Entering forms.LoginForm...")
     email = forms.EmailField(required=True,
                              label='Email Address',
                              widget=forms.TextInput())
@@ -44,31 +43,39 @@ class LoginForm(forms.Form):
                                widget=forms.PasswordInput())
 
     def __init__(self, request=None, *args, **kwargs):
+        print("Entering LoginForm.init")
         self.request = request
         self.user_cache = None
         super(LoginForm, self).__init__(*args, **kwargs)
 
     def clean(self):
-
+        print("entering LoginForm.clean")
         email = self.cleaned_data.get('email')
         password = self.cleaned_data.get('password')
+        print("email: ", email)
+        print("password: ", password)
 
         # Error messages for user feedback
         credential_error = "Please enter a valid email address and password"
         inactive_error = "The account is inactive"
 
         if email and password:
+            print("calling authenticate")
             self.user_cache = authenticate(email=email,
                                            password=password)
-
+            print("self.user_cache:", self.user_cache)
             if not self.user_cache:
+                print("if not user cache")
                 raise forms.ValidationError(credential_error)
             elif not self.user_cache.is_active:
+                print("else user is is active")
                 raise forms.ValidationError(inactive_error)
-
+            print("self.cleaned_data", self.cleaned_data)
         return self.cleaned_data
 
     def get_user(self):
+        print("entering LoginForm.get_user")
+        print("usercache:", self.user_cache)
         return self.user_cache
 
 
@@ -243,7 +250,6 @@ class ForgotPasswordForm(forms.Form):
 
 
 class SetPasswordForm(forms.Form):
-
     password1 = forms.CharField(required=True,
                                 label='New Password',
                                 widget=forms.PasswordInput())
