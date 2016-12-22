@@ -1,5 +1,6 @@
 import logging
 import re
+import datetime  # added by LNguyen
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -7,7 +8,6 @@ from core.utilities import time_jump
 from core.utilities import discover_type
 from .models import CertificateMonitor, DomainMonitor, IpMonitor
 from .tasks import GEOLOCATION_KEY, DOMAIN_KEY, IP_KEY
-
 
 LOGGER = logging.getLogger(__name__)
 """The logger for this module"""
@@ -150,6 +150,7 @@ class MonitorSubmissionWithHosts(MonitorSubmission, SubmissionWithHosts):
     A Django form allowing users to submit IP or Domain indicators for monitoring with an optional initial list of
     hosts.
     """
+
     # Note: The idea is that, if they ever want to allow initial hosts to be specified with IPs or Domains, they can
     # just start using this class instead of MonitorSubmission.  (Note that they would still have to update the
     # 'add.html' template, however!)
@@ -183,7 +184,8 @@ class CertificateSubmission(SubmissionWithHosts):
             return
         user = User.objects.get(email__exact=request.user)
         lookup_time = time_jump(minutes=2)
-        interval = 24
+        interval = 1
+        current_time = datetime.datetime.utcnow()
 
         # Build the 'resolutions' monitor member.  We're not actually going to do full resolutions now (which would
         # entail doing geo-location and domain lookup for each IP host).   Rather, we'll just use placeholder values
@@ -200,7 +202,17 @@ class CertificateSubmission(SubmissionWithHosts):
             resolution[DOMAIN_KEY] = [PENDING]
 
         # Finally, we can construct the actual monitor object and save it to the database.
+        # monitor = CertificateMonitor(owner=user,
+        #                              certificate_value=indicator,
+        #                              lookup_interval=interval,
+        #                              next_lookup=lookup_time,
+        #                              last_hosts=self.valid_hosts,
+        #                              resolutions=resolutions)
+
+        # updated by LNguyen on 29nov2016
+        # added created field
         monitor = CertificateMonitor(owner=user,
+                                     created=current_time,
                                      certificate_value=indicator,
                                      lookup_interval=interval,
                                      next_lookup=lookup_time,
