@@ -204,6 +204,11 @@ with open('testfile.txt') as fp:
     msg = MIMEText(fp.read())
 msg['Subject'] = 'Censys.io Alert for %s' % (filedate)
 msg['From'] = 'nguylt1222@gmail.com'  # Replace with your sender email address
+recipients = ['nguylt1222@gmail.com']  # Replace with your recipient email addresses here
+msg['To'] = ", ".join(recipients)
+
+username = ''  # Replace with your sender email address
+password = ''  # Replace with your sender email password
 
 server = smtplib.SMTP('smtp.gmail.com:587')
 server.ehlo()
