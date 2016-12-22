@@ -12,7 +12,6 @@ from core.utilities import discover_type
 
 
 class MechanizedScraper(object):
-
     def __init__(self):
 
         # Create and configure browser object for navigation
@@ -34,7 +33,6 @@ class MechanizedScraper(object):
 
 
 class RobtexScraper(MechanizedScraper):
-
     def __init__(self):
         MechanizedScraper.__init__(self)
 
@@ -46,15 +44,18 @@ class RobtexScraper(MechanizedScraper):
         url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
 
         self.browser.open(url)
-
+        print("response:", self.browser.response)
         parser = self.browser.parsed
-        search = parser.find("span", {"id": "shared_ma"})
 
+        print("parser:", parser)
+        search = parser.find("span", {"id": "shared_ma"})
+        print("search: ", search)
         if search is not None:
             # count = self.extract_string(search.text, "(", " shown")
             # if int(count) <= 50:
 
-            for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+            # for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+            for result in search.parent.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
                 result_value = result.text
 
                 if ' ' in result_value:
@@ -64,14 +65,13 @@ class RobtexScraper(MechanizedScraper):
                 else:
                     results.append(result_value)
 
-            # else:
-            #    results.append("%s domains identified" % str(count))
+                    # else:
+                    #    results.append("%s domains identified" % str(count))
 
         return results
 
 
 class GoogleScraper(MechanizedScraper):
-
     def __init__(self):
         MechanizedScraper.__init__(self)
         self.results = {'top_results': [], 'result_count': 0}
@@ -126,7 +126,6 @@ class GoogleScraper(MechanizedScraper):
 
 
 class VirusTotalScraper(MechanizedScraper):
-
     def __init__(self):
         MechanizedScraper.__init__(self)
 
@@ -206,7 +205,6 @@ class VirusTotalScraper(MechanizedScraper):
 
 
 class ThreatExpertScraper(MechanizedScraper):
-
     def __init__(self):
         MechanizedScraper.__init__(self)
 
@@ -227,7 +225,7 @@ class ThreatExpertScraper(MechanizedScraper):
         if section:
 
             if len(section) > 1:
-                page_count = len(section[1].find_all('td')) - 1 # Acquire page count
+                page_count = len(section[1].find_all('td')) - 1  # Acquire page count
             else:
                 page_count = 1
 
@@ -281,7 +279,6 @@ class ThreatExpertScraper(MechanizedScraper):
 
 
 class InternetIdentityScraper(MechanizedScraper):
-
     def __init__(self):
         MechanizedScraper.__init__(self)
         self.service = "IID"
@@ -363,8 +360,8 @@ class InternetIdentityScraper(MechanizedScraper):
     def scrape_data(self, indicator, query_type):
 
         passive_table = []
-        
-        #search period 7 is "complete history"
+
+        # search period 7 is "complete history"
         search_period = '7'
 
         # 0 = Current Day
