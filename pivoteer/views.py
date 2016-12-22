@@ -24,12 +24,10 @@ from pivoteer.writer.search import SearchCsvWriter
 from pivoteer.writer.threatcrowd import ThreatCrowdCsvWriter
 from pivoteer.writer.whois import WhoIsCsvWriter
 
-
 LOGGER = logging.getLogger(__name__)
 
 
 class PivotManager(LoginRequiredMixin, View):
-
     login_url = "login"
     redirect_unauthenticated_users = True
 
@@ -53,8 +51,10 @@ class PivotManager(LoginRequiredMixin, View):
 
             # If a recent task exists, use that one instead
             if recent_tasks:
+                print("recent tasks")
                 task_tracking['id'] = recent_tasks.group_id
             else:
+                print("create new tasks")
                 new_task = submitted_form.create_new_task(current_time)
 
                 if new_task:
@@ -72,7 +72,6 @@ class PivotManager(LoginRequiredMixin, View):
 # Check if task completed
 # https://zapier.com/blog/async-celery-example-why-and-how/
 class CheckTask(LoginRequiredMixin, View):
-
     login_url = "login"
     redirect_unauthenticated_users = True
 
@@ -91,6 +90,7 @@ class CheckTask(LoginRequiredMixin, View):
 
         # Task completion allows for origin information to be pulled
         try:
+
             task_origin = TaskTracker.objects.get(group_id=task)
             record_type = task_origin.type
             indicator = task_origin.keyword
@@ -176,7 +176,7 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_name = "pivoteer/SearchRecords.html"
             search_records = IndicatorRecord.objects.get_search_records(indicator)
             self.template_vars["search_records"] = search_records
-            
+
         elif record_type == "External":
             self.template_name = "pivoteer/ExternalRecords.html"
             self.template_vars['indicator'] = indicator

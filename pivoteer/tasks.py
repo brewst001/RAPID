@@ -13,6 +13,7 @@ from core.threatcrowd import ThreatCrowd
 from core.totalhash import TotalHashApi
 from core.malwr import MalwrApi
 from core.lookups import lookup_ip_whois, lookup_domain_whois, resolve_domain, geolocate_ip, lookup_ip_censys_https, \
+    lookup_ip_censys_https_new, \
     lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException
 from pivoteer.collectors.scrape import RobtexScraper, InternetIdentityScraper
 from pivoteer.collectors.scrape import VirusTotalScraper, ThreatExpertScraper
@@ -21,6 +22,7 @@ from pivoteer.records import RecordSource, RecordType
 from .models import IndicatorRecord
 
 logger = logging.getLogger(None)
+
 
 def create_record(record_type,
                   record_source,
@@ -40,6 +42,11 @@ def create_record(record_type,
                              info_source=record_source.name,
                              info_date=current_time,
                              info=info)
+    # print("recordtype:",record_type.name)
+    # print("info_source:",record_source.name)
+    # print("info_date:",current_time)
+    # print("info:",info)
+    # print("record created: ",record)
     logger.info("Created %s (%s) record from %s: %s",
                 record_type.name,
                 record_type.title,
@@ -180,6 +187,7 @@ def ip_whois(ip_address):
 def domain_hosts(domain):
     try:
         hosts = resolve_domain(domain)
+        print("domain-hosts:", hosts)
     except LookupException as e:
         logger.error("Error performing domain resolution for domain '%s': %s", domain, e.message)
         return
@@ -193,6 +201,7 @@ def domain_hosts(domain):
                                 "https_cert": https_cert,
                                 "ip": host, "domain": domain})
             try:
+                print("domain_hosts.info: ", info)
                 save_record(record_type,
                             record_source,
                             info)
@@ -203,8 +212,10 @@ def domain_hosts(domain):
                                  record_source.title)
 
 
+# ORIGINAL
 @app.task
 def ip_hosts(ip_address):
+    print("entering tasks.ip_hosts...")
     scraper = RobtexScraper()
     hosts = scraper.run(ip_address)
     ip_location = geolocate_ip(ip_address)
@@ -226,6 +237,70 @@ def ip_hosts(ip_address):
                                  record_type.name,
                                  record_type.title,
                                  record_source.title)
+
+
+# @app.task
+# def ip_hosts(ip_address):
+#   #  print("entering tasks.ip_hosts...")
+#   #  print("ip_address:",ip_address)
+#     # scraper = RobtexScraper()
+#     # print("scraper:",scraper)
+#     # hosts = scraper.run(ip_address)
+#     #hosts = ['us-update.com', 'sky.otzo.com', 'www.us-update.com', 'r.ddns.me', 'singin.loginto.me', 'salesmarkting.co.vu', 'info.intarspace.co.vu', 'sales.intarspace.co.vu']
+#     hosts = ['us-update.com']
+#   #  print("hosts:",hosts)
+#     ip_location = geolocate_ip(ip_address)
+#   # print("ip_location:",ip_location)
+#     https_cert = lookup_ip_censys_https_new(ip_address)
+#   #  print("https_cert:",https_cert)
+#     if type(hosts) == list:
+#         record_type = RecordType.HR
+#         record_source = RecordSource.REX
+#         for host in hosts:
+#             try:
+#                 info = OrderedDict({"geo_location": ip_location,
+#                                     "https_cert": https_cert,
+#                                     "ip": ip_address, "domain": host})
+#                 print("caling save_record...")
+#                 save_record(record_type,
+#                             record_source,
+#                             info)
+#             except Exception:
+#                 logger.exception("Error saving %s (%s) record from %s",
+#                                  record_type.name,
+#                                  record_type.title,
+#                                  record_source.title)
+
+# TESTING
+# @app.task
+# def ip_hosts(ip_address):
+#     scraper = RobtexScraper()
+#     hosts = scraper.run(ip_address) #hosts: ['us-update.com', 'sky.otzo.com', 'www.us-update.com', 'r.ddns.me', 'singin.loginto.me', 'salesmarkting.co.vu', 'info.intarspace.co.vu', 'sales.intarspace.co.vu']
+#     print("ip-hosts:",hosts)
+#     ip_location = geolocate_ip(ip_address)
+#     #https_cert = lookup_ip_censys_https(ip_address)
+#     #https_cert = lookup_certs_censys('us-update.com',25)
+
+#     #print("https_cert: ",https_cert)
+#     if type(hosts) == list:
+#         record_type = RecordType.HR
+#         record_source = RecordSource.REX
+#         for host in hosts:
+#             try:
+#                 print("host:",host)
+#                 https_cert = lookup_certs_censys(host,25)
+#                 info = OrderedDict({"geo_location": ip_location,
+#                                     "https_cert": https_cert,
+#                                     "ip": ip_address, "domain": host})
+#                 #print("ip_hosts.info: ", info)
+#                 save_record(record_type,
+#                             record_source,
+#                             info)
+#             except Exception:
+#                 logger.exception("Error saving %s (%s) record from %s",
+#                                  record_type.name,
+#                                  record_type.title,
+#                                  record_source.title)
 
 
 @app.task
@@ -289,6 +364,7 @@ def malware_samples(indicator, record_source):
                              record_type.name,
                              record_type.title,
                              record_source.title)
+
 
 @app.task
 def google_safebrowsing(indicator):
@@ -356,7 +432,6 @@ def malwr_ip_domain_search(indicator):
                              record_source.title)
     else:
         mw_logger.info("No Malwr data, save aborted")
-
 
 
 # Task to look up totalhash ip or domain search terms
