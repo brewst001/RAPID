@@ -9,18 +9,18 @@ from celery.schedules import crontab
 
 @shared_task(name='deliver_email')
 def deliver_email(subject=None, body=None, recipients=None):
+    print("Entering core.tasks.deliver_email for ...", recipients)
 
     if recipients:
 
         for recipient in recipients:
+            print("sending email to recipient: ", recipient)
             email = EmailMessage(subject, body, to=[recipient])
             email.send()
 
 
-
 @periodic_task(bind=True, run_every=crontab(0, 0, day_of_month='7'))
 def update_geolocation(self):
-
     # Establish desired paths and directories
     current_directory = os.path.dirname(__file__)
     compressed_filepath = os.path.join(current_directory, 'GeoLite2-City.mmdb.gz')
