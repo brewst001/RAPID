@@ -1,11 +1,14 @@
 import os
 from .base import *
 
+#Added comment by LNguyen - Set service name to BASE_SITE_URL ie., https://fullservername
 BASE_SITE_URL = 'https://rapidpivot.com'
 AMQP_URL = 'amqp://guest:guest@localhost:5672//'
 
+#Added comment by LNguyen - Update with server name and IP addresse ie., [<servername', '127.0.0.1]
 ALLOWED_HOSTS = ['rapidpivot.com']
 
+#Update with admin email address ie., Rapid@gmail.com
 ADMINS = (('Name', 'email@service.com'),)
 
 DEBUG = False
@@ -36,7 +39,8 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'RAPID.log',
+            'filename':'/home/ubuntu/workspace/RAPID.log',
+            #'filename': 'RAPID.log',
         },
     },
     'loggers': {
