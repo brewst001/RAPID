@@ -6,15 +6,17 @@ from django.contrib.auth.models import AnonymousUser
 
 
 class TestPivotManager(TestCase):
+    print("calling test_pivot_views.pyt")
     indicator = "twitter.com"
     ip_indicator = "199.59.150.7"
 
     def setUp(self):
         self.factory = RequestFactory()
 
-    # We test each role, authenticated users first.
-    def test_pivot_manager_auth_get(self):
+    # We test each role, authenticated users first.cd ..
 
+    def test_pivot_manager_auth_get(self):
+        print("calling test_pivot_manager_auth_get")
         # Spin up a user and run a request through the view.
         url = reverse("Pivoteer_Tasks")
         request = self.factory.get(url)
@@ -28,7 +30,7 @@ class TestPivotManager(TestCase):
 
     # Administrative users.
     def test_pivot_manager_admin_get(self):
-
+        print("calling test_pivot_manager_admin_get")
         # Spin up a user and run a request through the view.
         url = reverse("Pivoteer_Tasks")
         request = self.factory.get(url)
@@ -42,7 +44,7 @@ class TestPivotManager(TestCase):
 
     # Inauthenticated users.
     def test_pivot_manager_anon_get(self):
-
+        print("calling test_pivot_manager_anon_get")
         # Spin up a user and run a request through the view.
         url = reverse("Pivoteer_Tasks")
         request = self.factory.get(url)
@@ -58,11 +60,12 @@ class TestPivotManager(TestCase):
 
     # Staff members.
     def test_pivot_manager_staff_sb_get(self):
-
+        print("calling test_pivot_manager_staff_sb_get")
         # Spin up a user and run a request through the view.
         url = reverse("Pivoteer_Tasks")
         request = self.factory.get(url)
-        request.user = Profile.objects.create_user(email='test3@test.com', password='test', is_admin=False, is_staff=True)
+        request.user = Profile.objects.create_user(email='test3@test.com', password='test', is_admin=False,
+                                                   is_staff=True)
         response = PivotManager.as_view()(request)
         self.assertEqual(response.status_code, 200)
         self.assertTrue("#SafeBrowsingPanel" in response.content.decode("utf-8"))
