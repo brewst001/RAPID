@@ -1,4 +1,5 @@
-from .base import *
+
+#from .base import *
 
 DEBUG = True
 TEMPLATE_DEBUG = True
@@ -8,10 +9,12 @@ SESSION_COOKIE_SECURE = False
 
 AMQP_URL = 'amqp://guest:guest@localhost:5672//'
 
+#Update with full server name ie., http://fullservername:8000
 BASE_SITE_URL = 'http://0.0.0.0:8000'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+#Update with servername ie., [<server name>]
 ALLOWED_HOSTS = []
 
 # TEMPLATE_DIRS += ("",)
