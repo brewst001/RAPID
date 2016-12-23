@@ -11,10 +11,8 @@ from email.mime.text import MIMEText
 # Loads Censys.io API Keys
 
 API_URL = "https://www.censys.io/api/v1/search/ipv4"
-# UID = "2155b2e5-84c0-4f2a-8dbf-514aa35d162e"
-# SECRET = "wUfjS3lGgaQaPQ3Mt1s8NxTalDRRZMZe"
-UID = 'e013909c-bdec-4c17-a997-74955b73ac89'
-SECRET = 'y4nlaUAD9Netlvlc2mcZnhdhohVInAww'
+UID = ''
+SECRET = ''
 
 # Establishes Certificate values to query for and associated IPs that are already tracked
 
