@@ -1,4 +1,6 @@
+
 import json
+import os #added by LNguyen
 from django.core.exceptions import ImproperlyConfigured
 from unipath import Path
 
@@ -27,7 +29,9 @@ MEDIA_URL = "/media/"
 STATIC_URL = "/static/"
 
 # Open JSON-based secrets module
-with open("secrets.json", "r") as f:
+#with open("secrets.json", "r") as f:
+#updated by LNguyen -- added path for secrets.json
+with open("/home/ubuntu/workspace/secrets.json", "r") as f:        
     secrets = json.loads(f.read())
 
 
@@ -90,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat', #added by LNguyen
     'widget_tweaks',
     'core',
     'profiles',
