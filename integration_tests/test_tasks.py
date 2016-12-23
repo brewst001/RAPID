@@ -4,7 +4,9 @@ from collections import OrderedDict
 from django.test import TestCase
 from pivoteer.records import RecordSource, RecordType
 from pivoteer.models import IndicatorRecord, IndicatorManager
-from pivoteer.tasks import certificate_cen, domain_thc, ip_thc, domain_whois, ip_whois, domain_hosts, ip_hosts, passive_hosts, malware_samples, google_safebrowsing, totalhash_ip_domain_search, make_indicator_search_records, save_record
+from pivoteer.tasks import certificate_cen, domain_thc, ip_thc, domain_whois, ip_whois, domain_hosts, ip_hosts, \
+    passive_hosts, malware_samples, google_safebrowsing, totalhash_ip_domain_search, make_indicator_search_records, \
+    save_record
 
 app = Celery('RAPID')
 
@@ -12,15 +14,17 @@ logger = logging.getLogger(None)
 
 
 class IndicatorRecordValues(TestCase):
+    # indicator = "twitter.com"
+    indicator = "us-update.com"
+    # ip_indicator = "199.59.150.7"
+    ip_indicator = "192.161.48.59"
 
-    indicator = "twitter.com"
-    ip_indicator = "199.59.150.7"
     current_time = datetime.datetime.utcnow()
 
     def setUp(self):
         # These settings ensure that Celery does not attempt to run tasks asynchronously.
         app.conf.update(CELERY_ALWAYS_EAGER=True)
-        app.conf.update(TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner')
+        app.conf.update(TEST_RUNNER='djcelery.contrib.test_runner.CeleryTestSuiteRunner')
 
     def test_safebrowsing_record_contents(self):
         # Execute Celery task synchronously . This will store the record in the test DB.
@@ -58,10 +62,13 @@ class IndicatorRecordValues(TestCase):
 
     def test_certificate_cen_contents(self):
         # Execute Celery task synchronously. This will store the record in the test DB.
-        certificate_cen(self.indicator)
+        print("calling certificate_cen... ")
 
+        certificate_cen(self.indicator)
+        print("self: ", self)
         # Retrieve records (return value is a dict.).
         certificate_cen_records = IndicatorRecord.objects.recent_cert(self.indicator)
+        print("calling  IndicatorRecord.objects.recent_cert ", certificate_cen_records)
 
         # Validate that each field is included in the record.
         self.assertTrue("info_date" in certificate_cen_records)
@@ -109,12 +116,15 @@ class IndicatorRecordValues(TestCase):
             self.assertTrue("info_date" in record)
 
     def test_ip_whois(self):
+        # print("calling integration.test_ip_whois")
         # Execute Celery task synchronously. This will store the record in the test DB.
+        # print("self:", self)
+        # print("ip_indicator:", self.ip_indicator)
         ip_whois(self.ip_indicator)
 
         # Retrieve records (return value is a QuerySet).
         ip_whois_records = IndicatorRecord.objects.whois_records(self.ip_indicator)
-
+        # print("ip_whois_reords:", ip_whois_records)
         # Validate that each field is included in the record.
         # We must loop even though there is only one record because Django gives us a QuerySet.
         for record in ip_whois_records:
@@ -126,12 +136,14 @@ class IndicatorRecordValues(TestCase):
             self.assertTrue("referral" in record['info'])
             self.assertTrue("info_date" in record)
 
-
     def test_domain_hosts(self):
         # Execute Celery task synchronously. This will store the record in the test DB.
+        print("entering test_domain_hosts...")
+        print("domain-self.indicator: ", self.indicator)  # domain-self.indicator:  us-update.com
         domain_hosts(self.indicator)
 
         # Retrieve records (return value is a QuerySet).
+        # print("calling  IndicatorRecord.objects.recent_hosts in test_domain_hosts... ")
         domain_hosts_records = IndicatorRecord.objects.recent_hosts(self.indicator)
 
         # Validate that each field is included in the record.
@@ -147,11 +159,14 @@ class IndicatorRecordValues(TestCase):
 
     def test_ip_hosts(self):
         # Execute Celery task synchronously. This will store the record in the test DB.
+        print("entering test_ip_hosts...")
+        print("test_ip_host.self.indicator: ", self.indicator)
         ip_hosts(self.ip_indicator)
 
+        # print("calling  IndicatorRecord.objects.recent_hosts in test_ip_hosts... ")
         # Retrieve records (return value is a QuerySet).
         ip_hosts_records = IndicatorRecord.objects.recent_hosts(self.ip_indicator)
-
+        print("test_ip_hosts.ip_hosts_records:", ip_hosts_records)
         # Validate that each field is included in the record.
         # We must loop even though there is only one record because Django gives us a QuerySet.
         for record in ip_hosts_records:
@@ -165,10 +180,16 @@ class IndicatorRecordValues(TestCase):
 
     def test_passive_hosts(self):
         # Execute Celery task synchronously. This will store the record in the test DB.
+        print("entering test_passive_hosts...")
+        print("test_passive_hosts.self.ip_indicator: ",
+              self.ip_indicator)  # test_passive_hosts.self.ip_indicator:  192.161.48.59
+        print("test_passive_hosts.self.indicator: ",
+              self.indicator)  # test_passive_hosts.self.indicator:  us-update.com
         ip_hosts(self.ip_indicator)
 
         # Retrieve records (return value is a QuerySet).
         ip_hosts_records = IndicatorRecord.objects.host_records(self.ip_indicator)
+        print("test_passive_hosts.ip_hosts_records:", ip_hosts_records)
 
         # Validate that each field is included in the record.
         # We must loop even though there is only one record because Django gives us a QuerySet.
@@ -192,7 +213,7 @@ class IndicatorRecordValues(TestCase):
             self.assertTrue("results" in record['info'])
             self.assertTrue("indicator" in record['info'])
 
-    #  Excluded due to API limit restrictions.
+    # Excluded due to API limit restrictions.
     #   def test_totalhash_ip_domain_search(self):
 
     def test_save_record(self):
