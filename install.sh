@@ -5,7 +5,7 @@ set -e
 
 # Directory where entire Django application is located
 #APPLICATION_DIR="/vagrant"
-APPLICATION_DIR="/home/ubuntu/workspace"
+APPLICATION_DIR="/home/lnguyen/RAPID"
 
 # Default external configuration files
 CELERY_CONFIGS_DIR="$APPLICATION_DIR/external_configs/celery"
