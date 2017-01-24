@@ -43,6 +43,7 @@ class CertificateMonitor(IndicatorLookupBase):
     """
 
     certificate_value = models.TextField(primary_key=True)
+
     """The certificate fragment to be monitored"""
 
     resolutions = JsonField()
@@ -51,13 +52,14 @@ class CertificateMonitor(IndicatorLookupBase):
 
     { <ip>: { "geo_location": <location>, "country": <code>, "domains": [ <domain>, ...] } }
     """
+   # Commented out by LNguyen on 1/24/2017 - Certificate Monitor will not require owner and certificate value to be a unique key
+   # class Meta:
+   #     """
+   #     A metaclass for Certificate Monitor that specifies that the combination of 'owner' (the person submitting the
+   #     monitor) and 'certificate_value' (the indicator value) must be unique.
+        #"""
 
-    class Meta:
-        """
-        A metaclass for Certificate Monitor that specifies that the combination of 'owner' (the person submitting the
-        monitor) and 'certificate_value' (the indicator value) must be unique.
-        """
-        unique_together = (('owner', 'certificate_value'),)
+    #    unique_together = (('owner', 'certificate_value'),)
 
 
 class IndicatorAlert(models.Model):
@@ -82,3 +84,15 @@ class IndicatorTag(models.Model):
 
     class Meta:
         unique_together = (('tag', 'owner'),)
+
+
+class CertificateSubscription(models.Model):
+    """
+    Created by: LNguyen
+    Date: 1/27/2017
+    Model for CertificateSubscription to store owner and certificate relationship
+    """
+    certificate = models.ForeignKey(CertificateMonitor,on_delete=models.PROTECT)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+

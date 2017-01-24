@@ -88,6 +88,9 @@
                     <li><a data-link="{% url 'add_certificate' %}"
                            data-toggle="modal"
                            data-target="#AddCertificateModal">Add Certificate</a></li>
+                    <li><a data-link="{% url 'update_certificate' %}"
+                           data-toggle="modal"
+                           data-target="#UpdateCertificateModal">Update Certificate</a></li>
                 </ul>
             </div>
 
@@ -174,6 +177,26 @@
         </div>
     </div>
     <!-- End Add Certificate Modal -->
+
+    <!-- Update Certificate Modal -->
+    <div class="modal fade" id="UpdateCertificateModal" tabindex="-1" role="dialog" aria-labelledby="AddCertificateLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                    <h4 class="modal-title" id="AddCertificateLabel">
+                        Update Certificate for Monitoring
+                    </h4>
+                </div>
+
+                <div class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+    <!-- End Update Certificate Modal -->
 
     <!-- Tagging Modal -->
         <div class="modal fade" id="TaggingModal" tabindex="-1" role="dialog" aria-labelledby="TaggingLabel">

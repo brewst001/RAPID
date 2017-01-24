@@ -1,0 +1,14 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<form action="{% url 'update_certificate' %}" method="post">
+    {% csrf_token %}
+    <h4><label>Update certificate submission</label></h4>
+    {{ form.fragment|attr:"class:form-control"|attr:"placeholder:Enter Certificate" }}<br>
+    {{ form.hosts|attr:"class:form-control"|attr:"placeholder:Enter Host(s)" }}<br>
+    {{ form.formname |attr:"placeholder:Update" }}
+    <div align="center">
+        <input class="btn btn-primary" type="submit" value="Confirm Update"/>
+    </div>
+
+</form>

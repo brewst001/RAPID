@@ -6,8 +6,10 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from core.utilities import time_jump
 from core.utilities import discover_type
-from .models import CertificateMonitor, DomainMonitor, IpMonitor
+from .models import CertificateMonitor, DomainMonitor, IpMonitor, CertificateSubscription
 from .tasks import GEOLOCATION_KEY, DOMAIN_KEY, IP_KEY
+
+import collections  #added by LNguyen on 10jan2017
 
 LOGGER = logging.getLogger(__name__)
 """The logger for this module"""
@@ -141,7 +143,7 @@ class SubmissionWithHosts(forms.Form):
         # Note: Even though this class doesn't inherit from MonitorSubmission, using this method signature will ensure
         # that it "just works" if you do multiple inheritance to have both indicator values and hosts (i.e.
         # MonitorSubmissionWithHosts, below).
-        monitor.last_hosts = list(self.valid_hosts)
+   #     monitor.last_hosts = list(self.valid_hosts) commented out by LNguyen
         return monitor
 
 
@@ -178,6 +180,7 @@ class CertificateSubmission(SubmissionWithHosts):
         :param request: The request being processed
         :return:  This method returns no values
         """
+        request.success = True
         indicator = self.cleaned_data.get("fragment")
         if indicator is None:
             LOGGER.debug("No certificate specified")
@@ -201,16 +204,37 @@ class CertificateSubmission(SubmissionWithHosts):
             resolution[GEOLOCATION_KEY] = PENDING
             resolution[DOMAIN_KEY] = [PENDING]
 
-        # Finally, we can construct the actual monitor object and save it to the database.
-        # monitor = CertificateMonitor(owner=user,
-        #                              certificate_value=indicator,
-        #                              lookup_interval=interval,
-        #                              next_lookup=lookup_time,
-        #                              last_hosts=self.valid_hosts,
-        #                              resolutions=resolutions)
+        # added by LNguyen on 10jan2017 to retrieve current owner and cert values from the database
+        # Need to first check if there is an existing owner with the given cert in the database
+        # If an existing owner does not exist, then set existing owner to NONE.
+        # If there are multiple existing owners, then set existing owner to the 1st owner
+        try:
+            current_owner = CertificateSubscription.objects.get(certificate=indicator).owner
 
+        except CertificateSubscription.DoesNotExist:
+            current_owner = None
+        except CertificateSubscription.MultipleObjectsReturned:
+            current_owner = CertificateSubscription.objects.filter(certificate=indicator, owner=user)[0].owner
+
+
+        # added by LNguyen on 10jan2017
+        # Need to check if the given cert exists in the database
+        # If the cert does not exist, then set the cert to NONE.
+        # If there are multiple entries for the given cert, then set the cert to the 1st entry
+        try:
+            current_cert = CertificateMonitor.objects.get(certificate_value=indicator).certificate_value
+
+        except CertificateMonitor.DoesNotExist:
+            current_cert = None
+        except CertificateMonitor.MultipleObjectsReturned:
+            current_cert = CertificateMonitor.objects.filter(certificate_value=indicator)[0].certificate_value
+
+
+        # Finally, we can construct the actual monitor object for the certificate info and save it to the database.
         # updated by LNguyen on 29nov2016
         # added created field
+        print("saving Certificate Monitor...")
+
         monitor = CertificateMonitor(owner=user,
                                      created=current_time,
                                      certificate_value=indicator,
@@ -219,11 +243,126 @@ class CertificateSubmission(SubmissionWithHosts):
                                      last_hosts=self.valid_hosts,
                                      resolutions=resolutions)
         monitor = self.update_monitor(monitor)
+
+        # Construct the subscription to store the new certificate and owner relationship
+        subscription = CertificateSubscription(certificate=monitor,owner=user)
+
+
         try:
-            monitor.save()
+
+            # If there is no existing owner and no existing cert in the database, then perform an initial save for the new values in
+            # the certificate monitor and certificate subscription tables
+            if not current_owner and not current_cert:
+               monitor.save()
+               subscription.save()
+
+            # If the cert exists but there is no existing owner, then save the new owner info in the certificate subscription table and update the submission for new hosts info
+            elif not current_owner and current_cert == indicator:
+                subscription.save()
+                self.update_submission(request)
+
+            # If the cert exists for a different owner, then save the new owner info in the certificate subscription table and update the submission for new hosts info
+            elif current_owner != user and current_cert == indicator:
+                subscription.save()
+                self.update_submission(request)
+
+            # Else if no condition is satisfied, then set success flag to False and do nothing
+            else:
+                request.success = False
+
+                 # Updates the last_hosts and resoultions fields for the Certificate Monitor record
+               #  CertificateMonitor.objects.filter(certificate_value=indicator, owner=user).update(last_hosts=self.valid_hosts,resolutions=resolutions)
+
+           # Enable the following lines to test save for CertificateMontior and CertificateSubscription tables
+           # monitor.save()
+           # subscription.save()
+
             LOGGER.info("New certificate monitor from %s for '%s' (initial hosts: %s)",
                         user,
                         indicator,
                         self.valid_hosts)
-        except:
-            LOGGER.exception("Error saving certificate monitor")
+
+        except Exception as err:
+            LOGGER.exception("Error saving certificate monitor: ", str(err))
+            request.success = False
+
+
+    def update_submission(self, request):
+        """
+        Created by: LNguyen
+        Date: 1/7/2017
+        Update a CertificateMonitor based upon the contents of this form.
+
+        :param request: The request being processed
+        :return:  This method returns no values
+        """
+        request.success = True
+        indicator = self.cleaned_data.get("fragment")
+        if indicator is None:
+            LOGGER.debug("No certificate specified")
+            return
+        user = User.objects.get(email__exact=request.user)
+        lookup_time = time_jump(minutes=2)
+        interval = 1
+        current_time = datetime.datetime.utcnow()
+
+        # Build the 'resolutions' monitor member.  We're not actually going to do full resolutions now (which would
+        # entail doing geo-location and domain lookup for each IP host).   Rather, we'll just use placeholder values
+        # until the monitor runs for the first time (as a periodic task).  This is important because it means that we
+        # will have a set of hosts already fsaved for this monitor.  Therefore, when this monitor runs for the first time
+        # it will have a previous set of hosts to which to compare.  (In other words, the first time it runs not every
+        # host will necessarily be new, and there may be some missing hosts on the first run.)
+        resolutions = dict()
+        for host in self.valid_hosts:
+            if host not in resolutions:
+                resolutions[host] = dict()
+            resolution = resolutions[host]
+            resolution[DOMAIN_KEY] = [PENDING]
+            resolution[GEOLOCATION_KEY] = PENDING
+
+
+
+        # Retrieve current certificate hosts info from the database and compare it to new hosts data.
+        # If the new hosts data does not exist in the database, then append the data to the list of current hosts data and save the updates in the database
+        # If the new hosts data exists in the database, then set the success flag to False and do not save the updates.
+        try:
+            # Retrieve the current certificate hosts from the database for the given cert
+           # lasthosts = CertificateMonitor.objects.get(
+           #     certificatesubscription=CertificateSubscription.objects.get(certificate=indicator,
+           #                                                                 owner=user)).last_hosts
+            lasthosts = CertificateMonitor.objects.get(certificate_value=indicator).last_hosts
+
+            # For every item in the list of new hosts, check to see if it exists in the list of current hosts
+            for host in self.valid_hosts:
+                # If there is no match, then perform the updates
+                if host not in lasthosts:
+                   # dbresolutions = CertificateMonitor.objects.get(
+                   #     certificatesubscription=CertificateSubscription.objects.get(certificate=indicator,
+                   #                                                                 owner=user)).resolutions
+                    dbresolutions = CertificateMonitor.objects.get(certificate_value=indicator).resolutions
+
+                    # Combine the current and new hosts to the current list
+                    lasthosts.extend(list(self.valid_hosts))
+
+                    # Combine the current and new resolutions and store to temp variable -  dbtmp
+                    dbtmp = {**resolutions, **dbresolutions}
+
+                    # Updates the last_hosts and resolutions fields for the Certificate Monitor record
+                    CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lasthosts, resolutions=dbtmp)
+
+
+#                CertificateMonitor.objects.filter(certificatesubscription=CertificateSubscription.objects.get(certificate=indicator,
+#                                                                                                                  owner=user)).update(last_hosts=lasthosts, resolutions=dbtmp)
+
+                # Else if there is no match, then set the success Flag to False and do nothing
+                else:
+                    request.success = False
+
+            LOGGER.info("New certificate monitor from %s for '%s' (initial hosts: %s)",
+                        user,
+                        indicator,
+                        self.valid_hosts)
+        except Exception as err:
+            LOGGER.exception("Error saving certificate monitor: ", str(err))
+            request.success = False
+

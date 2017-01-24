@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
 
 from .views import MonitorDashboard
-from .views import AddIndicator, AddCertificate, DeleteIndicator
+from .views import AddIndicator, AddCertificate, DeleteIndicator, UpdateCertificate
 from .views import CertificateList, DomainList, IpList, AlertList
 from .views import UntagIndicator, TagIndicator
 from .views import export_indicators
@@ -12,6 +12,7 @@ urlpatterns = patterns('',
                        url(r'^$', MonitorDashboard.as_view(), name='monitor_dashboard'),
                        url(r'^add_indicators', AddIndicator.as_view(), name='add_indicators'),
                        url(r'^add_certificate', AddCertificate.as_view(), name='add_certificate'),
+                       url(r'^update_certificate', UpdateCertificate.as_view(), name='update_certificate'),
                        url(r'^delete_indicators', DeleteIndicator.as_view(), name='delete_indicators'),
                        url(r'^export_indicators', export_indicators, name='export_indicators'),
                        url(r'^tag_indicators', TagIndicator.as_view(), name='tag_indicators'),

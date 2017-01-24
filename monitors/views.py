@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 
 from core.utilities import discover_type
 
-from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, IndicatorTag
+from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, IndicatorTag, CertificateSubscription
 from .forms import MonitorSubmission, CertificateSubmission
 from .tasks import GEOLOCATION_KEY, DOMAIN_KEY, COUNTRY_KEY
 
@@ -85,7 +85,8 @@ class CertificateList(LoginRequiredMixin, ListView):
     template_name = 'monitors/certificate.html'
 
     def get_queryset(self):
-        return CertificateMonitor.objects.filter(owner=self.request.user)
+       return CertificateMonitor.objects.filter(certificatesubscription = CertificateSubscription.objects.filter(owner=self.request.user))
+       #return CertificateMonitor.objects.filter(owner=self.request.user)
 
 
 class AlertList(LoginRequiredMixin, ListView):
@@ -112,12 +113,31 @@ class AddIndicator(LoginRequiredMixin, FormView):
     msg_success = "Indicator(s) added for monitoring"
     msg_failure = "No indicator(s) added for monitoring"
 
+
     def get_success_url(self):
         return reverse('monitor_dashboard')
 
     def form_valid(self, form):
-        form.save_submission(self.request)
-        messages.add_message(self.request, messages.SUCCESS, self.msg_success)
+        """
+        Updated by: LNguyen
+        Date: January 10, 2017
+        Handler for directing form to handle adding a new certificate or updating an existing certificate.
+        It also returns the corresponding success and failure messages to the UI
+        """
+
+        if self.request.path=='/monitors/add_certificate':
+            form.save_submission(self.request)
+            self.msg_success = "Indicator(s) added for monitoring"
+            self.msg_failure = "No indicator added for monitoring because duplicate certificate exists"
+        elif self.request.path=='/monitors/update_certificate':
+            form.update_submission(self.request)
+            self.msg_success = "Indicator has been updated"
+            self.msg_failure = "Indicator has not been updated because duplicate value exists"
+
+        if self.request.success == True:
+            messages.add_message(self.request, messages.SUCCESS, self.msg_success)
+        else:
+            messages.add_message(self.request, messages.ERROR, self.msg_failure)
         return super(AddIndicator, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -128,12 +148,22 @@ class AddIndicator(LoginRequiredMixin, FormView):
         return redirect('monitor_dashboard')
 
 
+
 class AddCertificate(AddIndicator):
     """
     A view for adding a new certificate monitor
     """
     form_class = CertificateSubmission
     template_name = "monitors/add_certificate.html"
+
+
+
+class UpdateCertificate(AddIndicator):
+    """
+    A view for adding a new certificate monitor
+    """
+    form_class = CertificateSubmission
+    template_name = "monitors/update_certificate.html"
 
 
 class DeleteIndicator(LoginRequiredMixin, View):
@@ -168,10 +198,17 @@ class DeleteIndicator(LoginRequiredMixin, View):
 
             if indicator_type == "other":
                 try:
-                    CertificateMonitor.objects.get(certificate_value=indicator,
-                                                   owner=request.user).delete()
-                except:
-                    LOGGER.exception("Error deleting certificate monitor for value: %s", indicator)
+                   # CertificateMonitor.objects.get(certificate_value=indicator,
+                   #                                owner=request.user).delete()
+                   # Added by LNguyen 1/18/2017 - Delete the associations but not the certificate data to preserve
+                   # any historical search results
+                   CertificateSubscription.objects.get(owner=request.user, certificate=indicator).delete()
+
+                #except:
+                #    LOGGER.exception("Error deleting certificate monitor for value: %s", indicator)
+
+                except Exception as err:
+                    LOGGER.exception("Error deleting certificate monitor for value: %s", indicator, str(err))
 
         messages.add_message(request, messages.SUCCESS, self.msg_success)
         return redirect('monitor_dashboard')
