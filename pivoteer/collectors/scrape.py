@@ -41,33 +41,36 @@ class RobtexScraper(MechanizedScraper):
         results = []
 
         url_param = ip.replace(".", "/")
-        url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
 
+        url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
+        print("url:",url)
         self.browser.open(url)
-        print("response:", self.browser.response)
+        #print("response:", self.browser.response)
         parser = self.browser.parsed
 
-        print("parser:", parser)
-        search = parser.find("span", {"id": "shared_ma"})
+        #print("parser:", parser)
+        #search = parser.find("span", {"id": "shared_ma"})
+        search = parser.find("span", {"id": "shared"})
         print("search: ", search)
         if search is not None:
             # count = self.extract_string(search.text, "(", " shown")
             # if int(count) <= 50:
+            if search.parent.parent.parent.find("ol", {"class": "xbul"}):
 
-            # for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
-            for result in search.parent.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
-                result_value = result.text
+                #for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+                for result in search.parent.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+                    result_value = result.text
+                    print("result_value: ",result.text)
+                    if ' ' in result_value:
+                        result_value = re.sub(' ', '.', result_value)
+                        results.append(result_value)
 
-                if ' ' in result_value:
-                    result_value = re.sub(' ', '.', result_value)
-                    results.append(result_value)
+                    else:
+                        results.append(result_value)
 
-                else:
-                    results.append(result_value)
-
-                    # else:
-                    #    results.append("%s domains identified" % str(count))
-
+                        # else:
+                        #    results.append("%s domains identified" % str(count))
+        print("scraperesults:",results)
         return results
 
 

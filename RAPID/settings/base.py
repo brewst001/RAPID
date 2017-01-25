@@ -11,6 +11,16 @@ STATIC_ROOT = BASE_DIR.child("static")
 TEMPLATE_ROOT = BASE_DIR.child("templates")
 
 STATICFILES_DIRS = (
+    #"/home/lnguyen/RAPID/static/css",
+    #"/home/lnguyen/RAPID/static/js",
+    #"/home/lnguyen/RAPID/static/bootstrap-3.3.2",
+    #"/home/lnguyen/RAPID/static/bootstrap-select-1.7.3",
+    #"/home/lnguyen/RAPID/static/DataTables-1.10.5",
+    #"/var/www/rapid/static/css",
+    #"/var/www/rapid/static/js",
+    #"/var/www/rapid/static/bootstrap-3.3.2",
+    #"/var/www/rapid/static/bootstrap-select-1.7.3",
+    #"/var/www/rapid/static/DataTables-1.10.5",
     STATIC_ROOT.child("css"),
     STATIC_ROOT.child("js"),
     STATIC_ROOT.child("bootstrap-3.3.2"),
@@ -27,6 +37,8 @@ WSGI_APPLICATION = 'RAPID.wsgi.application'
 
 MEDIA_URL = "/media/"
 STATIC_URL = "/static/"
+#MEDIA_URL = "/home/lnguyen/RAPID/static/DataTables-10.5/"
+#STATIC_URL = "/home/lnguyen/RAPID/static/"
 
 # Open JSON-based secrets module
 #with open("secrets.json", "r") as f:
