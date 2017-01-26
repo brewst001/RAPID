@@ -10,6 +10,8 @@ import dateutil.parser
 from pivoteer.models import ExternalSessions
 from core.utilities import discover_type
 
+import lxml.html
+from bs4 import BeautifulSoup
 
 class MechanizedScraper(object):
     def __init__(self):
@@ -37,41 +39,78 @@ class RobtexScraper(MechanizedScraper):
         MechanizedScraper.__init__(self)
 
     def run(self, ip):
+        """
+        Updated by: LNguyen
+        Date: 26January2017
+        Updated scraping logic because of existing bug that was dependent finding an ID = shared_ma that no longer existed in the Robtex web pages.
+        The new logic finds a list of shared domains located in the tag <ol class:xbul.>
 
+        :param ip: The ip address to scrape the Robtex web page for
+        :return: A list of domains found for the given ip address
+        """
         results = []
 
         url_param = ip.replace(".", "/")
 
         url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
-        print("url:",url)
+        #print("url:",url)
         self.browser.open(url)
-        #print("response:", self.browser.response)
+
         parser = self.browser.parsed
 
-        #print("parser:", parser)
-        #search = parser.find("span", {"id": "shared_ma"})
-        search = parser.find("span", {"id": "shared"})
-        print("search: ", search)
+        search = parser.find("ol", {"class": "xbul"})
+       # print("search: ", search)
+
         if search is not None:
-            # count = self.extract_string(search.text, "(", " shown")
-            # if int(count) <= 50:
-            if search.parent.parent.parent.find("ol", {"class": "xbul"}):
+           for result in search.find_all("li"):
+                result_value = result.text
+        #       print("result_value: ",result.text)
+                if ' ' in result_value:
+                    result_value = re.sub(' ', '.', result_value)
+                    results.append(result_value)
 
-                #for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
-                for result in search.parent.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
-                    result_value = result.text
-                    print("result_value: ",result.text)
-                    if ' ' in result_value:
-                        result_value = re.sub(' ', '.', result_value)
-                        results.append(result_value)
+                else:
+                    results.append(result_value)
+           print("scraperesults:",results)
 
-                    else:
-                        results.append(result_value)
-
-                        # else:
-                        #    results.append("%s domains identified" % str(count))
-        print("scraperesults:",results)
         return results
+
+#
+# def run(self, ip):
+#     results = []
+#
+#     url_param = ip.replace(".", "/")
+#
+#     url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
+#     print("url:", url)
+#     self.browser.open(url)
+#     # print("response:", self.browser.response)
+#     parser = self.browser.parsed
+#
+#     # print("parser:", parser)
+#     # search = parser.find("span", {"id": "shared_ma"})
+#     search = parser.find("span", {"id": "shared"})
+#     print("search: ", search)
+#     if search is not None:
+#         # count = self.extract_string(search.text, "(", " shown")
+#         # if int(count) <= 50:
+#         if search.parent.parent.parent.find("ol", {"class": "xbul"}):
+#
+#             # for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+#             for result in search.parent.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+#                 result_value = result.text
+#                 print("result_value: ", result.text)
+#                 if ' ' in result_value:
+#                     result_value = re.sub(' ', '.', result_value)
+#                     results.append(result_value)
+#
+#                 else:
+#                     results.append(result_value)
+#
+#                     # else:
+#                     #    results.append("%s domains identified" % str(count))
+#     print("scraperesults:", results)
+#     return results
 
 
 class GoogleScraper(MechanizedScraper):

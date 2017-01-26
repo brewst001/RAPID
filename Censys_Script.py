@@ -11,8 +11,8 @@ from email.mime.text import MIMEText
 # Loads Censys.io API Keys
 
 API_URL = "https://www.censys.io/api/v1/search/ipv4"
-UID = ''
-SECRET = ''
+UID = 'e013909c-bdec-4c17-a997-74955b73ac89'
+SECRET = 'y4nlaUAD9Netlvlc2mcZnhdhohVInAww'
 
 # Establishes Certificate values to query for and associated IPs that are already tracked
 
@@ -144,6 +144,13 @@ for key in cert_values:
                 for x in new_ip:
                     print(x)
                     print(new_ip[x])
+            # else:
+            #     print("Previously known IP(s) identified with this cert value:")
+            #     new_ip[value] = set(cert_values[key])
+            #     print("new_ip: ", new_ip)
+            #     for x in new_ip:
+            #         print(x)
+            #         print(new_ip[x])
 
     if search.status_code != 200:
         print("error occurred: %s" % search.json()["error"])
@@ -205,8 +212,8 @@ msg['From'] = 'nguylt1222@gmail.com'  # Replace with your sender email address
 recipients = ['nguylt1222@gmail.com']  # Replace with your recipient email addresses here
 msg['To'] = ", ".join(recipients)
 
-username = ''  # Replace with your sender email address
-password = ''  # Replace with your sender email password
+username = 'nguylt1222@gmail.com'  # Replace with your sender email address
+password = 'Nhucham1'  # Replace with your sender email password
 
 server = smtplib.SMTP('smtp.gmail.com:587')
 server.ehlo()
