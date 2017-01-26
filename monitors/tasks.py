@@ -624,6 +624,9 @@ class IndicatorMonitoring(PeriodicTask):
             body = """
             %s lookup performed at %s has detected changes in the resolution of tracked %s value '%s':\n\n
             """ % (type_name, current_time, type_name, sanitized_value)
+
+            NeedToAlert = False
+
             if last_hosts:
                 # alert_text = 'Removed hosts: %s' % ', '.join(subtask.list_hosts(lookup, hosts=missing_hosts))
                 # self.create_alert(indicator=indicator, alert_text=alert_text, owner=owner)
@@ -634,16 +637,21 @@ class IndicatorMonitoring(PeriodicTask):
                 self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
                 body += "The following previous IP associations are missing from the database: %s\n\n" % subtask.list_hosts(
                     lookup, hosts=missing_hosts, sanitized=True)
+                NeedToAlert = True
             if new_hosts:
                 alert_text = "Added hosts: %s" % ", ".join(subtask.list_hosts(lookup, hosts=new_hosts))
                 self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
                 # body += "\tAdded hosts: %s\n" % subtask.list_hosts(lookup, hosts=new_hosts, sanitized=True)
                 body += "The following new IPs were identified: \n%s\n\n" % subtask.list_hosts(lookup, hosts=new_hosts,
                                                                                                sanitized=True)
-            print("sending email...")
-            print("body:", body)
-            print("recipients:", recipients)
-            self.send_email(indicator, subject, body, recipients)
+                NeedToAlert = True
+
+            #Update logic to send email alert if there are missing hosts or new hosts added
+            if NeedToAlert:
+               print("sending email...")
+               print("body:", body)
+               print("recipients:", recipients)
+               self.send_email(indicator, subject, body, recipients)
 
     @staticmethod
     def create_alert(indicator, alert_text, recipients):
