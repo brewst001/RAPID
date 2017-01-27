@@ -444,7 +444,12 @@ def search_ip_for_certificate(value):
         print("api: ", api)
         logger.info("Searching for certificate value: %s", value)
         total = 0
+        search = api.search(query=_escape_censys_value(value), fields=["ip"])
+       # print("search:",search)
+
         for result in api.search(query=_escape_censys_value(value), fields=["ip"]):
+           # print("result:",result)
+           # print("result ip:",result["ip"])
             total += 1
             yield result["ip"]
         logger.info("Found %d total result(s) for certificate value: %s", total, value)
@@ -475,6 +480,7 @@ def accumulate_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     results = list(search_ip_for_certificate(value))
+    print("API results:",results)
     logger.info("Found %d total result(s) for certificate search value: %s", len(results), value)
     return results
 

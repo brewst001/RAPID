@@ -537,11 +537,14 @@ class IndicatorMonitoring(PeriodicTask):
                 current_hosts.extend(original_hosts)
                 new_hosts = list(set(current_hosts).difference(last_hosts))
                 print("updated current_hosts:", current_hosts)
+            else:
+                new_hosts = current_hosts
 
             # Update and re-save the lookup
             print("calling subtask.update_lookup")
             lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
-
+            print("lookup.last_hosts:",lookup.last_hosts)
+            print("lookup.resolutions:",lookup.resolutions)
             print("calling lookup.save()...")
             # lookup.save()
             # Added by LNguyen 1/13/2017
@@ -590,7 +593,9 @@ class IndicatorMonitoring(PeriodicTask):
                 if last_hosts:
                     missing_hosts = list(set(last_hosts).difference(current_hosts))
                     new_hosts = list(set(current_hosts).difference(last_hosts))
-
+            else:
+                new_hosts = new_hosts
+                missing_hosts = []
 
             print("last_hosts: ", last_hosts)
             print("new_Hosts: ", new_hosts)

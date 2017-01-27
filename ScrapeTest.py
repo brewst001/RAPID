@@ -35,7 +35,7 @@ results = []
 url_param = ip.replace(".", "/")
 url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
 # url = "https://www.robtex.com/en/advisory/ip/" + ip + "/shared.html"
-#print("url: ", url)
+print("url: ", url)
 browser.open(url)
 
 response = browser.response
@@ -43,22 +43,17 @@ response = browser.response
 parser = browser.parsed
 #print("parser: ", parser)
 
-soup = lxml.html.fromstring(parser)
-
 #broken_html = '<ul class=country><li>Area</li>Population</ul>'
 
 #soup = BeautifulSoup(parser, 'html.parser')
-print("soup:",soup)
-fixed_html = parser.prettify()
-print("fixedhtml:",fixed_html)
 #ul = soup.find("ol", {"class": "xbul"})
 #print("ul:",ul)
 #search = ul.find('li')
-parent = parser.find("ol", {"class": "xbul"})
+# parent = parser.find("ol", {"class": "xbul"})
 search = parser.find("ol", {"class": "xbul"})
 #search = parent.find_all("li")
 #search = parser.find("span", {"id": "shared"})
-print("parent:",parent)
+# print("parent:",parent)
 print("search:",search)
 #print("parent: ", search.parent.parent.parent.parent)
 
