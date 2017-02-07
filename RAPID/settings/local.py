@@ -30,7 +30,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/home/lnguyen/RAPID/RAPID.log',
+            'filename': '/home/home/RAPID/RAPID.log',
         },
     },
     'loggers': {

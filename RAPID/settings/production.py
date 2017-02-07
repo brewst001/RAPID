@@ -45,7 +45,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename':'/home/lnguyen/RAPID/RAPID.log',
+            'filename':'/home/ubuntu/RAPID/RAPID.log',
         },
     },
     'loggers': {
