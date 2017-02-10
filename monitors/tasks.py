@@ -339,7 +339,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
             ip = enclose_periods_in_braces(host) if sanitized else host
             location = info[GEOLOCATION_KEY]
             domains = [enclose_periods_in_braces(domain) if sanitized else domain for domain in info[DOMAIN_KEY]]
-            # description = "%s (%s) - %s" % (ip, location, domains)
+           # description = "%s (%s) - %s" % (ip, location, domains)
             description = "%s" % (host)
             result.append(description)
         return result
@@ -460,7 +460,7 @@ class IndicatorMonitoring(PeriodicTask):
         :return: A list of lookups
         """
         # return lookup_type.objects.filter(next_lookup__lte=current_time)  commented out by LNguyen to ignore the current time
-        return lookup_type.objects.filter()  # gets the list of lookups without respect to the time
+        return lookup_type.objects.filter(next_lookup__lte=current_time)  # gets the list of lookups without respect to the time
 
     @staticmethod
     def get_owners(indicator):
