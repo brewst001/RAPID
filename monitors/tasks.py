@@ -245,6 +245,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
             return e.message
 
     def create_records(self, lookup, date=None):
+        print("running tasks.DomainLookupSubTask.create_records")
         domain = self.get_indicator_value(lookup)
         if type(lookup.last_hosts) is list:
             for ip in lookup.last_hosts:
@@ -256,8 +257,13 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
                                          info=info)
+                print("calling DomainLookupSubTask.save_record")
                 self._save_record(record)
 
+
+    def save_lookup(self, indicator, lookup):
+        print("entering DomainLookupSubTasks.save_lookup")
+        lookup.save()
 
 class IpLookupSubTask(IndicatorLookupSubTask):
     """
@@ -282,6 +288,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
         return get_domains_for_ip(value)
 
     def create_records(self, lookup, date=None):
+        print("running tasks.IPLookupSubTask.create_records")
         ip = self.get_indicator_value(lookup)
         if type(lookup.last_hosts) is list:
             for domain in lookup.last_hosts:
@@ -293,7 +300,13 @@ class IpLookupSubTask(IndicatorLookupSubTask):
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
                                          info=info)
+                print("calling IPLookupSubTask.save_record")
                 self._save_record(record)
+
+
+    def save_lookup(self, indicator, lookup):
+        print("entering IPLookupSubTasks.save_lookup")
+        lookup.save()
 
 
 class CertificateLookupSubTask(IndicatorLookupSubTask):
@@ -346,21 +359,33 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
 
     def create_records(self, lookup, date=None):
         print("running tasks.CertificateLookupSubTask.create_records")
+
         if lookup.resolutions is None:
-            return
-        for ip in lookup.resolutions:
-            resolution = lookup.resolutions[ip]
-            location = resolution[GEOLOCATION_KEY]
-            for domain in resolution[DOMAIN_KEY]:
-                info = {GEOLOCATION_KEY: location,
-                        IP_KEY: ip,
-                        DOMAIN_KEY: domain}
-                record = IndicatorRecord(record_type=RecordType.HR.name,
-                                         info_source=RecordSource.DNS.name,
-                                         info_date=date,
-                                         info=info)
-                self._save_record(record)
-                LOGGER.debug("Created host record: %s", info)
+            print("lookup.resoultions is none", lookup.resolutions)
+           # return
+        else:
+            for ip in lookup.resolutions:
+                resolution = lookup.resolutions[ip]
+                location = resolution[GEOLOCATION_KEY]
+                for domain in resolution[DOMAIN_KEY]:
+                    info = {GEOLOCATION_KEY: location,
+                            IP_KEY: ip,
+                            DOMAIN_KEY: domain}
+                    record = IndicatorRecord(record_type=RecordType.HR.name,
+                                             info_source=RecordSource.DNS.name,
+                                             info_date=date,
+                                             info=info)
+                    print("calling CertificateLookupSubTask.save_record")
+                    self._save_record(record)
+                    LOGGER.debug("Created host record: %s", info)
+
+    def save_lookup(self, indicator,lookup):
+        print("entering CertificateLookupSubTasks.save_lookup")
+             # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
+        CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,
+                                                                              resolutions=lookup.resolutions,
+                                                                              next_lookup=lookup.next_lookup)
+
 
     def update_lookup(self, lookup, current_time, hosts):
 
@@ -434,7 +459,6 @@ class IndicatorMonitoring(PeriodicTask):
 
     run_every = crontab()
 
-
     def run(self, **kwargs):
         """
         Run this task.
@@ -459,8 +483,8 @@ class IndicatorMonitoring(PeriodicTask):
         :param current_time: The current time (as a string)
         :return: A list of lookups
         """
-        # return lookup_type.objects.filter(next_lookup__lte=current_time)  commented out by LNguyen to ignore the current time
-        return lookup_type.objects.filter(next_lookup__lte=current_time)  # gets the list of lookups without respect to the time
+        return lookup_type.objects.filter(next_lookup__lte=current_time)
+       #return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
 
     @staticmethod
     def get_owners(indicator):
@@ -543,13 +567,14 @@ class IndicatorMonitoring(PeriodicTask):
             # Update and re-save the lookup
             print("calling subtask.update_lookup")
             lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
-            print("lookup.last_hosts:",lookup.last_hosts)
-            print("lookup.resolutions:",lookup.resolutions)
+           # print("lookup.last_hosts:",lookup.last_hosts)
+           # print("lookup.resolutions:",lookup.resolutions)
             print("calling lookup.save()...")
+            subtask.save_lookup(indicator,lookup)
             # lookup.save()
             # Added by LNguyen 1/13/2017
             # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
-            CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
+            #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
             LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
 
             # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
@@ -564,7 +589,7 @@ class IndicatorMonitoring(PeriodicTask):
             # database for each.
             print("calling subtask.create_records...")
             subtask.create_records(lookup=lookup, date=current_time)
-
+            print("post subtasks.create_records")
             # Commented out by LNguyen
             # If there is no host information to compare, move on to the next lookup.  Otherwise, we need to calculate
             # the set of hosts that were added and the set of hosts that were removed.  If there aren't either, once

@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from core.utilities import time_jump
 from core.utilities import discover_type
-from .models import CertificateMonitor, DomainMonitor, IpMonitor, CertificateSubscription
+from .models import CertificateMonitor, DomainMonitor, IpMonitor, CertificateSubscription, DomainSubscription, IpSubscription
 from .tasks import GEOLOCATION_KEY, DOMAIN_KEY, IP_KEY
 
 import collections  #added by LNguyen on 10jan2017
@@ -47,35 +47,150 @@ class MonitorSubmission(forms.Form):
                 LOGGER.warn("Discarding attempt to add '%s' as an IP or Domain to be monitored", indicator)
                 raise ValidationError("%s is not a valid IP or Domain" % indicator)
 
+
     def save_submission(self, request):
+
+        request.success = True
+        request.msg = "Indicator has been added for submission"
 
         current_user = User.objects.get(email__exact=request.user)
         lookup_time = time_jump(minutes=2)
         set_interval = 24
 
+
         for domain in self.valid_domains:
 
             try:
+                current_owner = DomainSubscription.objects.get(domain_name=domain).owner
+            except DomainSubscription.DoesNotExist:
+                current_owner = None
+            except DomainSubscription.MultipleObjectsReturned:
+                current_owner = DomainSubscription.objects.filter(domain_name=domain, owner=current_user)[0].owner
+
+            try:
+                current_domain = DomainMonitor.objects.get(domain_name=domain).domain_name
+            except DomainMonitor.DoesNotExist:
+                current_domain = None
+            except DomainMonitor.MultipleObjectsReturned:
+                current_domain = DomainMonitor.objects.filter(domain_name=domain)[0].domain_name
+
+
+            try:
+
                 new_monitor = DomainMonitor(owner=current_user,
                                             domain_name=domain,
                                             lookup_interval=set_interval,
                                             next_lookup=lookup_time)
                 new_monitor = self.update_monitor(new_monitor)
-                new_monitor.save()
+               # new_monitor.save()
+
+                new_subscription = DomainSubscription(domain_name=new_monitor,owner=current_user)
+
+                # IF there is no existing owner and no existing domain in the database, then perform an initial save for the new values
+                if not current_owner and not current_domain:
+                    new_monitor.save()
+                    new_subscription.save()
+                # IF the domain exists but there is no existing user, then save the new owner info in the domain subscription table
+                elif not current_owner and current_domain == domain:
+                    new_subscription.save()
+                # IF the domain exists for a different user, then save the owner info in the domain subscription table
+                elif current_owner != current_user and current_domain == domain:
+                    new_subscription.save()
+                # IF no condition is satisified, then set success flag to False and do nothing
+                else:
+                    request.success = False
+                    request.msg = "No indicator added for monitoring because duplicate domain exists"
+
             except:
                 LOGGER.exception("Error saving domain monitor from %s for %s", current_user, domain)
+                request.success = False
+                request.msg = "Error saving domain monitor for " +  domain
 
         for ip_address in self.valid_ips:
 
             try:
+                current_owner = IpSubscription.objects.get(ip_address=ip_address).owner
+            except IpSubscription.DoesNotExist:
+                current_owner = None
+            except IpSubscription.MultipleObjectsReturned:
+                current_owner = IpSubscription.objects.filter(ip_address=ip_address, owner=current_user)[0].owner
+
+            try:
+                current_IP = IpMonitor.objects.get(ip_address=ip_address).ip_address
+            except IpMonitor.DoesNotExist:
+                current_IP = None
+            except IpMonitor.MultipleObjectsReturned:
+                current_IP = IpMonitor.objects.filter(ip_address=ip_address)[0].ip_address
+
+            try:
+               # current_owner = IpSubscription.objects.get(domain_name=domain).owner
+               # current_IP = IpSubscription.objects.get(domain_name=domain).domain_name
+
                 new_monitor = IpMonitor(owner=current_user,
                                         ip_address=ip_address,
                                         lookup_interval=set_interval,
                                         next_lookup=lookup_time)
                 new_monitor = self.update_monitor(new_monitor)
-                new_monitor.save()
+              #  new_monitor.save()
+
+                new_subscription = IpSubscription(ip_address=new_monitor, owner=current_user)
+
+                #IF there is no existing owner and no existing IP in the database, then perform an initial save for the new values
+                if not current_owner and not current_IP:
+                    new_monitor.save()
+                    new_subscription.save()
+                # IF the IP exists but there is no existing user, then save the new owner info in the IP subscription table
+                elif not current_owner and current_IP == ip_address:
+                    new_subscription.save()
+                # IF the IP exists for a different user, then save the owner info in the IP subscription table
+                elif current_owner != current_user and current_IP == ip_address:
+                    new_subscription.save()
+                # IF no condition is satisified, then set success flag to False and do nothing
+                else:
+                    request.success = False
+                    request.msg = "No indicator added for monitoring because duplicate IP address exists"
+
             except:
                 LOGGER.exception("Error saving IP monitor from %s for %s", current_user, ip_address)
+                request.success = False
+                request.msg = "Error saving IP monitor for "  + ip_address
+    #
+    # def save_submission(self, request):
+    #
+    #     request.success = True
+    #     request.msg = "Indicator has been added for submission"
+    #
+    #     current_user = User.objects.get(email__exact=request.user)
+    #     lookup_time = time_jump(minutes=2)
+    #     set_interval = 24
+    #
+    #     for domain in self.valid_domains:
+    #
+    #         try:
+    #             new_monitor = DomainMonitor(owner=current_user,
+    #                                         domain_name=domain,
+    #                                         lookup_interval=set_interval,
+    #                                         next_lookup=lookup_time)
+    #             new_monitor = self.update_monitor(new_monitor)
+    #             new_monitor.save()
+    #         except:
+    #             LOGGER.exception("Error saving domain monitor from %s for %s", current_user, domain)
+    #             request.success = False
+    #             request.msg = "Error saving domain monitor for " +  domain
+    #
+    #     for ip_address in self.valid_ips:
+    #
+    #         try:
+    #             new_monitor = IpMonitor(owner=current_user,
+    #                                     ip_address=ip_address,
+    #                                     lookup_interval=set_interval,
+    #                                     next_lookup=lookup_time)
+    #             new_monitor = self.update_monitor(new_monitor)
+    #             new_monitor.save()
+    #         except:
+    #             LOGGER.exception("Error saving IP monitor from %s for %s", current_user, ip_address)
+    #             request.success = False
+    #             request.msg = "Error saving IP monitor for "  + ip_address
 
     def update_monitor(self, monitor):
         """
@@ -181,6 +296,7 @@ class CertificateSubmission(SubmissionWithHosts):
         :return:  This method returns no values
         """
         request.success = True
+        request.msg = "Indicator(s) added for monitoring"
         indicator = self.cleaned_data.get("fragment")
         if indicator is None:
             LOGGER.debug("No certificate specified")
@@ -269,7 +385,7 @@ class CertificateSubmission(SubmissionWithHosts):
             # Else if no condition is satisfied, then set success flag to False and do nothing
             else:
                 request.success = False
-
+                request.msg = "No indicator added for monitoring because duplicate certificate exists"
                  # Updates the last_hosts and resoultions fields for the Certificate Monitor record
                #  CertificateMonitor.objects.filter(certificate_value=indicator, owner=user).update(last_hosts=self.valid_hosts,resolutions=resolutions)
 
@@ -285,6 +401,7 @@ class CertificateSubmission(SubmissionWithHosts):
         except Exception as err:
             LOGGER.exception("Error saving certificate monitor: ", str(err))
             request.success = False
+            request.msg = "Error saving certificate monitor submission: " + str(err)
 
 
     def update_submission(self, request):
@@ -297,6 +414,7 @@ class CertificateSubmission(SubmissionWithHosts):
         :return:  This method returns no values
         """
         request.success = True
+        request.msg = "Indicator has been updated"
         indicator = self.cleaned_data.get("fragment")
         if indicator is None:
             LOGGER.debug("No certificate specified")
@@ -357,12 +475,14 @@ class CertificateSubmission(SubmissionWithHosts):
                 # Else if there is no match, then set the success Flag to False and do nothing
                 else:
                     request.success = False
+                    request.msg =  "Indicator has not been updated because duplicate value exists"
 
             LOGGER.info("New certificate monitor from %s for '%s' (initial hosts: %s)",
                         user,
                         indicator,
                         self.valid_hosts)
         except Exception as err:
-            LOGGER.exception("Error saving certificate monitor: ", str(err))
+            LOGGER.exception("Error updating certificate monitor: ", str(err))
             request.success = False
+            request.msg = "Error updating certificate monitor : " + str(err)
 

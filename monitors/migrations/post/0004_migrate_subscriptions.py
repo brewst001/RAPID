@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 from django.apps import apps
 
-def populate_subscriptions(apps):
+def populate_subscriptions(apps, schema_editor):
     print("entering populate_subscriptions")
     Certificates = apps.get_model("monitors","CertificateMonitor")
     Subscription = apps.get_model("monitors","CertificateSubscription")

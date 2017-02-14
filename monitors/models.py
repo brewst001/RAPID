@@ -96,3 +96,25 @@ class CertificateSubscription(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
 
+class DomainSubscription(models.Model):
+    """
+    Created by: LNguyen
+    Date: 2/13/2017
+    Model for DomainSubscription to store owner and domain relationship
+    """
+    domain_name = models.ForeignKey(DomainMonitor,on_delete=models.PROTECT)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+
+
+class IpSubscription(models.Model):
+    """
+    Created by: LNguyen
+    Date: 2/13/2017
+    Model for IpSubscription to store owner and IP relationship
+    """
+    ip_address = models.ForeignKey(IpMonitor,on_delete=models.PROTECT)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+
+

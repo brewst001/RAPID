@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 
 from core.utilities import discover_type
 
-from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, IndicatorTag, CertificateSubscription
+from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, IndicatorTag, CertificateSubscription, DomainSubscription, IpSubscription
 from .forms import MonitorSubmission, CertificateSubmission
 from .tasks import GEOLOCATION_KEY, DOMAIN_KEY, COUNTRY_KEY
 
@@ -53,8 +53,10 @@ class DomainList(LoginRequiredMixin, ListView):
     template_name = 'monitors/domain.html'
 
     def get_queryset(self):
-        domains = DomainMonitor.objects.filter(owner=self.request.user)
-        return domains
+        #domains = DomainMonitor.objects.filter(owner=self.request.user)
+        #return domains
+        return DomainMonitor.objects.filter(domainsubscription=DomainSubscription.objects.filter(owner=self.request.user))
+
 
 
 class IpList(LoginRequiredMixin, ListView):
@@ -66,8 +68,10 @@ class IpList(LoginRequiredMixin, ListView):
     template_name = 'monitors/ip.html'
 
     def get_queryset(self):
-        ips = IpMonitor.objects.filter(owner=self.request.user)
-        return ips
+       # ips = IpMonitor.objects.filter(owner=self.request.user)
+       # return ips
+        return IpMonitor.objects.filter(ipsubscription=IpSubscription.objects.filter(owner=self.request.user))
+
 
 
 class CertificateList(LoginRequiredMixin, ListView):
@@ -124,20 +128,24 @@ class AddIndicator(LoginRequiredMixin, FormView):
         Handler for directing form to handle adding a new certificate or updating an existing certificate.
         It also returns the corresponding success and failure messages to the UI
         """
-
-        if self.request.path=='/monitors/add_certificate':
-            form.save_submission(self.request)
-            self.msg_success = "Indicator(s) added for monitoring"
-            self.msg_failure = "No indicator added for monitoring because duplicate certificate exists"
-        elif self.request.path=='/monitors/update_certificate':
+        if self.request.path=='/monitors/update_certificate':
             form.update_submission(self.request)
-            self.msg_success = "Indicator has been updated"
-            self.msg_failure = "Indicator has not been updated because duplicate value exists"
+         #   self.msg_success = "Indicator has been updated"
+         #   self.msg_failure = "Indicator has not been updated because duplicate value exists"
+        #if self.request.path=='/monitors/add_certificate':
+        else:
+            form.save_submission(self.request)
+         #   self.msg_success = "Indicator(s) added for monitoring"
+         #   self.msg_failure = "No indicator added for monitoring because duplicate certificate exists"
+        # elif self.request.path=='/monitors/update_certificate':
+        #     form.update_submission(self.request)
+        #     self.msg_success = "Indicator has been updated"
+        #     self.msg_failure = "Indicator has not been updated because duplicate value exists"
 
         if self.request.success == True:
-            messages.add_message(self.request, messages.SUCCESS, self.msg_success)
+            messages.add_message(self.request, messages.SUCCESS, self.request.msg)
         else:
-            messages.add_message(self.request, messages.ERROR, self.msg_failure)
+            messages.add_message(self.request, messages.ERROR, self.request.msg)
         return super(AddIndicator, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -183,16 +191,16 @@ class DeleteIndicator(LoginRequiredMixin, View):
             if indicator_type == "domain":
 
                 try:
-                    DomainMonitor.objects.get(domain_name=indicator,
-                                              owner=request.user).delete()
+                   # DomainMonitor.objects.get(domain_name=indicator,owner=request.user).delete()
+                   DomainSubscription.objects.get(owner=request.user, domain_name=indicator).delete()
                 except:
                     LOGGER.exception("Error deleting domain monitor for value: %s", indicator)
 
             if indicator_type == "ip":
 
                 try:
-                    IpMonitor.objects.get(ip_address=indicator,
-                                          owner=request.user).delete()
+                    #IpMonitor.objects.get(ip_address=indicator,owner=request.user).delete()
+                   IpSubscription.objects.get(owner=request.user, ip_address=indicator).delete()
                 except:
                     LOGGER.exception("Error deleting IP monitor for value: %s", indicator)
 
