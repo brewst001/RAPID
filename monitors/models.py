@@ -23,15 +23,15 @@ class IndicatorLookupBase(models.Model):
 class DomainMonitor(IndicatorLookupBase):
     domain_name = models.CharField(max_length=253, primary_key=True)
 
-    class Meta:
-        unique_together = (('owner', 'domain_name'),)
+    # class Meta:
+    #     unique_together = (('owner', 'domain_name'),)
 
 
 class IpMonitor(IndicatorLookupBase):
     ip_address = models.GenericIPAddressField(unpack_ipv4=True, primary_key=True)
 
-    class Meta:
-        unique_together = (('owner', 'ip_address'),)
+    # class Meta:
+    #     unique_together = (('owner', 'ip_address'),)
 
 
 class CertificateMonitor(IndicatorLookupBase):
