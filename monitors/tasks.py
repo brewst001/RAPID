@@ -14,10 +14,11 @@ from celery.schedules import crontab
 from celery.task import PeriodicTask
 from django.contrib.auth import get_user_model
 
-from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, CertificateSubscription
+from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, CertificateSubscription, DomainSubscription, IpSubscription
 from pivoteer.models import IndicatorRecord
 from pivoteer.records import RecordSource, RecordType
 from pivoteer.collectors.scrape import RobtexScraper
+from profiles.models import Profile
 
 LOGGER = logging.getLogger(None)
 """The logger for this module"""
@@ -155,6 +156,15 @@ class IndicatorLookupSubTask:
         raise NotImplementedError("IndicatorLookupSubTask subclass must implement 'get_type_name'")
 
     @abc.abstractmethod
+    def get_owners(self,indicator):
+        """
+            Get a list of subscription owners for indicator types handled by this sub-task.
+
+            :return: The list of subscription owners for the lookup type
+            """
+        raise NotImplementedError("IndicatorLookupSubTask subclass must implement 'get_owners'")
+
+    @abc.abstractmethod
     def resolve_hosts(self, value):
         """
         Given an indicator value, return a list of resolved hosts for it.
@@ -237,6 +247,12 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
     def get_type_name(self):
         return "Domain"
 
+    def get_owners(self,indicator):
+        print("entering DomainLookup.get_owners")
+        owners = Profile.objects.filter(is_active=True)
+        print("activeowners:", owners)
+        return DomainSubscription.objects.filter(domain_name=indicator, owner=owners)
+
     def resolve_hosts(self, value):
         try:
             return core.lookups.resolve_domain(value)
@@ -284,6 +300,13 @@ class IpLookupSubTask(IndicatorLookupSubTask):
     def get_type_name(self):
         return "IP"
 
+    def get_owners(self,indicator):
+        print("entering IPLookup.get_owners")
+        owners = Profile.objects.filter(is_active=True)
+        print("activeowners:", owners)
+
+        return IpSubscription.objects.filter(ip_address=indicator, owner=owners)
+
     def resolve_hosts(self, value):
         return get_domains_for_ip(value)
 
@@ -326,6 +349,12 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
 
     def get_type_name(self):
         return "Certificate"
+
+    def get_owners(self,indicator):
+        print("entering CertificateLookup.get_owners")
+        owners = Profile.objects.filter(is_active=True)
+        print("activeowners:", owners)
+        return CertificateSubscription.objects.filter(certificate=indicator, owner=owners)
 
     def resolve_hosts(self, value):
         try:
@@ -487,17 +516,6 @@ class IndicatorMonitoring(PeriodicTask):
         return lookup_type.objects.filter(next_lookup__lte=current_time)
        # return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
 
-    @staticmethod
-    def get_owners(indicator):
-        """
-        Created by: LNguyen
-        Date: 10January2017
-        Get the list of owners from the CertificateSubscription table in the database to be processed.
-
-        :param indicator: The indicator associated to the list of owners
-        :return: A list of owners
-        """
-        return CertificateSubscription.objects.filter(certificate=indicator)
 
     def do_indicator_lookups(self, subtask):
         """
@@ -527,19 +545,10 @@ class IndicatorMonitoring(PeriodicTask):
             indicator = subtask.get_indicator_value(lookup)
             print("indicator:", indicator)  # a1833c32d5f61d6ef9d1bb0133585112069d770e
 
-            if lookup_type == CertificateMonitor:
-                # Retrieve the list of Certificate Subscription owners from the database for lookup type = Certificate Monitor
-                ownerlist = self.get_owners(indicator)
-                owner = []
-               # print("owners:",owner)
-                for owners in ownerlist:
-                    owner.append(owners.owner)
-                   # print ("owner in list: ",owners.owner)
-
-            else: # Else just return the lookup.owner
-                owner = [lookup.owner]
-
+            print("calling get_owners...")
+            owner = subtask.get_owners(indicator)
             print("ownerlist:", owner)
+            
             LOGGER.info("Processing lookup from %s for %s '%s'", owner, type_name, indicator)
 
             # Get the historical list of hosts.  (For some monitors, if this is the first time they've run, there are none.)
