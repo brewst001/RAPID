@@ -396,6 +396,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         # If host resolution failed (i.e. 'hosts' is not a list), there is nothing else to do
         if type(hosts) is not list:
             LOGGER.debug("Cannot update lookup resolutions because host lookup failed")
+            print("Cannot update lookup resolutions because host lookup failed")
             return lookup
 
         # Reset the resolutions dictionary and then rebuild it using the current hosts
@@ -484,7 +485,7 @@ class IndicatorMonitoring(PeriodicTask):
         :return: A list of lookups
         """
         return lookup_type.objects.filter(next_lookup__lte=current_time)
-       #return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
+       # return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
 
     @staticmethod
     def get_owners(indicator):
@@ -508,6 +509,7 @@ class IndicatorMonitoring(PeriodicTask):
         print("running tasks.do_indicator_lookups")
         type_name = subtask.get_type_name()
         lookup_type = subtask.get_lookup_type()
+        print("lookuptype:",lookup_type)
         LOGGER.debug("Running monitor lookups for %s indicators...", type_name)
 
         # Time values
@@ -550,6 +552,7 @@ class IndicatorMonitoring(PeriodicTask):
             print("calling subtask.resolve_hosts...")
             #current_hosts = last_hosts #enable the line  for testing
             #comment out following line if testing to prevent direct API calls
+          #  indicator = 'miltechweb.com'
             current_hosts = subtask.resolve_hosts(indicator)
             print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("New lookup hosts: %s", current_hosts)
@@ -564,32 +567,34 @@ class IndicatorMonitoring(PeriodicTask):
             else:
                 new_hosts = current_hosts
 
-            # Update and re-save the lookup
-            print("calling subtask.update_lookup")
-            lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
-           # print("lookup.last_hosts:",lookup.last_hosts)
-           # print("lookup.resolutions:",lookup.resolutions)
-            print("calling lookup.save()...")
-            subtask.save_lookup(indicator,lookup)
-            # lookup.save()
-            # Added by LNguyen 1/13/2017
-            # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
-            #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
-            LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
+            print("updated current_hosts:",current_hosts)
+            if current_hosts:
+                # Update and re-save the lookup
+                print("calling subtask.update_lookup")
+                lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
+               # print("lookup.last_hosts:",lookup.last_hosts)
+               # print("lookup.resolutions:",lookup.resolutions)
+                print("calling lookup.save()...")
+                subtask.save_lookup(indicator,lookup)
+                # lookup.save()
+                # Added by LNguyen 1/13/2017
+                # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
+                #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
+                LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
 
-            # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
-            # processing is done for this lookup and we can continue to the next.
-            if type(current_hosts) == str:
-                alert_text = current_hosts
-                self.create_alert(indicator, alert_text, owner)
-                LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
-                continue
+                # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
+                # processing is done for this lookup and we can continue to the next.
+                if type(current_hosts) == str:
+                    alert_text = current_hosts
+                    self.create_alert(indicator, alert_text, owner)
+                    LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
+                    continue
 
-            # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
-            # database for each.
-            print("calling subtask.create_records...")
-            subtask.create_records(lookup=lookup, date=current_time)
-            print("post subtasks.create_records")
+                # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
+                # database for each.
+                print("calling subtask.create_records...")
+                subtask.create_records(lookup=lookup, date=current_time)
+                print("post subtasks.create_records")
             # Commented out by LNguyen
             # If there is no host information to compare, move on to the next lookup.  Otherwise, we need to calculate
             # the set of hosts that were added and the set of hosts that were removed.  If there aren't either, once
@@ -603,7 +608,7 @@ class IndicatorMonitoring(PeriodicTask):
 
             # Added by LNguyen
             # If there is current host information from the API lookup call then process it.
-            if current_hosts:
+        #    if current_hosts:
 
                 # If there is no historical host information then no comparison is needed.  Just set new_hosts to the current host information and continue on.
                 if not last_hosts:

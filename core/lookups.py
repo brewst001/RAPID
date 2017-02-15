@@ -146,6 +146,7 @@ def resolve_domain(domain):
     resolver = dns.resolver.Resolver()
     resolver.nameservers = ['8.8.8.8', '8.8.4.4']
     errmsg = "Error resolving domain '%s': " % domain
+    answer = []
 
     try:
         query_answer = resolver.query(qname=domain)
@@ -155,27 +156,32 @@ def resolve_domain(domain):
     except dns.resolver.NXDOMAIN as e:
         errmsg += "NX Domain"
         logger.exception(errmsg)
-        raise LookupException(errmsg, e) from e
+        return answer
+       # raise LookupException(errmsg, e) from e
 
     except dns.resolver.Timeout as e:
         errmsg += "Query Timeout"
         logger.exception(errmsg)
-        raise LookupException(errmsg, e) from e
+        return answer
+       # raise LookupException(errmsg, e) from e
 
     except dns.resolver.NoAnswer as e:
         errmsg += "No Answer"
         logger.exception(errmsg)
-        raise LookupException(errmsg, e) from e
+        return answer
+       # raise LookupException(errmsg, e) from e
 
     except dns.resolver.NoNameservers as e:
         errmsg += "No Name Server"
         logger.exception(errmsg)
-        raise LookupException(errmsg, e) from e
+        return answer
+       # raise LookupException(errmsg, e) from e
 
     except Exception as e:
         errmsg += "Unexpected error"
         logger.exception(errmsg)
-        raise LookupException(errmsg, e) from eTha
+        return answer
+       # raise LookupException(errmsg, e) from e
 
 
 def lookup_domain_whois(domain):
@@ -439,7 +445,7 @@ def search_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     try:
-        print("entering search_ip_for_certificate...")
+        print("entering search_ip_for_certificate...",value)
         api = CensysIPv4(api_id=settings.CENSYS_API_ID, api_secret=settings.CENSYS_API_SECRET)
         print("api: ", api)
         logger.info("Searching for certificate value: %s", value)
