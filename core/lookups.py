@@ -458,19 +458,27 @@ def search_ip_for_certificate(value):
     except censys.base.CensysRateLimitExceededException as e:
         msg = "Censys rate limit exceeded"
         logger.exception(msg)
-        raise LookupException(msg, e) from e
+        result = []
+        yield result
+        #raise LookupException(msg, e) from e
     except censys.base.CensysUnauthorizedException as e:
         msg = "Censys authorization failed"
         logger.exception(msg)
-        raise LookupException(msg, e) from e
+        result = []
+        yield result
+        #raise LookupException(msg, e) from e
     except censys.base.CensysNotFoundException as e:
         msg = "Certificate fragment not found in Censys: %s" % value
         logger.exception(msg)
-        raise LookupException(msg, e) from e
+        result = []
+        yield result
+        #raise LookupException(msg, e) from e
     except Exception as e:
         msg = "Unknown error searching for certificate: %s" % value
         logger.exception(msg)
-        raise LookupException(msg, e) from e
+        result=[]
+        yield result
+       # raise LookupException(msg, e) from e
 
 
 def accumulate_ip_for_certificate(value):
