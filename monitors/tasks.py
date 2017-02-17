@@ -27,6 +27,9 @@ LOGGER = logging.getLogger(None)
 User = get_user_model()
 """The current user"""
 
+ActiveUsers = Profile.objects.filter(is_active=True)
+"""List of active users"""
+
 GEOLOCATION_KEY = "geo_location"
 """The key used in JSON for the geo-location of an IP address"""
 
@@ -249,9 +252,11 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
 
     def get_owners(self,indicator):
         print("entering DomainLookup.get_owners")
-        owners = Profile.objects.filter(is_active=True)
-        print("activeowners:", owners)
-        return DomainSubscription.objects.filter(domain_name=indicator, owner=owners)
+        owners = []
+        for owner in DomainSubscription.objects.filter(domain_name=indicator, owner=ActiveUsers):
+            owners.append(owner.owner)
+        return owners
+
 
     def resolve_hosts(self, value):
         try:
@@ -302,10 +307,11 @@ class IpLookupSubTask(IndicatorLookupSubTask):
 
     def get_owners(self,indicator):
         print("entering IPLookup.get_owners")
-        owners = Profile.objects.filter(is_active=True)
-        print("activeowners:", owners)
+        owners = []
+        for owner in IpSubscription.objects.filter(ip_address=indicator, owner=ActiveUsers):
+            owners.append(owner.owner)
+        return owners
 
-        return IpSubscription.objects.filter(ip_address=indicator, owner=owners)
 
     def resolve_hosts(self, value):
         return get_domains_for_ip(value)
@@ -331,6 +337,11 @@ class IpLookupSubTask(IndicatorLookupSubTask):
         print("entering IPLookupSubTasks.save_lookup")
         lookup.save()
 
+        # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
+        CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,
+                                                                              resolutions=lookup.resolutions,
+                                                                              next_lookup=lookup.next_lookup)
+
 
 class CertificateLookupSubTask(IndicatorLookupSubTask):
     """
@@ -352,9 +363,11 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
 
     def get_owners(self,indicator):
         print("entering CertificateLookup.get_owners")
-        owners = Profile.objects.filter(is_active=True)
-        print("activeowners:", owners)
-        return CertificateSubscription.objects.filter(certificate=indicator, owner=owners)
+
+        owners = []
+        for owner in CertificateSubscription.objects.filter(certificate=indicator, owner=ActiveUsers):
+            owners.append(owner.owner)
+        return owners
 
     def resolve_hosts(self, value):
         try:
@@ -381,8 +394,8 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
             ip = enclose_periods_in_braces(host) if sanitized else host
             location = info[GEOLOCATION_KEY]
             domains = [enclose_periods_in_braces(domain) if sanitized else domain for domain in info[DOMAIN_KEY]]
-           # description = "%s (%s) - %s" % (ip, location, domains)
-            description = "%s" % (host)
+            description = "%s (%s) - %s" % (ip, location, domains)
+           # description = "%s" % (host)
             result.append(description)
         return result
 
@@ -390,8 +403,8 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         print("running tasks.CertificateLookupSubTask.create_records")
 
         if lookup.resolutions is None:
-            print("lookup.resoultions is none", lookup.resolutions)
-           # return
+            print("lookup.resolutions is none", lookup.resolutions)
+            return
         else:
             for ip in lookup.resolutions:
                 resolution = lookup.resolutions[ip]
@@ -501,7 +514,8 @@ class IndicatorMonitoring(PeriodicTask):
         print("running IndicatorMonitoring.run")
         LOGGER.debug("Running monitor lookups...")
         for subtask in IndicatorMonitoring.SUBTASKS:
-            self.do_indicator_lookups(subtask)
+             self.do_indicator_lookups(subtask)
+
         LOGGER.debug("Monitor lookups complete.")
 
     @staticmethod
@@ -513,8 +527,28 @@ class IndicatorMonitoring(PeriodicTask):
         :param current_time: The current time (as a string)
         :return: A list of lookups
         """
-        return lookup_type.objects.filter(next_lookup__lte=current_time)
+
+       # return lookup_type.objects.filter(next_lookup__lte=current_time)
        # return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
+        # if lookup_type == CertificateMonitor:
+        #     subscription = CertificateSubscription.objects.filter(owner=active_owners)
+        #     print("certowners:",subscription)
+        #    # return CertificateMonitor.objects.filter(certificate=subscription)
+        #
+        # elif lookup_type == DomainMonitor:
+        #     subscription = DomainSubscription.objects.filter(owner=active_owners)
+        #     print("domainowners:", subscription)
+        #    # return DomainMonitor.objects.filter(domain_name=subscription.owner)
+        #
+        # elif lookup_type == IpMonitor:
+        #     subscription = IpSubscription.objects.filter(owner=active_owners)
+        #     print("IPowners:", subscription.owner)
+        #    # return IpMonitor.objects.filter(ip_address=subscription)
+
+        return lookup_type.objects.filter(next_lookup__lte=current_time)
+
+
+
 
 
     def do_indicator_lookups(self, subtask):
@@ -538,51 +572,49 @@ class IndicatorMonitoring(PeriodicTask):
         # Retrieve the lookups (monitors) from the database and iterate over them...
         lookups = self.get_lookups(lookup_type=lookup_type,
                                    current_time=current_time)
-
+       # print("lookups:",lookups)
         if LOGGER.isEnabledFor(logging.INFO) and len(lookups) > 0:
             LOGGER.info("Found %d %s lookups to be processed...", len(lookups), type_name)
         for lookup in lookups:
+
             indicator = subtask.get_indicator_value(lookup)
-            print("indicator:", indicator)  # a1833c32d5f61d6ef9d1bb0133585112069d770e
+
+            print("indicator:", indicator)
 
             print("calling get_owners...")
             owner = subtask.get_owners(indicator)
             print("ownerlist:", owner)
-            
+
             LOGGER.info("Processing lookup from %s for %s '%s'", owner, type_name, indicator)
 
             # Get the historical list of hosts.  (For some monitors, if this is the first time they've run, there are none.)
             last_hosts = list() if lookup.last_hosts is None else list(lookup.last_hosts)
-            print("historical last hosts: ", last_hosts)  # ['95.215.44.38', '185.86.151.180', '89.238.132.210', '89.34.111.119', '185.25.50.117']
+            #print("historical last hosts: ", last_hosts)  # ['95.215.44.38', '185.86.151.180', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("Previous lookup hosts: %s", last_hosts)
 
             # Do a lookup for any new hosts.  Note that this returns a list of resolved hosts if successful and an error message
             # string if unsuccessful.
             print("calling subtask.resolve_hosts...")
-            #current_hosts = last_hosts #enable the line  for testing
-            #comment out following line if testing to prevent direct API calls
-          #  indicator = 'miltechweb.com'
             current_hosts = subtask.resolve_hosts(indicator)
-            print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
+            #print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("New lookup hosts: %s", current_hosts)
 
             # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
             original_hosts = list(set(last_hosts).difference(current_hosts))
-            print("original_hosts:", original_hosts)
+            #print("original_hosts:", original_hosts)
             if original_hosts:
                 current_hosts.extend(original_hosts)
                 new_hosts = list(set(current_hosts).difference(last_hosts))
-                print("updated current_hosts:", current_hosts)
+                #print("updated current_hosts:", current_hosts)
             else:
                 new_hosts = current_hosts
 
-            print("updated current_hosts:",current_hosts)
+            #print("updated current_hosts:",current_hosts)
             if current_hosts:
                 # Update and re-save the lookup
                 print("calling subtask.update_lookup")
                 lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
-               # print("lookup.last_hosts:",lookup.last_hosts)
-               # print("lookup.resolutions:",lookup.resolutions)
+
                 print("calling lookup.save()...")
                 subtask.save_lookup(indicator,lookup)
                 # lookup.save()
@@ -603,7 +635,7 @@ class IndicatorMonitoring(PeriodicTask):
                 # database for each.
                 print("calling subtask.create_records...")
                 subtask.create_records(lookup=lookup, date=current_time)
-                print("post subtasks.create_records")
+                #print("post subtasks.create_records")
             # Commented out by LNguyen
             # If there is no host information to compare, move on to the next lookup.  Otherwise, we need to calculate
             # the set of hosts that were added and the set of hosts that were removed.  If there aren't either, once
@@ -636,9 +668,9 @@ class IndicatorMonitoring(PeriodicTask):
                 new_hosts = new_hosts
                 missing_hosts = []
 
-            print("last_hosts: ", last_hosts)
-            print("new_Hosts: ", new_hosts)
-            print("missing_hosts: ", missing_hosts)
+            #print("last_hosts: ", last_hosts)
+            #print("new_Hosts: ", new_hosts)
+            #print("missing_hosts: ", missing_hosts)
 
             if not missing_hosts and not new_hosts:
                 print("No host changes detected")
@@ -709,9 +741,9 @@ class IndicatorMonitoring(PeriodicTask):
         """
         try:
             print("running IndicatorMonitoring.create_alert")
-            print("recipients:",recipients)
+            #print("recipients:",recipients)
             for owner in recipients:
-                print("recipientowner:",owner)
+                #print("recipientowner:",owner)
                 new_alert = IndicatorAlert(indicator=indicator, message=alert_text, recipient=owner)
                 new_alert.save()
                 LOGGER.info("Created alert to %s for indicator '%s':\n%s", owner, indicator, alert_text)
@@ -740,7 +772,7 @@ class IndicatorMonitoring(PeriodicTask):
             #emails.append(list(owners))
         #emails = [owner.email for owner in recipients]
         try:
-            print("owners.emails: ", emails)
+            #print("owners.emails: ", emails)
             core.tasks.deliver_email(subject=subject, body=body, recipients=emails)
             LOGGER.debug("Sent email to %s:\n%s\n\n%s", emails, subject, body)
         except Exception:

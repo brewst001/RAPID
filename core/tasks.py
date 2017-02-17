@@ -9,12 +9,12 @@ from celery.schedules import crontab
 
 @shared_task(name='deliver_email')
 def deliver_email(subject=None, body=None, recipients=None):
-    print("Entering core.tasks.deliver_email for ...", recipients)
+    #print("Entering core.tasks.deliver_email for ...", recipients)
 
     if recipients:
 
         for recipient in recipients:
-            print("sending email to recipient: ", recipient)
+            #print("sending email to recipient: ", recipient)
             email = EmailMessage(subject, body, to=[recipient])
             email.send()
 

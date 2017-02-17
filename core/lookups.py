@@ -447,36 +447,40 @@ def search_ip_for_certificate(value):
     try:
         print("entering search_ip_for_certificate...",value)
         api = CensysIPv4(api_id=settings.CENSYS_API_ID, api_secret=settings.CENSYS_API_SECRET)
-        print("api: ", api)
+       # print("api: ", api)
         logger.info("Searching for certificate value: %s", value)
         total = 0
 
         for result in api.search(query=_escape_censys_value(value), fields=["ip"]):
             total += 1
-            yield result["ip"]
+            if total > 100:
+                break
+            else:
+                yield result["ip"]
         logger.info("Found %d total result(s) for certificate value: %s", total, value)
+        print("IPtotal:",total)
     except censys.base.CensysRateLimitExceededException as e:
         msg = "Censys rate limit exceeded"
         logger.exception(msg)
-        result = []
+        result = ''
         yield result
         #raise LookupException(msg, e) from e
     except censys.base.CensysUnauthorizedException as e:
         msg = "Censys authorization failed"
         logger.exception(msg)
-        result = []
+        result = ''
         yield result
         #raise LookupException(msg, e) from e
     except censys.base.CensysNotFoundException as e:
         msg = "Certificate fragment not found in Censys: %s" % value
         logger.exception(msg)
-        result = []
+        result = ''
         yield result
         #raise LookupException(msg, e) from e
     except Exception as e:
         msg = "Unknown error searching for certificate: %s" % value
         logger.exception(msg)
-        result=[]
+        result=''
         yield result
        # raise LookupException(msg, e) from e
 
@@ -490,7 +494,7 @@ def accumulate_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     results = list(search_ip_for_certificate(value))
-    print("API results:",results)
+    #print("API results:",results)
     logger.info("Found %d total result(s) for certificate search value: %s", len(results), value)
     return results
 
