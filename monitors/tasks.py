@@ -337,11 +337,6 @@ class IpLookupSubTask(IndicatorLookupSubTask):
         print("entering IPLookupSubTasks.save_lookup")
         lookup.save()
 
-        # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
-        CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,
-                                                                              resolutions=lookup.resolutions,
-                                                                              next_lookup=lookup.next_lookup)
-
 
 class CertificateLookupSubTask(IndicatorLookupSubTask):
     """

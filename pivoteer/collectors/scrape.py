@@ -61,16 +61,23 @@ class RobtexScraper(MechanizedScraper):
         search = parser.find("ol", {"class": "xbul"})
        # print("search: ", search)
 
+        total = 0
         if search is not None:
            for result in search.find_all("li"):
-                result_value = result.text
-        #       print("result_value: ",result.text)
-                if ' ' in result_value:
-                    result_value = re.sub(' ', '.', result_value)
-                    results.append(result_value)
+                total += 1
 
+                if total > 100:
+                    break
                 else:
-                    results.append(result_value)
+                    result_value = result.text
+                    #       print("result_value: ",result.text)
+
+                    if ' ' in result_value:
+                        result_value = re.sub(' ', '.', result_value)
+                        results.append(result_value)
+
+                    else:
+                        results.append(result_value)
          #  print("scraperesults:",results)
 
         return results
