@@ -493,7 +493,8 @@ class IndicatorMonitoring(PeriodicTask):
     """
     print("entering tasks.IndicatorMonitoring")
 
-    SUBTASKS = [DomainLookupSubTask(), IpLookupSubTask(), CertificateLookupSubTask()]
+   # SUBTASKS = [DomainLookupSubTask(), IpLookupSubTask(), CertificateLookupSubTask()]
+    SUBTASKS = [CertificateLookupSubTask(), DomainLookupSubTask(), IpLookupSubTask()]
 
     run_every = crontab()
 
@@ -593,9 +594,13 @@ class IndicatorMonitoring(PeriodicTask):
             current_hosts = subtask.resolve_hosts(indicator)
             #print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("New lookup hosts: %s", current_hosts)
-
+            print("current hosts length:",len(current_hosts))
             # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
-            original_hosts = list(set(last_hosts).difference(current_hosts))
+            if len(current_hosts) > 99:
+                original_hosts = current_hosts
+            else:
+                original_hosts = list(set(last_hosts).difference(current_hosts))
+
             #print("original_hosts:", original_hosts)
             if original_hosts:
                 current_hosts.extend(original_hosts)
