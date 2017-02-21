@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_subscriptions(apps)),
+        migrations.RunPython(populate_subscriptions),
     ]
