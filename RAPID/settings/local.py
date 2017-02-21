@@ -10,8 +10,7 @@ SESSION_COOKIE_SECURE = False
 AMQP_URL = 'amqp://guest:guest@localhost:5672//'
 
 #Update with full server name ie., http://fullservername:8000
-#BASE_SITE_URL = 'http://0.0.0.0:8000'
-BASE_SITE_URL = 'http://172.16.2.103:8000'
+BASE_SITE_URL = 'http://0.0.0.0:8000'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
