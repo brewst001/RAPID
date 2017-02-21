@@ -2,19 +2,17 @@ import os
 from .base import *
 
 #Added comment by LNguyen - Set service name to BASE_SITE_URL ie., https://fullservername
-#BASE_SITE_URL = 'https://rapidpivot.com'
-BASE_SITE_URL = 'https://172.16.2.103'
+BASE_SITE_URL = 'https://rapidpivot.com'
 AMQP_URL = 'amqp://guest:guest@localhost:5672//'
 
 #Added comment by LNguyen - Update with server name and IP addresse ie., [<servername', '127.0.0.1]
-#ALLOWED_HOSTS = ['rapidpivot.com']
-ALLOWED_HOSTS = ['nerestcnd0203c','172.16.2.103', '127.0.0.1']
+ALLOWED_HOSTS = ['rapidpivot.com']
 
 #Update with admin email address ie., Rapid@gmail.com
-ADMINS = (('Name', 'nguylt1222@gmail.com'),)
+ADMINS = (('Name', 'email@service.com'),)
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
 
 #original commented outed by LNguyen
 #DEBUG = True
@@ -22,8 +20,8 @@ TEMPLATE_DEBUG = True
 
 # SSL/TLS Settings
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_COOKIE_SECURE = False #updated to false by LNguyen
-SESSION_COOKIE_SECURE = False #update to false by LNguyen
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 os.environ['wsgi.url_scheme'] = 'https'
 
 # Email Settings
