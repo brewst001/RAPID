@@ -79,7 +79,7 @@ class RobtexScraper(MechanizedScraper):
                     else:
                         results.append(result_value)
          #  print("scraperesults:",results)
-        print("robtex_total:",total)
+       # print("robtex_total:",total)
         return results
 
 #

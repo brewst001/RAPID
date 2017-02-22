@@ -260,6 +260,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
 
     def resolve_hosts(self, value):
         try:
+            print("running Domain.resolve_hosts")
             return core.lookups.resolve_domain(value)
         except core.lookups.LookupException as e:
             LOGGER.error("Domain resolution failed for domain '%s': %s", value, e.message)
@@ -314,6 +315,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
 
 
     def resolve_hosts(self, value):
+        print("running IPLookup.resolve_hosts")
         return get_domains_for_ip(value)
 
     def create_records(self, lookup, date=None):
@@ -389,8 +391,8 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
             ip = enclose_periods_in_braces(host) if sanitized else host
             location = info[GEOLOCATION_KEY]
             domains = [enclose_periods_in_braces(domain) if sanitized else domain for domain in info[DOMAIN_KEY]]
-            description = "%s (%s) - %s" % (ip, location, domains)
-           # description = "%s" % (host)
+           # description = "%s (%s) - %s" % (ip, location, domains)
+            description = "%s" % (host)
             result.append(description)
         return result
 
