@@ -597,8 +597,11 @@ class IndicatorMonitoring(PeriodicTask):
             #print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("New lookup hosts: %s", current_hosts)
             print("current hosts length:",len(current_hosts))
+            print("last hosts length:", len(last_hosts))
+
             # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
-            if len(current_hosts) > 0 and len(current_hosts) < 100:
+            # if len(current_hosts) > 0 and len(current_hosts) <= 100:
+            if len(last_hosts) > 0:
                 original_hosts = list(set(last_hosts).difference(current_hosts))
                 current_hosts.extend(original_hosts)
                 new_hosts = list(set(current_hosts).difference(last_hosts))
