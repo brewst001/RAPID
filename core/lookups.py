@@ -267,91 +267,91 @@ def lookup_ip_censys_https(ip):
         return {'status': ce.status_code, 'message': ce.message}
 
 
-def lookup_ip_censys_https_new(ip):
-    # api_id = settings.CENSYS_API_ID
-    # api_secret = settings.CENSYS_API_SECRET
-    api_id = 'e013909c-bdec-4c17-a997-74955b73ac89'
-    api_secret = 'y4nlaUAD9Netlvlc2mcZnhdhohVInAww'
-
-    try:
-        print("enteringg lookup_ip_censys_https: ", ip)
-        test = 'a1833c32d5f61d6ef9d1bb0133585112069d770e'
-        ip_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(test)
-        print("ip_data_test:", ip_data)
-
-        parsed_json = json.dumps(ip_data)
-        resp = json.loads(parsed_json)
-        # print("resp: ", resp)
-        sha256 = resp['25']['smtp']['starttls']['tls']['certificate']['parsed']['fingerprint_sha256']
-        print("sha256: ", sha256)
-
-        data = {}
-        # data["query"] = 'fingerprint_sha256:e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74'
-        # data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-        data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-        data["fields"] = []
-        # value = sha256
-        print("data:", data)
-
-        # works okay
-        # cc = CensysCertificates(api_id=api_id, api_secret=api_secret)
-        #    print ("ccview: ",cc.view("e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74 "))
-        # generator = cc.search(data)
-
-        #    print ("generator: ",generator)
-
-
-        # print("cc:",cc.view('a1833c32d5f61d6ef9d1bb0133585112069d770e'))
-        # fields = ["443.https.tls.certificate.parsed.fingerprint_sha1"]
-        # query = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-
-        # for cert in generator:
-        #     print ("cert:", cert["parsed.subject_dn"])
-        # print("cert:", cert['443.https.tls.certificate.parsed.fingerprint_sha1'])
-        #  print ("cert: ",cert["443.https.tls.certificate.parsed.fingerprint_sha1"])
-        # generator = cc.search(sha256)
-        # generator = cc.search('fingerprint_sha256')
-        # print("generator:",generator)
-        # for record in generator:
-        #    print("record:",record['fingerprint_sha256'])
-
-
-
-
-        # API_URL = "https://censys.io/ipv4?q=a1833c32d5f61d6ef9d1bb0133585112069d770"
-        API_URL = "https://www.censys.io/api/v1/search/ipv4"
-        # data = "e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a4"
-
-        # time.sleep(3.5)
-        search = requests.post(API_URL, data=json.dumps(data), auth=(api_id, api_secret))
-
-        # search = requests.post(API_URL, auth=(api_id, api_secret))
-        #  print("search: ", search)
-
-        if search.status_code == 200:
-            results = search.json()
-            print("results: ", results)
-            parsed_test = json.dumps(results)
-            #     print("parsed_test: ", parsed_test)
-            resp = json.loads(parsed_test)
-            print("resp:", resp)
-            parent = resp['results']
-
-        id_all = []
-        for item in parent:
-            print("item ip: ", item['ip'])
-            id_all.append(item['ip'])
-
-            # cert_data = search_ip_for_certificate(sha256)
-            # cert_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(sha256)
-            #    print("cert_data:", cert_data)
-
-        return ip_data
-        # return ip_data['443']['https']['tls']['certificate']['parsed'] commented out by LNguyen
-    except KeyError:
-        return {'status': 404, 'message': "No HTTPS certificate data was found for IP " + ip}
-    except censys.base.CensysException as ce:
-        return {'status': ce.status_code, 'message': ce.message}
+# def lookup_ip_censys_https_new(ip):
+#     # api_id = settings.CENSYS_API_ID
+#     # api_secret = settings.CENSYS_API_SECRET
+#     api_id = 'e013909c-bdec-4c17-a997-74955b73ac89'
+#     api_secret = 'y4nlaUAD9Netlvlc2mcZnhdhohVInAww'
+#
+#     try:
+#         print("enteringg lookup_ip_censys_https: ", ip)
+#         test = 'a1833c32d5f61d6ef9d1bb0133585112069d770e'
+#         ip_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(test)
+#         print("ip_data_test:", ip_data)
+#
+#         parsed_json = json.dumps(ip_data)
+#         resp = json.loads(parsed_json)
+#         # print("resp: ", resp)
+#         sha256 = resp['25']['smtp']['starttls']['tls']['certificate']['parsed']['fingerprint_sha256']
+#         print("sha256: ", sha256)
+#
+#         data = {}
+#         # data["query"] = 'fingerprint_sha256:e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74'
+#         # data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
+#         data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
+#         data["fields"] = []
+#         # value = sha256
+#         print("data:", data)
+#
+#         # works okay
+#         # cc = CensysCertificates(api_id=api_id, api_secret=api_secret)
+#         #    print ("ccview: ",cc.view("e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74 "))
+#         # generator = cc.search(data)
+#
+#         #    print ("generator: ",generator)
+#
+#
+#         # print("cc:",cc.view('a1833c32d5f61d6ef9d1bb0133585112069d770e'))
+#         # fields = ["443.https.tls.certificate.parsed.fingerprint_sha1"]
+#         # query = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
+#
+#         # for cert in generator:
+#         #     print ("cert:", cert["parsed.subject_dn"])
+#         # print("cert:", cert['443.https.tls.certificate.parsed.fingerprint_sha1'])
+#         #  print ("cert: ",cert["443.https.tls.certificate.parsed.fingerprint_sha1"])
+#         # generator = cc.search(sha256)
+#         # generator = cc.search('fingerprint_sha256')
+#         # print("generator:",generator)
+#         # for record in generator:
+#         #    print("record:",record['fingerprint_sha256'])
+#
+#
+#
+#
+#         # API_URL = "https://censys.io/ipv4?q=a1833c32d5f61d6ef9d1bb0133585112069d770"
+#         API_URL = "https://www.censys.io/api/v1/search/ipv4"
+#         # data = "e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a4"
+#
+#         # time.sleep(3.5)
+#         search = requests.post(API_URL, data=json.dumps(data), auth=(api_id, api_secret))
+#
+#         # search = requests.post(API_URL, auth=(api_id, api_secret))
+#         #  print("search: ", search)
+#
+#         if search.status_code == 200:
+#             results = search.json()
+#             print("results: ", results)
+#             parsed_test = json.dumps(results)
+#             #     print("parsed_test: ", parsed_test)
+#             resp = json.loads(parsed_test)
+#             print("resp:", resp)
+#             parent = resp['results']
+#
+#         id_all = []
+#         for item in parent:
+#             print("item ip: ", item['ip'])
+#             id_all.append(item['ip'])
+#
+#             # cert_data = search_ip_for_certificate(sha256)
+#             # cert_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(sha256)
+#             #    print("cert_data:", cert_data)
+#
+#         return ip_data
+#         # return ip_data['443']['https']['tls']['certificate']['parsed'] commented out by LNguyen
+#     except KeyError:
+#         return {'status': 404, 'message': "No HTTPS certificate data was found for IP " + ip}
+#     except censys.base.CensysException as ce:
+#         return {'status': ce.status_code, 'message': ce.message}
 
 
 def google_for_indicator(indicator, limit=10, domain=None):
@@ -445,7 +445,7 @@ def search_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     try:
-        print("entering search_ip_for_certificate...",value)
+       # print("entering search_ip_for_certificate...",value)
         api = CensysIPv4(api_id=settings.CENSYS_API_ID, api_secret=settings.CENSYS_API_SECRET)
        # print("api: ", api)
         logger.info("Searching for certificate value: %s", value)
@@ -458,29 +458,29 @@ def search_ip_for_certificate(value):
             else:
                 yield result["ip"]
         logger.info("Found %d total result(s) for certificate value: %s", total, value)
-        print("IPtotal:",total)
+        #print("IPtotal:",total)
     except censys.base.CensysRateLimitExceededException as e:
         msg = "Censys rate limit exceeded"
         logger.exception(msg)
-        result = ''
+        result = None
         yield result
         #raise LookupException(msg, e) from e
     except censys.base.CensysUnauthorizedException as e:
         msg = "Censys authorization failed"
         logger.exception(msg)
-        result = ''
+        result = None
         yield result
         #raise LookupException(msg, e) from e
     except censys.base.CensysNotFoundException as e:
         msg = "Certificate fragment not found in Censys: %s" % value
         logger.exception(msg)
-        result = ''
+        result = None
         yield result
         #raise LookupException(msg, e) from e
     except Exception as e:
         msg = "Unknown error searching for certificate: %s" % value
         logger.exception(msg)
-        result=''
+        result= None
         yield result
        # raise LookupException(msg, e) from e
 
