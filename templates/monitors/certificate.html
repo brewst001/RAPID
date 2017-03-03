@@ -20,9 +20,19 @@
                 <tr>
                     <td>{{ monitor.certificate_value }}</td>
                     <td>
-                        <!-- If there are more than 5 hosts (IPs), we collapse it -->
-                        {% if monitor.resolutions.items|length > 5 %}
-                            {% with collapse_id=monitor.certificate_value|digest %}
+
+                        {% with collapse_id=monitor.certificate_value|digest %}
+                            <!-- Limit the display list to 50 records and collapse it -->
+                            {% if monitor.resolutions.items|length >= 50 %}
+                                <button type="button"
+                                        class="btn btn-link btn-xs"
+                                        data-toggle="collapse"
+                                        data-target="#{{ collapse_id }}"
+                                        aria-expanded="true"
+                                        aria-controls="{{ collapse_id }}">
+                                     {{ 50 }}  IP addresses
+                                </button>
+                            {% elif monitor.resolutions.items|length > 0 %}
                                 <button type="button"
                                         class="btn btn-link btn-xs"
                                         data-toggle="collapse"
@@ -31,12 +41,17 @@
                                         aria-controls="{{ collapse_id }}">
                                     {{ monitor.resolutions|length }} IP addresses
                                 </button>
-                                <div id="{{ collapse_id }}" class="collapse">
-                                    <table id="certificate_host_table"
-                                           class="table display"
-                                           data-count={{ monitor.resolutions|length }}>
-                                        {% for ip, resolution in monitor.resolutions.items %}
+                            {% endif  %}
+                            <!-- Collapse all rows and limit results at 50-->
+                            <div id="{{ collapse_id }}" class="collapse">
+                                <table id="certificate_host_table"
+                                       class="table display"
+                                       data-count={{ forloop.counter }}>
+                                    {% for ip, resolution in monitor.resolutions.items %}
+
+                                        {% if forloop.counter <= 50  %}
                                             <tr>
+                                                <td class="btn btn-link btn-xs">{{ forloop.counter }}</td>
                                                 <td>{{ ip }}</td>
                                                 <td>{{ resolution.geo_location.country }}</td>
                                                 <td>
@@ -61,29 +76,14 @@
                                                     {% endif %}
                                                 </td>
                                             </tr>
-                                        {% endfor %}
-                                    </table>
-                                </div>
-                            {% endwith %}
-                        {%  else %}
-                            <table id="certificate_host_table"
-                                   class="table display"
-                                   data-count={{ monitor.resolutions|length }}>
-                            {% for ip, resolution in monitor.resolutions.items %}
-                                <tr>
-                                    <td>{{ ip }}</td>
-                                    <td>{{ resolution.geo_location.country }}</td>
-                                    <td>
-                                        {% if resolution.domain|length == 0 %}
-                                            (No Domains)
-                                        {% else %}
-                                            {{ resolution.domain|safeseq|join:", " }}
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </table>
-                        {% endif %}
+                                        {% endif  %}
+                                    {% endfor %}
+
+                                </table>
+                            </div>
+
+                        {% endwith %}
+
                     </td>
                     <td>{{ monitor.next_lookup }}</td>
                     <td>

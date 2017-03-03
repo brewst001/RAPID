@@ -35,7 +35,7 @@
                                 </button>
                                 <div id="{{ collapse_id }}" class="collapse">
                                     {% for host in monitor.last_hosts %}
-                                        {{ host }}<br>
+                                       <div class="btn btn-link btn-xs" >{{ forloop.counter }}</div> {{ host }}<br>
                                     {% endfor %}
                                 </div>
                             {% endwith %}
