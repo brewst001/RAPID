@@ -13,7 +13,6 @@ from core.threatcrowd import ThreatCrowd
 from core.totalhash import TotalHashApi
 from core.malwr import MalwrApi
 from core.lookups import lookup_ip_whois, lookup_domain_whois, resolve_domain, geolocate_ip, lookup_ip_censys_https, \
-    lookup_ip_censys_https_new, \
     lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException
 from pivoteer.collectors.scrape import RobtexScraper, InternetIdentityScraper
 from pivoteer.collectors.scrape import VirusTotalScraper, ThreatExpertScraper
