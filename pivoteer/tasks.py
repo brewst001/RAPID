@@ -186,7 +186,7 @@ def ip_whois(ip_address):
 def domain_hosts(domain):
     try:
         hosts = resolve_domain(domain)
-        print("domain-hosts:", hosts)
+       # print("domain-hosts:", hosts)
     except LookupException as e:
         logger.error("Error performing domain resolution for domain '%s': %s", domain, e.message)
         return
@@ -200,7 +200,7 @@ def domain_hosts(domain):
                                 "https_cert": https_cert,
                                 "ip": host, "domain": domain})
             try:
-                print("domain_hosts.info: ", info)
+               # print("domain_hosts.info: ", info)
                 save_record(record_type,
                             record_source,
                             info)
@@ -214,7 +214,7 @@ def domain_hosts(domain):
 # ORIGINAL
 @app.task
 def ip_hosts(ip_address):
-    print("entering tasks.ip_hosts...")
+   # print("entering tasks.ip_hosts...")
     scraper = RobtexScraper()
     hosts = scraper.run(ip_address)
     ip_location = geolocate_ip(ip_address)
