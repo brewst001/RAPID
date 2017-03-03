@@ -96,7 +96,7 @@ class IndicatorLookupSubTask:
         - update_lookup: Update the lookup object.  Please refer to method documentation for a description of the
           default implementation.
     """
-    print("entering tasks.IndicatorLookupSubTask...")
+   # print("entering tasks.IndicatorLookupSubTask...")
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
@@ -207,7 +207,7 @@ class IndicatorLookupSubTask:
         of resolved hosts.  If the resolution was unsuccessful, this will be an error message (a string)
         :return: The updated lookup
         """
-        print("running tasks.update_lookup")
+       # print("running tasks.update_lookup")
         if type(hosts) is list:
             lookup.last_hosts = list(hosts)
         lookup.next_lookup = current_time + datetime.timedelta(hours=lookup.lookup_interval)
@@ -225,7 +225,7 @@ class IndicatorLookupSubTask:
         :return: This method returns no values
         """
         try:
-            print("running tasks._save_record")
+           # print("running tasks._save_record")
             record.save()
         except:
             LOGGER.exception("Error saving %s indicator record", self.get_type_name)
@@ -251,7 +251,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
         return "Domain"
 
     def get_owners(self,indicator):
-        print("entering DomainLookup.get_owners")
+       # print("entering DomainLookup.get_owners")
         owners = []
         for owner in DomainSubscription.objects.filter(domain_name=indicator, owner=ActiveUsers):
             owners.append(owner.owner)
@@ -267,7 +267,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
             return e.message
 
     def create_records(self, lookup, date=None):
-        print("running tasks.DomainLookupSubTask.create_records")
+        #print("running tasks.DomainLookupSubTask.create_records")
         domain = self.get_indicator_value(lookup)
         if type(lookup.last_hosts) is list:
             for ip in lookup.last_hosts:
@@ -279,12 +279,12 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
                                          info=info)
-                print("calling DomainLookupSubTask.save_record")
+                print("saves the Domain record to the Pivoteer_IndicatorRecord table")
                 self._save_record(record)
 
 
-    def save_lookup(self, indicator, lookup):
-        print("entering DomainLookupSubTasks.save_lookup")
+    def save_lookup(self, indicator, lookup, date):
+        print("updates the Domain record in the Monitors_DomainMonitor table")
         lookup.save()
 
 class IpLookupSubTask(IndicatorLookupSubTask):
@@ -307,7 +307,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
         return "IP"
 
     def get_owners(self,indicator):
-        print("entering IPLookup.get_owners")
+       # print("entering IPLookup.get_owners")
         owners = []
         for owner in IpSubscription.objects.filter(ip_address=indicator, owner=ActiveUsers):
             owners.append(owner.owner)
@@ -319,7 +319,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
         return get_domains_for_ip(value)
 
     def create_records(self, lookup, date=None):
-        print("running tasks.IPLookupSubTask.create_records")
+       # print("running tasks.IPLookupSubTask.create_records")
         ip = self.get_indicator_value(lookup)
         if type(lookup.last_hosts) is list:
             for domain in lookup.last_hosts:
@@ -331,12 +331,12 @@ class IpLookupSubTask(IndicatorLookupSubTask):
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
                                          info=info)
-                print("calling IPLookupSubTask.save_record")
+                print("saves the IP record to the Pivoteer_IndicatorRecord table")
                 self._save_record(record)
 
 
-    def save_lookup(self, indicator, lookup):
-        print("entering IPLookupSubTasks.save_lookup")
+    def save_lookup(self, indicator, lookup, date):
+        print("updates the IP record in the Monitors_IPMonitor table")
         lookup.save()
 
 
@@ -359,7 +359,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         return "Certificate"
 
     def get_owners(self,indicator):
-        print("entering CertificateLookup.get_owners")
+        #print("entering CertificateLookup.get_owners")
 
         owners = []
         for owner in CertificateSubscription.objects.filter(certificate=indicator, owner=ActiveUsers):
@@ -397,10 +397,10 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         return result
 
     def create_records(self, lookup, date=None):
-        print("running tasks.CertificateLookupSubTask.create_records")
+        #print("entering CertificateLookupTask.create_records")
 
         if lookup.resolutions is None:
-            print("lookup.resolutions is none", lookup.resolutions)
+           # print("lookup.resolutions is none", lookup.resolutions)
             return
         else:
             for ip in lookup.resolutions:
@@ -414,16 +414,17 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
                                              info_source=RecordSource.DNS.name,
                                              info_date=date,
                                              info=info)
-                    print("calling CertificateLookupSubTask.save_record")
+                    print("saving the certificate records to the Pivoteer_IndicatorRecord table")
                     self._save_record(record)
                     LOGGER.debug("Created host record: %s", info)
 
-    def save_lookup(self, indicator,lookup):
-        print("entering CertificateLookupSubTasks.save_lookup")
+    def save_lookup(self, indicator,lookup, date):
+        print("updates the Certificate record in the Monitors_CertificateMonitor table")
              # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
         CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,
                                                                               resolutions=lookup.resolutions,
-                                                                              next_lookup=lookup.next_lookup)
+                                                                              next_lookup=lookup.next_lookup,
+                                                                              modified=date)
 
 
     def update_lookup(self, lookup, current_time, hosts):
@@ -435,7 +436,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         # If host resolution failed (i.e. 'hosts' is not a list), there is nothing else to do
         if type(hosts) is not list:
             LOGGER.debug("Cannot update lookup resolutions because host lookup failed")
-            print("Cannot update lookup resolutions because host lookup failed")
+           # print("Cannot update lookup resolutions because host lookup failed")
             return lookup
 
         # Reset the resolutions dictionary and then rebuild it using the current hosts
@@ -528,20 +529,6 @@ class IndicatorMonitoring(PeriodicTask):
 
        # return lookup_type.objects.filter(next_lookup__lte=current_time)
        # return lookup_type.objects.filter()  # gets the list of lookups without respect to the time-- use this for testing
-        # if lookup_type == CertificateMonitor:
-        #     subscription = CertificateSubscription.objects.filter(owner=active_owners)
-        #     print("certowners:",subscription)
-        #    # return CertificateMonitor.objects.filter(certificate=subscription)
-        #
-        # elif lookup_type == DomainMonitor:
-        #     subscription = DomainSubscription.objects.filter(owner=active_owners)
-        #     print("domainowners:", subscription)
-        #    # return DomainMonitor.objects.filter(domain_name=subscription.owner)
-        #
-        # elif lookup_type == IpMonitor:
-        #     subscription = IpSubscription.objects.filter(owner=active_owners)
-        #     print("IPowners:", subscription.owner)
-        #    # return IpMonitor.objects.filter(ip_address=subscription)
 
         return lookup_type.objects.filter(next_lookup__lte=current_time)
 
@@ -602,9 +589,11 @@ class IndicatorMonitoring(PeriodicTask):
             # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
             # if len(current_hosts) > 0 and len(current_hosts) <= 100:
             if len(last_hosts) > 0:
-                original_hosts = list(set(last_hosts).difference(current_hosts))
-                current_hosts.extend(original_hosts)
-                new_hosts = list(set(current_hosts).difference(last_hosts))
+                 original_hosts = last_hosts
+                 new_hosts = list(set(current_hosts).difference(last_hosts))
+             #   original_hosts = list(set(last_hosts).difference(current_hosts)) #get the historical list
+             #   current_hosts.extend(original_hosts) #appends the historical lists to the end of the new list
+             #   new_hosts = list(set(current_hosts).difference(last_hosts))
             else:
                 new_hosts = current_hosts
 
@@ -615,7 +604,7 @@ class IndicatorMonitoring(PeriodicTask):
                 lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
 
                 print("calling lookup.save()...")
-                subtask.save_lookup(indicator,lookup)
+                subtask.save_lookup(indicator,lookup,current_time)
                 # lookup.save()
                 # Added by LNguyen 1/13/2017
                 # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
@@ -632,7 +621,7 @@ class IndicatorMonitoring(PeriodicTask):
 
                 # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
                 # database for each.
-                print("calling subtask.create_records...")
+                print("calling routine to save Pivoteer_IndicatorRecords for lookup task...")
                 subtask.create_records(lookup=lookup, date=current_time)
                 #print("post subtasks.create_records")
             # Commented out by LNguyen
@@ -662,7 +651,7 @@ class IndicatorMonitoring(PeriodicTask):
                 # Set to the list of existing hosts to missing_hosts and set the list of newly added hosts to new_hosts.
                 if last_hosts:
                     missing_hosts = list(set(last_hosts).difference(current_hosts))
-                    new_hosts = list(set(current_hosts).difference(last_hosts))
+                   # new_hosts = list(set(current_hosts).difference(last_hosts))
             else:
                 new_hosts = new_hosts
                 missing_hosts = []
