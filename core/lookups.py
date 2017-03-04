@@ -83,27 +83,32 @@ def get_country_code(name):
     #   - "Russia" vs. "Russian Federation": This is why we do the 'contains' approach
     #   - "Vietnam" vs. "Viet Nam": The actual name is the latter.  You're just out of luck on this one.
     code = None
-    for country in pycountry.countries:
-        opts = [country.name]
-        try:
-            opts.append(country.official_name)
-        except AttributeError:
-            # There is no official name for this country
-            pass
-        if name in opts:
-            code = country.alpha2
-        else:
-            for opt in opts:
-                if name in opt:
+
+    if name:
+        for country in pycountry.countries:
+            opts = [country.name]
+
+            try:
+                opts.append(country.official_name)
+            except AttributeError:
+                # There is no official name for this country
+                pass
+            if opts:
+                if name in opts:
                     code = country.alpha2
+                else:
+                    for opt in opts:
+                        if name in opt:
+                            code = country.alpha2
+                            break
+                if code is not None:
                     break
-        if code is not None:
-            break
-    logger.debug("Country code for '%s' is '%s'", name, code)
-    if code is None:
-        msg = "No code available for country '%s'" % name
-        logger.warn(msg)
-        raise KeyError(msg)
+        logger.debug("Country code for '%s' is '%s'", name, code)
+
+  #  if code is None:
+  #      msg = "No code available for country '%s'" % name
+  #      logger.warn(msg)
+  #      raise KeyError(msg)
     return code
 
 
