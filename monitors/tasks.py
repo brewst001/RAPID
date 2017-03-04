@@ -532,10 +532,6 @@ class IndicatorMonitoring(PeriodicTask):
 
         return lookup_type.objects.filter(next_lookup__lte=current_time)
 
-
-
-
-
     def do_indicator_lookups(self, subtask):
         """
         Process all lookups for a sub-task.
@@ -586,74 +582,67 @@ class IndicatorMonitoring(PeriodicTask):
             print("current hosts length:",len(current_hosts))
             print("last hosts length:", len(last_hosts))
 
-            # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
-            # if len(current_hosts) > 0 and len(current_hosts) <= 100:
-            if len(last_hosts) > 0:
-                 original_hosts = last_hosts
-                 new_hosts = list(set(current_hosts).difference(last_hosts))
-             #   original_hosts = list(set(last_hosts).difference(current_hosts)) #get the historical list
-             #   current_hosts.extend(original_hosts) #appends the historical lists to the end of the new list
-             #   new_hosts = list(set(current_hosts).difference(last_hosts))
-            else:
-                new_hosts = current_hosts
+            # Update and re-save the lookup
+            print("calling subtask.update_lookup")
+            lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
 
+            print("calling lookup.save()...")               
+            subtask.save_lookup(indicator,lookup,current_time)
+            # lookup.save()
+            # Added by LNguyen 1/13/2017
+            # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
+            #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
+            LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
 
-            if current_hosts:
-                # Update and re-save the lookup
-                print("calling subtask.update_lookup")
-                lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
+            # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
+            # processing is done for this lookup and we can continue to the next.
+            if type(current_hosts) == str:
+                alert_text = current_hosts
+                self.create_alert(indicator, alert_text, owner)
+                LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
+                continue
 
-                print("calling lookup.save()...")
-                subtask.save_lookup(indicator,lookup,current_time)
-                # lookup.save()
-                # Added by LNguyen 1/13/2017
-                # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
-                #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
-                LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
-
-                # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
-                # processing is done for this lookup and we can continue to the next.
-                if type(current_hosts) == str:
-                    alert_text = current_hosts
-                    self.create_alert(indicator, alert_text, owner)
-                    LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
-                    continue
-
-                # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
-                # database for each.
-                print("calling routine to save Pivoteer_IndicatorRecords for lookup task...")
-                subtask.create_records(lookup=lookup, date=current_time)
-                #print("post subtasks.create_records")
+            # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
+            # database for each.
+            print("calling routine to save Pivoteer_IndicatorRecords for lookup task...")
+            subtask.create_records(lookup=lookup, date=current_time)
+            
             # Commented out by LNguyen
             # If there is no host information to compare, move on to the next lookup.  Otherwise, we need to calculate
             # the set of hosts that were added and the set of hosts that were removed.  If there aren't either, once
             # again there's nothing for us to do and we can move on to the next lookup.
-            # if not current_hosts or not last_hosts:
+            #if not current_hosts or not last_hosts:
             #     print("initial last_hosts: ",last_hosts)
             #     print("initial current_hosts: ",current_hosts)
             #     print("Host comparison unavailable")
             #     LOGGER.debug("Host comparison unavailable for %s '%s'", type_name, indicator)
             #     continue
-
+            
+            
             # Added by LNguyen
             # If there is current host information from the API lookup call then process it.
-        #    if current_hosts:
-
-                # If there is no historical host information then no comparison is needed.  Just set new_hosts to the current host information and continue on.
+            if current_hosts:
+                
+                # If there is historical host information then compare historical list to the current host information.
+                # Set to the list of existing hosts to missing_hosts and set the list of newly added hosts to new_hosts.
+                if len(last_hosts) > 0:
+                    original_hosts = last_hosts
+                    new_hosts = list(set(current_hosts).difference(last_hosts))                    
+                    missing_hosts = list(set(last_hosts).difference(current_hosts))
+             
+             # If there is no historical host information then no comparison is needed.  
+             # Just set new_hosts to the current host information and continue on.
                 if not last_hosts:
                     print("This is an initial search and no historical data exists for current indicator")
                     LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
                     new_hosts = current_hosts
                     missing_hosts = []
                     # continue
-
-                # If there is historical host information then compare historical list to the current host information.
-                # Set to the list of existing hosts to missing_hosts and set the list of newly added hosts to new_hosts.
-                if last_hosts:
-                    missing_hosts = list(set(last_hosts).difference(current_hosts))
-                   # new_hosts = list(set(current_hosts).difference(last_hosts))
+                    
+            # Else if there is no current hosts, then set new_hosts and missing_hosts to empty set
             else:
-                new_hosts = new_hosts
+                
+                new_hosts = []
                 missing_hosts = []
 
             #print("last_hosts: ", last_hosts)
