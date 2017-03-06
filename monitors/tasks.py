@@ -582,7 +582,39 @@ class IndicatorMonitoring(PeriodicTask):
             print("current hosts length:",len(current_hosts))
             print("last hosts length:", len(last_hosts))
 
-            # Update and re-save the lookup
+
+            # If there is no new hosts information, then no need to do any comparison.  Set new_hosts and missing_hosts to empty set
+            if not current_hosts:
+                new_hosts = []
+                missing_hosts = []
+
+                #Set the current hosts to the historical list if it exists
+                if len(last_hosts) > 0:
+                    current_hosts = last_hosts
+
+
+            #Else if there is new hosts information, then compare it to the historical data
+            else:
+                # Compare the historical host list to the list of new hosts and added any original hosts entries to the new hosts list
+                if len(last_hosts) > 0:
+                    missing_hosts = list(set(last_hosts).difference(current_hosts))  # get any missing hosts from the historical list that dropped off
+                    delta_hosts = list(set(current_hosts).difference(last_hosts)) #get the delta items that are not from the historical list and are new hosts only
+                    new_hosts = delta_hosts
+
+                    current_hosts = delta_hosts.extend(last_hosts) #appends the historical lists to the end of the new list
+
+
+                # If there is no historical host information then no comparison is needed.
+                # Just set new_hosts to the current host information and continue on.
+                if not last_hosts:
+                    print("This is an initial search and no historical data exists for current indicator")
+                    LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
+                    new_hosts = current_hosts
+                    missing_hosts = []
+
+
+
+            # Update and re-save the lookup with updated hosts info
             print("calling subtask.update_lookup")
             lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
 
@@ -606,44 +638,7 @@ class IndicatorMonitoring(PeriodicTask):
             # database for each.
             print("calling routine to save Pivoteer_IndicatorRecords for lookup task...")
             subtask.create_records(lookup=lookup, date=current_time)
-            
-            # Commented out by LNguyen
-            # If there is no host information to compare, move on to the next lookup.  Otherwise, we need to calculate
-            # the set of hosts that were added and the set of hosts that were removed.  If there aren't either, once
-            # again there's nothing for us to do and we can move on to the next lookup.
-            #if not current_hosts or not last_hosts:
-            #     print("initial last_hosts: ",last_hosts)
-            #     print("initial current_hosts: ",current_hosts)
-            #     print("Host comparison unavailable")
-            #     LOGGER.debug("Host comparison unavailable for %s '%s'", type_name, indicator)
-            #     continue
-            
-            
-            # Added by LNguyen
-            # If there is current host information from the API lookup call then process it.
-            if current_hosts:
-                
-                # If there is historical host information then compare historical list to the current host information.
-                # Set to the list of existing hosts to missing_hosts and set the list of newly added hosts to new_hosts.
-                if len(last_hosts) > 0:
-                    original_hosts = last_hosts
-                    new_hosts = list(set(current_hosts).difference(last_hosts))                    
-                    missing_hosts = list(set(last_hosts).difference(current_hosts))
-             
-             # If there is no historical host information then no comparison is needed.  
-             # Just set new_hosts to the current host information and continue on.
-                if not last_hosts:
-                    print("This is an initial search and no historical data exists for current indicator")
-                    LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
-                    new_hosts = current_hosts
-                    missing_hosts = []
-                    # continue
-                    
-            # Else if there is no current hosts, then set new_hosts and missing_hosts to empty set
-            else:
-                
-                new_hosts = []
-                missing_hosts = []
+
 
             #print("last_hosts: ", last_hosts)
             #print("new_Hosts: ", new_hosts)
