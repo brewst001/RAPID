@@ -583,6 +583,9 @@ class IndicatorMonitoring(PeriodicTask):
             print("last hosts length:", len(last_hosts))
 
 
+            #print("last_hostsp:",last_hosts)
+            #print("current_hostsp:",current_hosts)
+
             # If there is no new hosts information, then no need to do any comparison.  Set new_hosts and missing_hosts to empty set
             if not current_hosts:
                 new_hosts = []
@@ -600,18 +603,24 @@ class IndicatorMonitoring(PeriodicTask):
                     missing_hosts = list(set(last_hosts).difference(current_hosts))  # get any missing hosts from the historical list that dropped off
                     delta_hosts = list(set(current_hosts).difference(last_hosts)) #get the delta items that are not from the historical list and are new hosts only
                     new_hosts = delta_hosts
-
-                    current_hosts = delta_hosts.extend(last_hosts) #appends the historical lists to the end of the new list
+                    #print("missing_hosts:",missing_hosts)
+                    #print("delta_hosts:",delta_hosts)
+                    current_hosts.extend(missing_hosts)
 
 
                 # If there is no historical host information then no comparison is needed.
                 # Just set new_hosts to the current host information and continue on.
-                if not last_hosts:
+                #if not last_hosts:
+                else:
                     print("This is an initial search and no historical data exists for current indicator")
                     LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
                     new_hosts = current_hosts
                     missing_hosts = []
 
+            #print("last_hostsx:",last_hosts)
+            #print("missing_hostsx:", missing_hosts)
+            #print("new_hostsx:", new_hosts)
+            #print("current_hostsx:",current_hosts)
 
 
             # Update and re-save the lookup with updated hosts info
