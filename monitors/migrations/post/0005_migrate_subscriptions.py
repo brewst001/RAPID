@@ -13,6 +13,7 @@ def populate_subscriptions(apps, schema_editor):
        NewSubscription.save()
 
 
+
 class Migration(migrations.Migration):
     dependencies = [
         ('monitors', '0003_certificatesubscription'),
