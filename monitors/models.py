@@ -23,15 +23,15 @@ class IndicatorLookupBase(models.Model):
 class DomainMonitor(IndicatorLookupBase):
     domain_name = models.CharField(max_length=253, primary_key=True)
 
-    # class Meta:
-    #     unique_together = (('owner', 'domain_name'),)
+    class Meta:
+         unique_together = (('owner', 'domain_name'),)
 
 
 class IpMonitor(IndicatorLookupBase):
     ip_address = models.GenericIPAddressField(unpack_ipv4=True, primary_key=True)
 
-    # class Meta:
-    #     unique_together = (('owner', 'ip_address'),)
+    class Meta:
+         unique_together = (('owner', 'ip_address'),)
 
 
 class CertificateMonitor(IndicatorLookupBase):
@@ -53,13 +53,13 @@ class CertificateMonitor(IndicatorLookupBase):
     { <ip>: { "geo_location": <location>, "country": <code>, "domains": [ <domain>, ...] } }
     """
    # Commented out by LNguyen on 1/24/2017 - Certificate Monitor will not require owner and certificate value to be a unique key
-   # class Meta:
-   #     """
-   #     A metaclass for Certificate Monitor that specifies that the combination of 'owner' (the person submitting the
-   #     monitor) and 'certificate_value' (the indicator value) must be unique.
-        #"""
+    class Meta:
+        """
+        A metaclass for Certificate Monitor that specifies that the combination of 'owner' (the person submitting the
+        monitor) and 'certificate_value' (the indicator value) must be unique.
+        """
 
-    #    unique_together = (('owner', 'certificate_value'),)
+        unique_together = (('owner', 'certificate_value'),)
 
 
 class IndicatorAlert(models.Model):
@@ -95,6 +95,9 @@ class CertificateSubscription(models.Model):
     certificate = models.ForeignKey(CertificateMonitor,on_delete=models.PROTECT)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
+    class Meta:
+        unique_together = (('certificate', 'owner'),)
+
 
 class DomainSubscription(models.Model):
     """
@@ -105,6 +108,8 @@ class DomainSubscription(models.Model):
     domain_name = models.ForeignKey(DomainMonitor,on_delete=models.PROTECT)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
+    class Meta:
+        unique_together = (('domain_name', 'owner'),)
 
 
 class IpSubscription(models.Model):
@@ -116,5 +121,7 @@ class IpSubscription(models.Model):
     ip_address = models.ForeignKey(IpMonitor,on_delete=models.PROTECT)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
+    class Meta:
+         unique_together = (('ip_address', 'owner'),)
 
 
