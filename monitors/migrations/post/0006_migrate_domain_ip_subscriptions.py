@@ -8,6 +8,8 @@ def populate_domainsubscriptions(apps, schema_editor):
     Domains = apps.get_model("monitors","DomainMonitor")
     Subscription = apps.get_model("monitors","DomainSubscription")
     for domain in Domains.objects.all():
+       domain.domain_name = domain.domain_name.replace('','').strip()
+       domain.save()
        DomainSubscription = Subscription(domain_name=domain,owner= domain.owner)
        DomainSubscription.save()
 
