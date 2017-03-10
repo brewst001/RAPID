@@ -33,8 +33,8 @@ class MonitorSubmission(forms.Form):
         indicator_list = re.split(r'[,;|\n\r ]+', submission)
 
         for indicator in indicator_list:
-
-            indicator = indicator.rstrip().lower()
+            indicator = re.sub(r'[,\';"|\n\r ]+', '', indicator).strip().lower()
+           # indicator = indicator.rstrip().lower()
             indicator_type = discover_type(indicator)
 
             if indicator_type == "domain":
@@ -297,7 +297,10 @@ class CertificateSubmission(SubmissionWithHosts):
         """
         request.success = True
         request.msg = "Indicator(s) added for monitoring"
-        indicator = self.cleaned_data.get("fragment")
+        #indicator = self.cleaned_data.get("fragment").replace('','').replace('"','').strip()
+
+        indicator = re.sub(r'[,\';"|\n\r ]+', '', self.cleaned_data.get("fragment")).strip()
+
         if indicator is None:
             LOGGER.debug("No certificate specified")
             return
@@ -320,6 +323,8 @@ class CertificateSubmission(SubmissionWithHosts):
             resolution[GEOLOCATION_KEY] = PENDING
             resolution[DOMAIN_KEY] = [PENDING]
 
+
+     #   for indicator in self.valid_certificates:
         # added by LNguyen on 10jan2017 to retrieve current owner and cert values from the database
         # Need to first check if there is an existing owner with the given cert in the database
         # If an existing owner does not exist, then set existing owner to NONE.
@@ -415,7 +420,8 @@ class CertificateSubmission(SubmissionWithHosts):
         """
         request.success = True
         request.msg = "Indicator has been updated"
-        indicator = self.cleaned_data.get("fragment")
+        #indicator = self.cleaned_data.get("fragment").strip()
+        indicator = re.sub(r'[,\';"|\n\r ]+', '', self.cleaned_data.get("fragment")).strip()
         if indicator is None:
             LOGGER.debug("No certificate specified")
             return
