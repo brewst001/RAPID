@@ -138,7 +138,11 @@ class IndicatorLookupSubTask:
         hosts = hosts or lookup.last_hosts
         if type(hosts) is not list:
             return None
-        return [enclose_periods_in_braces(host) for host in hosts] if sanitized else list(hosts)
+        result=list()
+        for host in hosts:
+            result.append(host)
+        return result
+        #return [enclose_periods_in_braces(host) for host in hosts] if sanitized else list(hosts)
 
     @abc.abstractmethod
     def get_lookup_type(self):
@@ -690,12 +694,12 @@ class IndicatorMonitoring(PeriodicTask):
                 # self.create_alert(indicator=indicator, alert_text=alert_text, owner=owner)
                 body += "Previously known IP(s) were identified with this cert value: \n%s\n\n" % subtask.list_hosts(
                     lookup, hosts=last_hosts, sanitized=True)
-            if missing_hosts:
-                alert_text = 'Removed hosts: %s' % ', '.join(subtask.list_hosts(lookup, hosts=missing_hosts))
-               # self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
-                body += "The following previous IP associations are missing from the database: %s\n\n" % subtask.list_hosts(
-                    lookup, hosts=missing_hosts, sanitized=True)
-                NeedToAlert = True
+            # if missing_hosts:
+            #     alert_text = 'Removed hosts: %s' % ', '.join(subtask.list_hosts(lookup, hosts=missing_hosts))
+            #    # self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
+            #     body += "The following previous IP associations are missing from the database: %s\n\n" % subtask.list_hosts(
+            #         lookup, hosts=missing_hosts, sanitized=True)
+            #     NeedToAlert = True
             if new_hosts:
                 alert_text = "Added hosts: %s" % ", ".join(subtask.list_hosts(lookup, hosts=new_hosts))
                # self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
