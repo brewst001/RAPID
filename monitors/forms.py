@@ -335,7 +335,11 @@ class CertificateSubmission(SubmissionWithHosts):
         except CertificateSubscription.DoesNotExist:
             current_owner = None
         except CertificateSubscription.MultipleObjectsReturned:
-            current_owner = CertificateSubscription.objects.filter(certificate=indicator, owner=user)[0].owner
+            try:
+                current_owner = CertificateSubscription.objects.get(certificate=indicator,owner=user).owner
+            except CertificateSubscription.DoesNotExist:
+                current_owner = CertificateSubscription.objects.filter(certificate=indicator)[0].owner
+            #current_owner = CertificateSubscription.objects.filter(certificate=indicator, owner=user)[0].owner
 
 
         # added by LNguyen on 10jan2017
