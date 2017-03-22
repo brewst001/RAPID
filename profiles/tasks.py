@@ -20,8 +20,7 @@ class Update_Users(PeriodicTask):
 
     This class runs every day at midnight
     """
-    #run_every = crontab(minute=0, hour=0)
-    run_every = crontab()
+    run_every = crontab(minute=0, hour=0)
 
     def run(self, **kwargs):
        LOGGER.debug("Running Update_Users task...")
