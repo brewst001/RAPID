@@ -214,6 +214,7 @@ class IndicatorLookupSubTask:
        # print("running tasks.update_lookup")
         if type(hosts) is list:
             lookup.last_hosts = list(hosts)
+        lookup.lookup_interval = 1
         lookup.next_lookup = current_time + datetime.timedelta(hours=lookup.lookup_interval)
 
         return lookup
@@ -290,7 +291,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
     def save_lookup(self, indicator, lookup, date):
         #print("updates the Domain record in the Monitors_DomainMonitor table")
         lookup.save()
-        print("Next lookup time will be ", lookup.next_lookup)
+
 
 class IpLookupSubTask(IndicatorLookupSubTask):
     """
@@ -343,7 +344,6 @@ class IpLookupSubTask(IndicatorLookupSubTask):
     def save_lookup(self, indicator, lookup, date):
         #print("updates the IP record in the Monitors_IPMonitor table")
         lookup.save()
-        print("Next lookup time will be ", lookup.next_lookup)
 
 
 class CertificateLookupSubTask(IndicatorLookupSubTask):
@@ -430,8 +430,8 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,
                                                                               resolutions=lookup.resolutions,
                                                                               next_lookup=lookup.next_lookup,
+                                                                              lookup_interval = lookup.lookup_interval,
                                                                               modified=date)
-        print("Next lookup time will be ",lookup.next_lookup)
 
 
     def update_lookup(self, lookup, current_time, hosts):
@@ -635,7 +635,9 @@ class IndicatorMonitoring(PeriodicTask):
             lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
 
             #print("calling lookup.save()...")
+            print("current time: ",current_time)
             subtask.save_lookup(indicator,lookup,current_time)
+            print("post save, next lookup time:",lookup.next_lookup)
             # lookup.save()
             # Added by LNguyen 1/13/2017
             # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
