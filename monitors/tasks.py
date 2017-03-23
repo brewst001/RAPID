@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(None)
 User = get_user_model()
 """The current user"""
 
-ActiveUsers = Profile.objects.filter(is_active=True)
+ActiveUsers = Profile.objects.filter(is_active=True, alerts=True)
 """List of active users"""
 
 GEOLOCATION_KEY = "geo_location"
