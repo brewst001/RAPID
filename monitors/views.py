@@ -193,6 +193,8 @@ class DeleteIndicator(LoginRequiredMixin, View):
                 try:
                    # DomainMonitor.objects.get(domain_name=indicator,owner=request.user).delete()
                    DomainSubscription.objects.get(owner=request.user, domain_name=indicator).delete()
+                   CertificateSubscription.objects.get(owner=request.user, certificate=indicator).delete()
+
                 except:
                     LOGGER.exception("Error deleting domain monitor for value: %s", indicator)
 
