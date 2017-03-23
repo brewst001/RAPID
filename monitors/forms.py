@@ -55,7 +55,8 @@ class MonitorSubmission(forms.Form):
 
         current_user = User.objects.get(email__exact=request.user)
         lookup_time = time_jump(minutes=2)
-        set_interval = 24
+        #set_interval = 24
+        set_interval = 1
 
 
         for domain in self.valid_domains:

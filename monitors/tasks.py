@@ -290,6 +290,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
     def save_lookup(self, indicator, lookup, date):
         #print("updates the Domain record in the Monitors_DomainMonitor table")
         lookup.save()
+        print("Next lookup time will be ", lookup.next_lookup)
 
 class IpLookupSubTask(IndicatorLookupSubTask):
     """
@@ -342,6 +343,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
     def save_lookup(self, indicator, lookup, date):
         #print("updates the IP record in the Monitors_IPMonitor table")
         lookup.save()
+        print("Next lookup time will be ", lookup.next_lookup)
 
 
 class CertificateLookupSubTask(IndicatorLookupSubTask):
@@ -429,6 +431,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
                                                                               resolutions=lookup.resolutions,
                                                                               next_lookup=lookup.next_lookup,
                                                                               modified=date)
+        print("Next lookup time will be ",lookup.next_lookup)
 
 
     def update_lookup(self, lookup, current_time, hosts):
