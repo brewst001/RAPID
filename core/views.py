@@ -1,3 +1,5 @@
+import datetime
+
 from django.views.generic.base import View
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
@@ -19,4 +21,5 @@ class PrimaryNavigation(View):  # TemplateView
     @method_decorator(login_required(login_url='login'))
     def get(self, request):
         print("entering core.views.PrimaryNavigation.get:",request)
+        request.dateval = datetime.datetime.utcnow()
         return render(request, self.template_name)

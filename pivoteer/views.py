@@ -37,6 +37,7 @@ class PivotManager(LoginRequiredMixin, View):
         self.template_vars = {'SubmissionForm': SubmissionForm}
 
     def get(self, request):
+        request.dateval = datetime.datetime.utcnow()
         return render(request, self.template_name, self.template_vars)
 
     def post(self, request):

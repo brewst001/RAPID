@@ -43,6 +43,10 @@ class MonitorDashboard(LoginRequiredMixin, TemplateView):
 
     template_name = "monitors/dashboard.html"
 
+    def get(self, request):
+        request.dateval = datetime.datetime.utcnow()
+        return render(request, self.template_name)
+
 
 class DomainList(LoginRequiredMixin, ListView):
 
