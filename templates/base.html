@@ -45,10 +45,17 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="{% url 'monitor_dashboard' %}">R.A.P.I.D</a>
-                    <a class="navbar-brand" style="padding-left: 10em">{{ request.dateval }}  UTC</a>
                 {% endblock navbar_header %}
             </div>
+
             <div id="navbar" class="navbar-collapse collapse">
+                {% block navbar_date %}
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                             <a class="dropdown-toggle" style="padding-left: 10em" >{{ request.dateval }}  UTC</a>
+                        </li>
+                    </ul>
+                {% endblock navbar_date %}
                 {% block navbar_content %}{% endblock navbar_content %}
             </div><!-- /.navbar-collapse -->
         </div><!-- /container -->
