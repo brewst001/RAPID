@@ -104,34 +104,39 @@ function initialize_table(record_element) {
             "iDisplayLength":  15,
             "info":            false,
             "bLengthChange":   false,
-            "bFilter":         false
+            "bFilter":         false,
+            "aaSorting":      [[0, "desc"]]
         });
 
     } else if (record_element == "#HistoricalPanel") {
         $('#HR_table').dataTable({
             "iDisplayLength":  50,
             "info":            false,
-            "bLengthChange":   false
+            "bLengthChange":   false,
+            "aaSorting":      [[0, "desc"]]
         });
 
         $('#HW_table').dataTable({
             "iDisplayLength":  10,
             "info":            false,
             "bLengthChange":   false,
-            "bFilter":         false
+            "bFilter":         false,
+            "aaSorting":      [[1, "desc"]]
         });
 
     } else if (record_element == "#MalwarePanel") {
         $('#MR_table').dataTable({
             "iDisplayLength":  50,
             "info":            false,
-            "bLengthChange":   false
+            "bLengthChange":   false,
+            "aaSorting":      [[0, "desc"]]
         });
     } else if (record_element == "#SafeBrowsingPanel") {
         $('#SS_table').dataTable({
             "iDisplayLength": 50,
             "info": false,
-            "bLengthChange": false
+            "bLengthChange": false,
+            "aaSorting":      [[0, "desc"]]
         });
     } else if (record_element == "#SearchPanel") {
         $('#SR_table').dataTable({

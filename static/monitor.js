@@ -16,10 +16,10 @@ function initialize_datatable(table_element) {
         "iDisplayLength":  25,
         "info":            false,
         "bLengthChange":   false,
-        "bFilter":         true
+        "bFilter":         true,
+        "aaSorting":      [[2, "desc"]]
     });
 }
-
 
 // Load a specified panel section with a given URL
 function load_panel(target_panel, target_url) {
@@ -51,7 +51,7 @@ function get_active_panel_choices() {
 
 
 $(document).ready(function(){
-   load_panel(certificate_panel, certificate_url); 
+   load_panel(certificate_panel, certificate_url);
    load_panel(domain_panel, domain_url);
    load_panel(ip_panel, ip_url);
    load_panel(alert_panel, alert_url);
