@@ -132,7 +132,7 @@ function initialize_table(record_element) {
             "aaSorting":      [[0, "desc"]]
         });
     } else if (record_element == "#SafeBrowsingPanel") {
-        $('#SS_table').dataTable({
+        $('#SB_table').dataTable({
             "iDisplayLength": 50,
             "info": false,
             "bLengthChange": false,
