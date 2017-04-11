@@ -1,8 +1,6 @@
 # Important: This module is NOT implemented with support for Python 2.x
 
 import unittest
-import json
-import requests
 import os
 import logging
 import tldextract
@@ -19,6 +17,7 @@ from ipwhois.ipwhois import IPDefinedError
 from censys.ipv4 import CensysIPv4
 from censys.certificates import CensysCertificates
 from django.conf import settings
+
 
 logger = logging.getLogger(__name__)
 current_directory = os.path.dirname(__file__)
@@ -83,36 +82,32 @@ def get_country_code(name):
     #   - "Russia" vs. "Russian Federation": This is why we do the 'contains' approach
     #   - "Vietnam" vs. "Viet Nam": The actual name is the latter.  You're just out of luck on this one.
     code = None
-
-    if name:
-        for country in pycountry.countries:
-            opts = [country.name]
-
-            try:
-                opts.append(country.official_name)
-            except AttributeError:
-                # There is no official name for this country
-                pass
-            if opts:
-                if name in opts:
+    for country in pycountry.countries:
+        opts = [country.name]
+        try:
+            opts.append(country.official_name)
+        except AttributeError:
+            # There is no official name for this country
+            pass
+        if name in opts:
+            code = country.alpha2
+        else:
+            for opt in opts:
+                if name in opt:
                     code = country.alpha2
-                else:
-                    for opt in opts:
-                        if name in opt:
-                            code = country.alpha2
-                            break
-                if code is not None:
                     break
-        logger.debug("Country code for '%s' is '%s'", name, code)
-
-  #  if code is None:
-  #      msg = "No code available for country '%s'" % name
-  #      logger.warn(msg)
-  #      raise KeyError(msg)
+        if code is not None:
+            break
+    logger.debug("Country code for '%s' is '%s'", name, code)
+    if code is None:
+        msg = "No code available for country '%s'" % name
+        logger.warn(msg)
+        raise KeyError(msg)
     return code
 
 
 def geolocate_ip(ip):
+
     geolocation_database = os.path.join(current_directory, 'GeoLite2-City.mmdb')
     reader = geoip2.database.Reader(geolocation_database)
 
@@ -151,7 +146,6 @@ def resolve_domain(domain):
     resolver = dns.resolver.Resolver()
     resolver.nameservers = ['8.8.8.8', '8.8.4.4']
     errmsg = "Error resolving domain '%s': " % domain
-    answer = []
 
     try:
         query_answer = resolver.query(qname=domain)
@@ -161,35 +155,31 @@ def resolve_domain(domain):
     except dns.resolver.NXDOMAIN as e:
         errmsg += "NX Domain"
         logger.exception(errmsg)
-        return answer
-       # raise LookupException(errmsg, e) from e
+        raise LookupException(errmsg, e) from e
 
     except dns.resolver.Timeout as e:
         errmsg += "Query Timeout"
         logger.exception(errmsg)
-        return answer
-       # raise LookupException(errmsg, e) from e
+        raise LookupException(errmsg, e) from e
 
     except dns.resolver.NoAnswer as e:
         errmsg += "No Answer"
         logger.exception(errmsg)
-        return answer
-       # raise LookupException(errmsg, e) from e
+        raise LookupException(errmsg, e) from e
 
     except dns.resolver.NoNameservers as e:
         errmsg += "No Name Server"
         logger.exception(errmsg)
-        return answer
-       # raise LookupException(errmsg, e) from e
+        raise LookupException(errmsg, e) from e
 
     except Exception as e:
         errmsg += "Unexpected error"
         logger.exception(errmsg)
-        return answer
-       # raise LookupException(errmsg, e) from e
+        raise LookupException(errmsg, e) from eTha
 
 
 def lookup_domain_whois(domain):
+
     # Extract base domain name for lookup
     ext = tldextract.extract(domain)
     delimiter = "."
@@ -210,6 +200,7 @@ def lookup_domain_whois(domain):
 
 
 def lookup_ip_whois(ip):
+
     try:
         # Retrieve parsed record
         record = IPWhois(ip).lookup()
@@ -248,8 +239,7 @@ def lookup_google_safe_browsing(domain):
         body = "Bad Request to API"
 
     elif response.status == 503:
-        logger.error(
-            "Google SafeSearch API is unresponsive. Potentially too many requests coming from our application, or their service is down.")
+        logger.error("Google SafeSearch API is unresponsive. Potentially too many requests coming from our application, or their service is down.")
         body = "SafeBrowsing API offline or throttling our requests"
 
     # There is no body when the API thinks this inidcator is safe.
@@ -270,93 +260,6 @@ def lookup_ip_censys_https(ip):
         return {'status': 404, 'message': "No HTTPS certificate data was found for IP " + ip}
     except censys.base.CensysException as ce:
         return {'status': ce.status_code, 'message': ce.message}
-
-
-# def lookup_ip_censys_https_new(ip):
-#     # api_id = settings.CENSYS_API_ID
-#     # api_secret = settings.CENSYS_API_SECRET
-#     api_id = 'e013909c-bdec-4c17-a997-74955b73ac89'
-#     api_secret = 'y4nlaUAD9Netlvlc2mcZnhdhohVInAww'
-#
-#     try:
-#         print("enteringg lookup_ip_censys_https: ", ip)
-#         test = 'a1833c32d5f61d6ef9d1bb0133585112069d770e'
-#         ip_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(test)
-#         print("ip_data_test:", ip_data)
-#
-#         parsed_json = json.dumps(ip_data)
-#         resp = json.loads(parsed_json)
-#         # print("resp: ", resp)
-#         sha256 = resp['25']['smtp']['starttls']['tls']['certificate']['parsed']['fingerprint_sha256']
-#         print("sha256: ", sha256)
-#
-#         data = {}
-#         # data["query"] = 'fingerprint_sha256:e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74'
-#         # data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-#         data["query"] = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-#         data["fields"] = []
-#         # value = sha256
-#         print("data:", data)
-#
-#         # works okay
-#         # cc = CensysCertificates(api_id=api_id, api_secret=api_secret)
-#         #    print ("ccview: ",cc.view("e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a429e74 "))
-#         # generator = cc.search(data)
-#
-#         #    print ("generator: ",generator)
-#
-#
-#         # print("cc:",cc.view('a1833c32d5f61d6ef9d1bb0133585112069d770e'))
-#         # fields = ["443.https.tls.certificate.parsed.fingerprint_sha1"]
-#         # query = '443.https.tls.certificate.parsed.fingerprint_sha1:a1833c32d5f61d6ef9d1bb0133585112069d770e'
-#
-#         # for cert in generator:
-#         #     print ("cert:", cert["parsed.subject_dn"])
-#         # print("cert:", cert['443.https.tls.certificate.parsed.fingerprint_sha1'])
-#         #  print ("cert: ",cert["443.https.tls.certificate.parsed.fingerprint_sha1"])
-#         # generator = cc.search(sha256)
-#         # generator = cc.search('fingerprint_sha256')
-#         # print("generator:",generator)
-#         # for record in generator:
-#         #    print("record:",record['fingerprint_sha256'])
-#
-#
-#
-#
-#         # API_URL = "https://censys.io/ipv4?q=a1833c32d5f61d6ef9d1bb0133585112069d770"
-#         API_URL = "https://www.censys.io/api/v1/search/ipv4"
-#         # data = "e2890192ca76ed2bc429b1b68f4c2909b88c9c2a535692e63d97677d7a4"
-#
-#         # time.sleep(3.5)
-#         search = requests.post(API_URL, data=json.dumps(data), auth=(api_id, api_secret))
-#
-#         # search = requests.post(API_URL, auth=(api_id, api_secret))
-#         #  print("search: ", search)
-#
-#         if search.status_code == 200:
-#             results = search.json()
-#             print("results: ", results)
-#             parsed_test = json.dumps(results)
-#             #     print("parsed_test: ", parsed_test)
-#             resp = json.loads(parsed_test)
-#             print("resp:", resp)
-#             parent = resp['results']
-#
-#         id_all = []
-#         for item in parent:
-#             print("item ip: ", item['ip'])
-#             id_all.append(item['ip'])
-#
-#             # cert_data = search_ip_for_certificate(sha256)
-#             # cert_data = CensysIPv4(api_id=api_id, api_secret=api_secret).view(sha256)
-#             #    print("cert_data:", cert_data)
-#
-#         return ip_data
-#         # return ip_data['443']['https']['tls']['certificate']['parsed'] commented out by LNguyen
-#     except KeyError:
-#         return {'status': 404, 'message': "No HTTPS certificate data was found for IP " + ip}
-#     except censys.base.CensysException as ce:
-#         return {'status': ce.status_code, 'message': ce.message}
 
 
 def google_for_indicator(indicator, limit=10, domain=None):
@@ -404,12 +307,12 @@ def google_for_indicator(indicator, limit=10, domain=None):
 
 def lookup_certs_censys(other, count):
     """Search the Censys.io API for any certificates that contain the search string
-
+    
         Args:
             other (str): The string to search for in certificates (named other referencing
                 the 'other' indicator type
             count (int): The maximum number of records to retrieve
-
+            
         Returns (dict):
             Returns a dictionary that contains the following keys:
                 records (list): A list of the certificates that matched this search string
@@ -426,19 +329,19 @@ def lookup_certs_censys(other, count):
         cc = CensysCertificates(api_id=api_id, api_secret=api_secret)
         generator = cc.search(other)
         i = 0
-        results = {'records': []}
+        results = {'records':[]}
         for record in generator:
             if i == 0:
                 results['total'] = generator.gi_frame.f_locals['payload']['metadata']['count']
             for sha256 in record['parsed.fingerprint_sha256']:
                 results['records'].append(cc.view(sha256))
-                i += 1
+                i+=1
             if i >= count:
                 break
         results['count'] = i
         return results
     except censys.base.CensysException as ce:
-        return {'status': ce.status_code, 'message': ce.message}
+        return {'status':ce.status_code,'message':ce.message}
 
 
 def search_ip_for_certificate(value):
@@ -450,44 +353,29 @@ def search_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     try:
-       # print("entering search_ip_for_certificate...",value)
         api = CensysIPv4(api_id=settings.CENSYS_API_ID, api_secret=settings.CENSYS_API_SECRET)
-       # print("api: ", api)
         logger.info("Searching for certificate value: %s", value)
         total = 0
-
         for result in api.search(query=_escape_censys_value(value), fields=["ip"]):
             total += 1
-            if total > 100:
-                break
-            else:
-                yield result["ip"]
+            yield result["ip"]
         logger.info("Found %d total result(s) for certificate value: %s", total, value)
-        #print("IPtotal:",total)
     except censys.base.CensysRateLimitExceededException as e:
         msg = "Censys rate limit exceeded"
         logger.exception(msg)
-        result = None
-        yield result
-        #raise LookupException(msg, e) from e
+        raise LookupException(msg, e) from e
     except censys.base.CensysUnauthorizedException as e:
         msg = "Censys authorization failed"
         logger.exception(msg)
-        result = None
-        yield result
-        #raise LookupException(msg, e) from e
+        raise LookupException(msg, e) from e
     except censys.base.CensysNotFoundException as e:
         msg = "Certificate fragment not found in Censys: %s" % value
         logger.exception(msg)
-        result = None
-        yield result
-        #raise LookupException(msg, e) from e
+        raise LookupException(msg, e) from e
     except Exception as e:
         msg = "Unknown error searching for certificate: %s" % value
         logger.exception(msg)
-        result= None
-        yield result
-       # raise LookupException(msg, e) from e
+        raise LookupException(msg, e) from e
 
 
 def accumulate_ip_for_certificate(value):
@@ -499,16 +387,14 @@ def accumulate_ip_for_certificate(value):
     :raises LookupException: If there was an error performing the lookup
     """
     results = list(search_ip_for_certificate(value))
-    #print("API results:",results)
     logger.info("Found %d total result(s) for certificate search value: %s", len(results), value)
     return results
-
 
 def _escape_censys_value(value):
     """Escapes necessary characters for a censys search
     """
     escape_strings = ["+", "-", "=", "&", "|", ">", "<", "!", "(", ")",
-                      "{", "}", "[", "]", "^", "\"", "~", "*", "?", ":", "\\", "/"]
+                      "{","}","[","]","^", "\"", "~", "*", "?", ":", "\\", "/"]
     escape_dict = {}
     for escape_string in escape_strings:
         escape_dict[escape_string] = "\\" + escape_string
