@@ -17,7 +17,8 @@ from django.contrib.auth import get_user_model
 from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, CertificateSubscription, DomainSubscription, IpSubscription
 from pivoteer.models import IndicatorRecord
 from pivoteer.records import RecordSource, RecordType
-from pivoteer.collectors.scrape import RobtexScraper
+#from pivoteer.collectors.scrape import RobtexScraper, \
+from pivoteer.collectors.scrape import RobtexMonitorScraper
 from profiles.models import Profile
 
 LOGGER = logging.getLogger(None)
@@ -45,7 +46,8 @@ IP_KEY = "ip"
 DOMAIN_KEY = "domain"
 """The key used in JSON for a domain name"""
 
-__scraper = RobtexScraper()
+#__scraper = RobtexScraper()
+__scraper = RobtexMonitorScraper()
 """The scraper used to resolve domain names for IP addresses"""
 
 

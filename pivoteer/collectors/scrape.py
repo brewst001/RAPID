@@ -34,13 +34,20 @@ class MechanizedScraper(object):
         return discover_type(indicator)
 
 
-class RobtexScraper(MechanizedScraper):
+class RobtexMonitorScraper(MechanizedScraper):
+    """
+    Created by: LNguyen
+    Date: 17April2017
+    Created class to handle web scraping logic for the certificate monitoring function.  This class will be referenced by the Monitor function.
+
+    """
     def __init__(self):
         MechanizedScraper.__init__(self)
 
+
     def run(self, ip):
         """
-        Updated by: LNguyen
+        Created by: LNguyen
         Date: 26January2017
         Updated scraping logic because of existing bug that was dependent finding an ID = shared_ma that no longer existed in the Robtex web pages.
         The new logic finds a list of shared domains located in the tag <ol class:xbul.>
@@ -53,17 +60,17 @@ class RobtexScraper(MechanizedScraper):
         url_param = ip.replace(".", "/")
 
         url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
-        #print("url:",url)
+        # print("url:",url)
         self.browser.open(url)
 
         parser = self.browser.parsed
 
         search = parser.find("ol", {"class": "xbul"})
-       # print("search: ", search)
+        # print("search: ", search)
 
         total = 0
         if search is not None:
-           for result in search.find_all("li"):
+            for result in search.find_all("li"):
                 total += 1
 
                 if total > 100:
@@ -78,9 +85,46 @@ class RobtexScraper(MechanizedScraper):
 
                     else:
                         results.append(result_value)
-         #  print("scraperesults:",results)
-       # print("robtex_total:",total)
+                        #  print("scraperesults:",results)
+                        # print("robtex_total:",total)
         return results
+
+
+class RobtexScraper(MechanizedScraper):
+    def __init__(self):
+        MechanizedScraper.__init__(self)
+
+    def run(self, ip):
+        results = []
+
+        url_param = ip.replace(".", "/")
+
+        url = "https://www.robtex.com/en/advisory/ip/" + url_param + "/shared.html"
+
+        self.browser.open(url)
+
+        parser = self.browser.parsed
+        search = parser.find("span", {"id": "shared_ma"})
+
+        if search is not None:
+            # count = self.extract_string(search.text, "(", " shown")
+            # if int(count) <= 50:
+
+            for result in search.parent.parent.find("ol", {"class": "xbul"}).findChildren('li'):
+                result_value = result.text
+
+                if ' ' in result_value:
+                    result_value = re.sub(' ', '.', result_value)
+                    results.append(result_value)
+
+                else:
+                    results.append(result_value)
+
+            # else:
+            #    results.append("%s domains identified" % str(count))
+
+        return results
+
 
 #
 # def run(self, ip):
