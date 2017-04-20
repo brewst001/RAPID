@@ -447,8 +447,9 @@ class InternetIdentityScraper(MechanizedScraper):
         form = self.browser.get_form()
         form['username'].value = self.username
         form['password'].value = self.password
-        self.browser.submit_form(form)
+        self.browser.submit_form(form,timelimit=10000)
         self.save_cookie()
+
 
     def scrape_data(self, indicator, query_type):
 
@@ -483,24 +484,83 @@ class InternetIdentityScraper(MechanizedScraper):
 
         url = "https://research.iad.internetidentity.com/index.php?period=" + search_period + "&format=" + format + "&queryType=" + query_type + "&target=" + indicator + "&submit=Submit+Query"
 
-        self.browser.open(url)
+        self.browser.open(url,timeout=20000)
         parser = self.browser.parsed
 
-        for tr in parser.find_all('tr')[7:]:
+        search = parser.find("table", {"style": "text-align: left; margin-left: auto; margin-right: auto;"})
+
+        for tr in search.find('tbody'):
+        #for tr in parser.find_all('tr')[7:]:
 
             tds = []
-            for td in tr.find_all('td'):
-                tds.append(td.text.strip())
+            if tr != "\n":
+                for td in tr.find_all('td'):
+                    tds.append(td.text.strip())
 
-            # check that table data exists
-            if len(tds) == 4:
-                IID_seen = tds[0]
-                IID_host = tds[1]
-                IID_qType = tds[2]
-                IID_ip = tds[3]
+                # check that table data exists
+                if len(tds) == 4:
+                    IID_seen = tds[0]
+                    IID_host = tds[1]
+                    IID_qType = tds[2]
+                    IID_ip = tds[3]
 
-                passive_table.append({'ip': IID_ip, 'domain': IID_host, 'date': IID_seen, 'ip_location': {}})
+                    passive_table.append({'ip': IID_ip, 'domain': IID_host, 'date': IID_seen, 'ip_location': {}})
 
-            tds[:] = []
+                tds[:] = []
 
         self.results.extend(passive_table)
+    #
+    # def scrape_data(self, indicator, query_type):
+    #
+    #     passive_table = []
+    #
+    #     # search period 7 is "complete history"
+    #     search_period = '7'
+    #
+    #     # 0 = Current Day
+    #     # 1 = Past 72 Hours
+    #     # 2 = Past Week
+    #     # 3 = Past Month
+    #     # 4 = Past 3 Months
+    #     # 5 = Past 6 Months
+    #     # 6 = Past Year
+    #
+    #     format = '0'
+    #     # 0 = Display results on screen
+    #     # 1 = Output to CSV file (Comma separated w/o quotes)
+    #     # 2 = Output to CSV file (Comma separated with quotes)
+    #     # 3 = Output to CSV file (Tab separated w/o quotes)
+    #     # 4 = Output to CSV file (Tab separated with quotes)
+    #     # 5 = Output to CSV file (Pipe separated w/o quotes)
+    #     # 6 = Output to CSV file (Pipe separated with quotes)
+    #
+    #     # queryType
+    #     # A = Query IP Address or CIDR,
+    #     # H = Query Hostname
+    #     # X = Query Domain Name for Hosts
+    #     # D = Query Domain for Authoritative Nameservers
+    #     # N = Query Nameserver for Authoritative Domains
+    #
+    #     url = "https://research.iad.internetidentity.com/index.php?period=" + search_period + "&format=" + format + "&queryType=" + query_type + "&target=" + indicator + "&submit=Submit+Query"
+    #
+    #     self.browser.open(url)
+    #     parser = self.browser.parsed
+    #
+    #     for tr in parser.find_all('tr')[7:]:
+    #
+    #         tds = []
+    #         for td in tr.find_all('td'):
+    #             tds.append(td.text.strip())
+    #
+    #         # check that table data exists
+    #         if len(tds) == 4:
+    #             IID_seen = tds[0]
+    #             IID_host = tds[1]
+    #             IID_qType = tds[2]
+    #             IID_ip = tds[3]
+    #
+    #             passive_table.append({'ip': IID_ip, 'domain': IID_host, 'date': IID_seen, 'ip_location': {}})
+    #
+    #         tds[:] = []
+    #
+    #     self.results.extend(passive_table)
