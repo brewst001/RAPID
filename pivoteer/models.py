@@ -31,7 +31,7 @@ class IndicatorManager(models.Manager):
                 result for the provided indicator or an empty query set if no record was found.
         """
         
-        # TODO: Why are we returning empty query sets versus None when there are no results?
+        # TODO: Why are we returning empty query sets hiversus None when there are no results?
         
         record_type = RecordType.CE
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
@@ -76,22 +76,35 @@ class IndicatorManager(models.Manager):
         return records
 
     def historical_hosts(self, indicator, request):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so updated where condition
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         if request.user.is_staff:
             records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(info__at_domain__endswith=indicator) |
-                                                 Q(info__at_ip__endswith=indicator))
+                                                  Q(info_date__lt=time_frame),
+                                                  Q(info__contains=indicator)).values('info', 'info_date')
+
+            # records = self.get_queryset().filter(Q(record_type=record_type.name),
+            #                                        Q(info_date__lt=time_frame),
+            #                                        Q(info__at_domain__endswith)=indicator) |
+            #                                        Q(info__at_ip__endswith=indicator))
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
                                                  ~Q(info_source=RecordSource.IID.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__at_domain__endswith=indicator) |
-                                                 Q(info__at_ip__endswith=indicator))
+                                                 Q(info__contains=indicator)).values('info', 'info_date')
+
+            # records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
+            #                                      ~Q(info_source=RecordSource.IID.name),
+            #                                      Q(record_type=record_type.name),
+            #                                      Q(info_date__lt=time_frame),
+            #                                      Q(info__at_domain__endswith=indicator) |
+            #                                      Q(info__at_ip__endswith=indicator))
         return records
 
     def malware_records(self, indicator):
