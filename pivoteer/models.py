@@ -66,26 +66,33 @@ class IndicatorManager(models.Manager):
         return records
 
     def recent_hosts(self, indicator):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__at_domain__endswith=indicator) |
-                                             Q(info__at_ip__endswith=indicator))
+                                             Q(info__contains=indicator))
+
+        # records = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                      Q(info_date__gte=time_frame),
+        #                                      Q(info__at_domain__endswith=indicator) |
+        #                                      Q(info__at_ip__endswith=indicator))
         return records
 
     def historical_hosts(self, indicator, request):
         # Updated by LNguyen
         # Date: 26April2017
-        # Description: Former query was not correctly handling unicode characters in the info field so updated where condition
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         if request.user.is_staff:
             records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                  Q(info_date__lt=time_frame),
-                                                  Q(info__contains=indicator)).values('info', 'info_date')
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__contains=indicator))
 
             # records = self.get_queryset().filter(Q(record_type=record_type.name),
             #                                        Q(info_date__lt=time_frame),
@@ -97,7 +104,7 @@ class IndicatorManager(models.Manager):
                                                  ~Q(info_source=RecordSource.IID.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__contains=indicator)).values('info', 'info_date')
+                                                 Q(info__contains=indicator))
 
             # records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
             #                                      ~Q(info_source=RecordSource.IID.name),

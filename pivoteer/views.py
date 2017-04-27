@@ -137,37 +137,6 @@ class CheckTask(LoginRequiredMixin, View):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Update to handle new data format returned from historical_hosts method
-        elif record_type == "Historical":
-
-            self.template_name = "pivoteer/HistoricalRecords.html"
-
-            # Historical hosting records
-            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
-
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
-            host_records_complete = []
-            for record in host_records:
-                date = record['info_date']
-                info = record['info']
-                location = geolocate_ip(info['ip'])
-
-                new_record = {
-                    'info_date': date,
-                    'info': info,
-                    'location':location
-                }
-
-                host_records_complete.append(new_record)
-                #host_records_complete.append(record)
-
-            self.template_vars["hosting_records"] = host_records_complete
-
-            # Historical WHOIS records
-            whois_record = IndicatorRecord.objects.historical_whois(indicator)
-            self.template_vars["historical_whois"] = whois_record
-
-        # ORIGINAL VERSION
         # elif record_type == "Historical":
         #
         #     self.template_name = "pivoteer/HistoricalRecords.html"
@@ -179,15 +148,46 @@ class CheckTask(LoginRequiredMixin, View):
         #     # We do this outside the task because we don't know the IP addresses until the task completes.
         #     host_records_complete = []
         #     for record in host_records:
-        #         info = getattr(record, 'info')
-        #         record.location = geolocate_ip(info['ip'])
-        #         host_records_complete.append(record)
+        #         date = record['info_date']
+        #         info = record['info']
+        #         location = geolocate_ip(info['ip'])
+        #
+        #         new_record = {
+        #             'info_date': date,
+        #             'info': info,
+        #             'location':location
+        #         }
+        #
+        #         host_records_complete.append(new_record)
+        #         #host_records_complete.append(record)
         #
         #     self.template_vars["hosting_records"] = host_records_complete
         #
         #     # Historical WHOIS records
         #     whois_record = IndicatorRecord.objects.historical_whois(indicator)
         #     self.template_vars["historical_whois"] = whois_record
+
+        # ORIGINAL VERSION
+        elif record_type == "Historical":
+
+            self.template_name = "pivoteer/HistoricalRecords.html"
+
+            # Historical hosting records
+            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+            host_records_complete = []
+            for record in host_records:
+                info = getattr(record, 'info')
+                record.location = geolocate_ip(info['ip'])
+                host_records_complete.append(record)
+
+            self.template_vars["hosting_records"] = host_records_complete
+
+            # Historical WHOIS records
+            whois_record = IndicatorRecord.objects.historical_whois(indicator)
+            self.template_vars["historical_whois"] = whois_record
 
         elif record_type == "Malware":
 
