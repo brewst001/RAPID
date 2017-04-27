@@ -518,11 +518,12 @@ def lookup_certs_censys(other, count):
             if type(record['parsed.fingerprint_sha256']) is list:
                 for sha256 in record['parsed.fingerprint_sha256']:
                     results['records'].append(cc.view(sha256))
-                    i += 1
+
             else:
                 sha256 = record['parsed.fingerprint_sha256']
                 shalist = cc.view(sha256)
                 results['records'].append(shalist)
+            i += 1
             if i >= count:
                 break
 
