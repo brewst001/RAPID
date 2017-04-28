@@ -407,6 +407,8 @@ def google_for_indicator(indicator, limit=10, domain=None):
 
 def lookup_dnstwist(domain=None):
     """
+    Created by: Linda Nguyen
+    Date: Apr2017
     Find the top DNSTwist search results for 'domain'
 
     DNSTwist takes in the domain name as a seed, generates a list of potential phishing domains and then checks to see

@@ -96,6 +96,9 @@ class SubmissionForm(forms.Form):
         elif record_type == "External":
             new_task = group([empty_task.s(indicator)])()
 
+        elif record_type == "DNSTwist":
+            new_task = group([dnstwist_search.s(indicator)])()
+
         else:
             new_task = None
 

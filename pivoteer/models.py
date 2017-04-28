@@ -250,6 +250,23 @@ class IndicatorManager(models.Manager):
         return records
 
 
+    def get_dnstwist_record(self, indicator):
+        """
+        Retrieve DNSTwist records for an indicator from the database.
+
+        :param indicator: The indicator value
+        :return:  The DNSTwist records for the indicator
+        """
+
+        record_type = RecordType.DR
+
+        records = self.get_queryset().filter(Q(record_type=record_type.name),
+                                             Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
+
+
+        return records
+
+
 class IndicatorRecord(models.Model):
 
     record_choices = tuple((rt.name, rt.title) for rt in RecordType)

@@ -13,7 +13,7 @@ from core.threatcrowd import ThreatCrowd
 from core.totalhash import TotalHashApi
 from core.malwr import MalwrApi
 from core.lookups import lookup_ip_whois, lookup_domain_whois, resolve_domain, geolocate_ip, lookup_ip_censys_https, \
-    lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException
+    lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException, lookup_dnstwist
 from pivoteer.collectors.scrape import RobtexScraper, InternetIdentityScraper
 from pivoteer.collectors.scrape import VirusTotalScraper, ThreatExpertScraper
 from pivoteer.collectors.api import PassiveTotal
@@ -443,6 +443,46 @@ def make_indicator_search_records(indicator, indicator_type):
         save_record(record_type, record_source, info)
     except Exception:
         logger.exception("Error saving %s (%s) record from %s",
+                         record_type.name,
+                         record_type.title,
+                         record_source.title)
+
+
+
+@app.task
+def dnstwist_search(indicator):
+    """
+    A Celery task for searching DNSTwist for a domain (indicator).
+
+    The idea is quite straightforward: *dnstwist* takes in your domain name as a
+    seed, generates a list of potential phishing domains and then checks to see if
+    they are registered.
+
+    Additionally it can test if the mail server from MX record can be used to
+    intercept misdirected corporate e-mails and it can generate fuzzy hashes of the
+    web pages to see if they are live phishing sites.
+
+
+        indicator: The indicator value
+        indicator_type: The indicator type
+        results: A list of SearchResult dictionary objects.  The order of this list should be the order in which results
+                 were returned by Google.   Please refer to the documentation for core.google.SearchResult for a
+                 description of these objects.
+
+    :param indicator: The indicator being processed
+
+    :return: This returns a list of domains and registrations
+    """
+    record_type = RecordType.DR
+    record_source = RecordSource.DTW
+
+    try:
+        results = lookup_dnstwist(domain=indicator)
+        info = OrderedDict({"indicator": indicator,
+                            "results": results})
+        save_record(record_type, record_source, info)
+    except Exception:
+        logger.exception("Error saving dnstwist %s (%s) record from %s",
                          record_type.name,
                          record_type.title,
                          record_source.title)

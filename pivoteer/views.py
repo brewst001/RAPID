@@ -217,6 +217,12 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_vars['indicator'] = indicator
             self.template_vars['type'] = discover_type(indicator)
 
+        elif record_type == "DNSTwist":
+            self.template_name = "pivoteer/DNSTwist.html"
+            dnstwist_records = IndicatorRecord.objects.get_dnstwist_record(indicator)
+            self.template_vars['dnstwist_records'] = dnstwist_records
+
+
         return render(request, self.template_name, self.template_vars)
 
 
