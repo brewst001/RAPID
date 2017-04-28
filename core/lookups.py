@@ -425,7 +425,7 @@ def lookup_dnstwist(domain=None):
 
     try:
 
-        cmd = "../dnstwist/dnstwist.py --registered %s" % domain
+        cmd = "../static/dnstwist/dnstwist.py --registered %s" % domain
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 
