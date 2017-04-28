@@ -151,6 +151,10 @@ class IndicatorManager(models.Manager):
         return records
 
     def recent_whois(self, indicator):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+
         record_type = RecordType.WR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
@@ -159,15 +163,22 @@ class IndicatorManager(models.Manager):
 
         record = self.get_queryset().filter(Q(record_type=record_type.name),
                                             Q(info_date__gte=time_frame),
-                                            Q(info__at_query__endswith=indicator) |
-                                            Q(info__at_domain_name__endswith=indicator)).values('info', 'info_date')
+                                            Q(info__contains=indicator)).values('info', 'info_date')
 
+        # record = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                     Q(info_date__gte=time_frame),
+        #                                     Q(info__at_query__endswith=indicator) |
+        #                                     Q(info__at_domain_name__endswith=indicator)).values('info', 'info_date')
         if record:
             return record.latest('info_date')
 
         return record
 
     def historical_whois(self, indicator):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+
         record_type = RecordType.WR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
@@ -176,9 +187,13 @@ class IndicatorManager(models.Manager):
 
         raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__at_query__endswith=indicator) |
-                                                 Q(info__at_domain_name__endswith=indicator)).values('info_hash',
-                                                                                                     'info_date')
+                                                 Q(info__contains=indicator)).values('info_hash', 'info_date')
+
+        # raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                          Q(info_date__lt=time_frame),
+        #                                          Q(info__at_query__endswith=indicator) |
+        #                                          Q(info__at_domain_name__endswith=indicator)).values('info_hash',
+        #                                                                                              'info_date')
 
         tracking = []
         unique_records = []
