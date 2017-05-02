@@ -403,9 +403,108 @@ def google_for_indicator(indicator, limit=10, domain=None):
         logger.info(msg)
     return result
 
+#
+#
+# def lookup_dnstwist(domain):
+#     """
+#     Created by: Linda Nguyen
+#     Date: Apr2017
+#     Find the top DNSTwist search results for 'domain'
+#
+#     DNSTwist takes in the domain name as a seed, generates a list of potential phishing domains and then checks to see
+#     if they are registered.
+#
+#     To download the latest code and docs, refer to the url https://github.com/elceef/dnstwist
+#
+#     :param indicator: The indicator value for which to search.
+#     :return: A list of domain variations and affiliated registration info
+#     """
+#
+#     result = []
+#     startval = 7
+#
+#     try:
+#
+#         print("domain:",domain)
+#         cmd = "../static/dnstwist/dnstwist.py --registered %s" %domain
+#
+#         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+#
+#         stdout, stderr = p.communicate(timeout=20000)
+#
+#         print("stdout:",stdout)
+#         print("stderr:",stderr)
+#
+#         out = stdout.decode('utf-8').strip('')
+#         #err = stderr.decode('utf-8')
+#         print("out:",out)
+#         print("len(out):", len(out))
+#         output = out.split('\n')
+#         print("output:",output)
+#         print("output length:",len(output))
+#
+#         for line in output:
+#             titleType = ''
+#             domainType = ''
+#             IPAddress = ''
+#             NSType = ''
+#             MXType = ''
+#
+#             if output.index(line) > startval:
+#
+#                 titleType = line[0:line.find(' ')].strip()
+#                 tmpcol = line[line.find(' '):len(line)].strip()
+#                 domainType = tmpcol[0:tmpcol.find(' ')]
+#                 tmpcol = tmpcol[0 + len(domainType):len(tmpcol)].strip()
+#
+#                 if tmpcol.find('MX:') >= 0:
+#                     MXType = tmpcol[tmpcol.find('MX:'):len(tmpcol)].strip()
+#                     tmpcol = tmpcol[0:len(tmpcol) - len(MXType)].strip()
+#
+#                 if tmpcol.find('NS:') >= 0:
+#                     NSType = tmpcol[tmpcol.find('NS:'):len(tmpcol)].strip()
+#                     tmpcol = tmpcol[0:len(tmpcol) - len(NSType)].strip()
+#
+#                 IPAddress = tmpcol[0:tmpcol.find(' ')].strip()
+#
+#                 print(line)
+#                 result.append(
+#                     {"title": titleType, "domain": domainType, "IP": IPAddress, "NS": NSType, "MX": MXType, "content": line})
+#
+#         # for line in output:
+#         #     col1 = line[0:line.find(' ')].strip()
+#         #     tmpcol = line[line.find(' '):len(line)].strip()
+#         #     col2 = tmpcol[0:tmpcol.find(' ')]
+#         #     tmpcol = line[line.find(col2):len(line)].strip()
+#         #     col3 = tmpcol[tmpcol.find(' '):len(line)].strip()
+#         #     if output.index(line) > startval:
+#         #        result.append({"title": col1, "indicator": col2, "content": col3})
+#
+#         print("final result length: ",len(result))
+#
+#         return result
+#
+#
+#     except Exception as e:
+#         print(str(e))
+#         p.kill()
+#         errmsg = "Error with DNSTwist: "+ str(e)
+#         logger.exception(errmsg)
+#         return result
 
 
-def lookup_dnstwist(domain=None):
+def toHex(s):
+   lst = []
+   for ch in s:
+      hv = hex(ord(ch)).replace('0x', '')
+      if len(hv) == 1:
+         hv = '0' + hv
+      lst.append(hv)
+      result = ''.join(lst)
+   return(result)
+
+
+def lookup_dnstwist(domain):
     """
     Created by: Linda Nguyen
     Date: Apr2017
@@ -416,7 +515,7 @@ def lookup_dnstwist(domain=None):
 
     To download the latest code and docs, refer to the url https://github.com/elceef/dnstwist
 
-    :param domain: The indicator value for which to search.
+    :param indicator: The indicator value for which to search.
     :return: A list of domain variations and affiliated registration info
     """
 
@@ -425,60 +524,45 @@ def lookup_dnstwist(domain=None):
 
     try:
 
-        cmd = "../static/dnstwist/dnstwist.py --registered %s" % domain
+        print("domain:",domain)
 
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        value = toHex(domain)
 
-        stdout, stderr = p.communicate(timeout=15)
+        url = "https://dnstwister.report/api/fuzz/" + value
 
-        out = stdout.decode('utf-8')
-        #err = stderr.decode('utf-8')
+        response = requests.get(url)
 
-        output = out.split('\n')
+        print("response:",response)
 
-        for line in output:
-            titleType = ''
-            domainType = ''
-            IPAddress = ''
-            NSType = ''
-            MXType = ''
+        jsonObj = json.loads(response.content.decode('utf-8'))
 
-            if output.index(line) > startval:
+        newresult = []
+        for key in jsonObj:
+            if (key == 'fuzzy_domains'):
+                for domainObj in jsonObj[key]:
+                   # print(domainObj)
+                    domain = domainObj["domain"]
+                    domainType = domainObj["fuzzer"]
+                    domain_hex = domainObj["domain_as_hexadecimal"]
+                    ip_url = domainObj["resolve_ip_url"]
 
-                titleType = line[0:line.find(' ')].strip()
-                tmpcol = line[line.find(' '):len(line)].strip()
-                domainType = tmpcol[0:tmpcol.find(' ')]
-                tmpcol = tmpcol[0 + len(domainType):len(tmpcol)].strip()
+                    ipdata = requests.get(ip_url)
+                    ip = json.loads(ipdata.content.decode('utf-8'))['ip']
 
-                if tmpcol.find('MX:') >= 0:
-                    MXType = tmpcol[tmpcol.find('MX:'):len(tmpcol)].strip()
-                    tmpcol = tmpcol[0:len(tmpcol) - len(MXType)].strip()
+                    if (ip != False):
+                       newresult.append({'IP': ip, 'domain': domain, 'title': domainType})
 
-                if tmpcol.find('NS:') >= 0:
-                    NSType = tmpcol[tmpcol.find('NS:'):len(tmpcol)].strip()
-                    tmpcol = tmpcol[0:len(tmpcol) - len(NSType)].strip()
-
-                IPAddress = tmpcol[0:tmpcol.find(' ')].strip()
-
-                result.append(
-                    {"title": titleType, "domain": domainType, "IP": IPAddress, "NS": NSType, "MX": MXType, "content": line})
-
-        # for line in output:
-        #     col1 = line[0:line.find(' ')].strip()
-        #     tmpcol = line[line.find(' '):len(line)].strip()
-        #     col2 = tmpcol[0:tmpcol.find(' ')]
-        #     tmpcol = line[line.find(col2):len(line)].strip()
-        #     col3 = tmpcol[tmpcol.find(' '):len(line)].strip()
+        result = newresult
         #     if output.index(line) > startval:
         #        result.append({"title": col1, "indicator": col2, "content": col3})
 
+        print("final result length: ",len(result))
 
         return result
 
 
     except Exception as e:
         print(str(e))
-        p.kill()
         errmsg = "Error with DNSTwist: "+ str(e)
         logger.exception(errmsg)
         return result
