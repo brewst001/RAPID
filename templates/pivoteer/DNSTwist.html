@@ -14,6 +14,7 @@
         <tbody>
             {% for record in dnstwist_records %}
                 {% for result in record.info.results %}
+                    {% if result.IP != "none" %}
                     <tr>
                         <td>{{ record.info_date|date:"N d, Y" }}</td>
                         <td>{{ result.title }}</td>
@@ -22,6 +23,7 @@
 {#                        <td>{{ result.NS }}</td>#}
 {#                        <td>{{ result.MX }}</td>#}
                     </tr>
+                    {% endif %}
                 {% endfor %}
             {% endfor %}
         </tbody>

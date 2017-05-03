@@ -150,7 +150,7 @@ function initialize_table(record_element) {
             "iDisplayLength":  50,
             "info":            false,
             "bLengthChange":   false,
-            "bSort":           false
+            "aaSorting":      [[0, "desc"]]
         })
 
     } 
