@@ -523,9 +523,6 @@ def lookup_dnstwist(domain):
     startval = 7
 
     try:
-
-        print("domain:",domain)
-
         value = toHex(domain)
 
         url = "https://dnstwister.report/api/fuzz/" + value
@@ -536,21 +533,24 @@ def lookup_dnstwist(domain):
 
         jsonObj = json.loads(response.content.decode('utf-8'))
 
+        session = requests.Session()
+
         newresult = []
-        for key in jsonObj:
-            if (key == 'fuzzy_domains'):
-                for domainObj in jsonObj[key]:
-                   # print(domainObj)
-                    domain = domainObj["domain"]
-                    domainType = domainObj["fuzzer"]
-                    domain_hex = domainObj["domain_as_hexadecimal"]
-                    ip_url = domainObj["resolve_ip_url"]
 
-                    ipdata = requests.get(ip_url)
-                    ip = json.loads(ipdata.content.decode('utf-8'))['ip']
+        for domainObj in jsonObj['fuzzy_domains']:
+           # print(domainObj)
+            domain = domainObj["domain"]
+            domainType = domainObj["fuzzer"]
+            ip_url = domainObj["resolve_ip_url"]
 
-                    if (ip != False):
-                       newresult.append({'IP': ip, 'domain': domain, 'title': domainType})
+            ipdata = session.get(ip_url)
+            ipObj = json.loads(ipdata.content.decode('utf-8'))
+            ip = str(ipObj['ip']).replace("False", "none")
+
+           # ipdata = requests.get(ip_url)
+            #ip = json.loads(ipdata.content.decode('utf-8'))['ip']
+
+            newresult.append({'IP': ip, 'domain': domain, 'title': domainType})
 
         result = newresult
         #     if output.index(line) > startval:
