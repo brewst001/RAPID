@@ -23,6 +23,7 @@ from pivoteer.writer.safebrowsing import SafeBrowsingCsvWriter
 from pivoteer.writer.search import SearchCsvWriter
 from pivoteer.writer.threatcrowd import ThreatCrowdCsvWriter
 from pivoteer.writer.whois import WhoIsCsvWriter
+from pivoteer.writer.dnstwist import DNSTwistCsvWriter
 
 
 LOGGER = logging.getLogger(__name__)
@@ -264,6 +265,8 @@ class ExportRecords(LoginRequiredMixin, View):
             self.export_search_records(indicator)
             self.line_separator()
             self.export_safebrowsing_records(indicator)
+            self.line_separator()
+            self.export_dnstwist_records(indicator)
 
         elif indicator and filtering == 'recent':
             self.export_recent(indicator)
@@ -280,7 +283,22 @@ class ExportRecords(LoginRequiredMixin, View):
         elif indicator and filtering == 'safebrowsing':
             self.export_safebrowsing_records(indicator)
 
+        elif indicator and filtering == 'dnstwist':
+            self.export_dnstwist_records(indicator)
+
+
         return self.response
+
+    def export_dnstwist_records(self, indicator):
+        """
+        Export recent 'DR' (DNS Twist Record) indicator records to CSV.
+
+        :param indicator: The indicator whose records are to be exported
+        :return: This method returns no values
+        """
+        dnstwist_records = IndicatorRecord.objects.get_dnstwist_record(indicator)
+        self._write_records(RecordType.DR, indicator, dnstwist_records)
+
 
     def export_safebrowsing_records(self, indicator):
         """
@@ -459,6 +477,8 @@ class ExportRecords(LoginRequiredMixin, View):
             return SafeBrowsingCsvWriter(self.writer)
         elif RecordType.MR is record_type:
             return MalwareCsvWriter(self.writer)
+        elif RecordType.DR is record_type:
+            return DNSTwistCsvWriter(self.writer)
         else:
             msg = "No writer for record type: " + record_type
             LOGGER.error(msg)

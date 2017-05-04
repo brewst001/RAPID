@@ -453,7 +453,7 @@ def lookup_dnstwist(domain):
             ipObj = ipdata.json()
             ip = str(ipObj['ip']).replace("False", "none")
 
-            newresult.append({'IP': ip, 'domain': domain, 'title': domainType})
+            newresult.append({'IP': ip, 'domain': domain, 'type': domainType})
 
         result = newresult
 
