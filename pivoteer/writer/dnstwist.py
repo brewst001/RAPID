@@ -35,6 +35,7 @@ class DNSTwistCsvWriter(CsvWriter):
               row = [
                 date,
                 source,
+                indicator,
                 result["type"],
                 result["domain"],
                 result["IP"] ]
