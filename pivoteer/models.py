@@ -23,7 +23,10 @@ class IndicatorManager(models.Manager):
 
     def recent_cert(self, indicator):
         """Retrieve the most recent censys.io certificate result for the provided indicator
-        
+        # Updated by LNguyen
+        # Date: 05May2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+
             Args:
                 indicator (str): The indicator to search for
             
@@ -36,9 +39,14 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.CE
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
+
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
+                                             Q(info__contains=indicator)).values('info', 'info_date')
+
+        # records = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                      Q(info_date__gte=time_frame),
+        #                                      Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
         if records:
             return records.latest('info_date')
         LOGGER.info("Failed to retrieve certificate data for indicator %s" % indicator)
@@ -46,7 +54,10 @@ class IndicatorManager(models.Manager):
 
     def recent_tc(self, indicator):
         """Retrieve the most recent ThreatCrowd record for the provided indicator
-        
+        # Updated by LNguyen
+        # Date: 05May2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+
             Args:
                 indicator (str): The indicator to search for
             
@@ -58,8 +69,11 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__at_domain__exact=indicator) |
-                                             Q(info__at_ip__exact=indicator)).values('info', 'info_date')
+                                             Q(info__contains=indicator)).values('info', 'info_date')
+        # records = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                      Q(info_date__gte=time_frame),
+        #                                      Q(info__at_domain__exact=indicator) |
+        #                                      Q(info__at_ip__exact=indicator)).values('info', 'info_date')
         if records:
             return records.latest('info_date')
         LOGGER.info("Failed to retrieve ThreatCrowd data for indicator %s" % indicator)
