@@ -278,24 +278,61 @@ class VirusTotalScraper(MechanizedScraper):
             self.browser.open(url)
 
         parsed_html = self.browser.parsed
-        alert = parsed_html.find('div', {'id': 'dns-resolutions'}).find('div', {'class': 'alert'})
+
+        try:
+            alert = parsed_html.find('div', {'id': 'dns-resolutions'}).find('div', {'class': 'alert'})
+        except AttributeError:
+            alert = None
+
 
         if not alert:
-            records = parsed_html.find('div', {'id': 'detected-communicating'})
+            records = parsed_html.find('div', {'id': 'undetected-referrer'})
             base_link_url = "https://www.virustotal.com/en/file/"
 
             if records is not None:
+
                 for item in records.find_all('div'):
                     raw = item.text.splitlines()
                     entries = [entry.strip() for entry in raw]
                     cleaned = list(filter(None, entries))[1:]  # Remove detection ratio
-                    link = base_link_url + str(cleaned[1]) + "/analysis"
+                    link = base_link_url + str(cleaned[0]) + "/analysis"
 
-                    results.append({"date": cleaned[0], "link": link, "C2": indicator,
-                                    "md5": "", "sha1": "", "sha256": cleaned[1]})
+                    results.append({"date": "", "link": link, "C2": indicator,
+                                    "md5": "", "sha1": "", "sha256": cleaned[0]})
 
         return results
 
+#
+# def get_malware(self, indicator):
+#     results = []
+#     indicator_type = self.check_type(indicator)
+#
+#     if indicator_type == "ip":
+#         url = "https://www.virustotal.com/en/ip-address/" + indicator + "/information/"
+#         self.browser.open(url)
+#
+#     elif indicator_type == "domain":
+#         url = "https://www.virustotal.com/en/domain/" + indicator + "/information/"
+#         self.browser.open(url)
+#
+#     parsed_html = self.browser.parsed
+#     alert = parsed_html.find('div', {'id': 'dns-resolutions'}).find('div', {'class': 'alert'})
+#
+#     if not alert:
+#         records = parsed_html.find('div', {'id': 'detected-communicating'})
+#         base_link_url = "https://www.virustotal.com/en/file/"
+#
+#         if records is not None:
+#             for item in records.find_all('div'):
+#                 raw = item.text.splitlines()
+#                 entries = [entry.strip() for entry in raw]
+#                 cleaned = list(filter(None, entries))[1:]  # Remove detection ratio
+#                 link = base_link_url + str(cleaned[1]) + "/analysis"
+#
+#                 results.append({"date": cleaned[0], "link": link, "C2": indicator,
+#                                 "md5": "", "sha1": "", "sha256": cleaned[1]})
+#
+#     return results
 
 class ThreatExpertScraper(MechanizedScraper):
     def __init__(self):
@@ -340,6 +377,7 @@ class ThreatExpertScraper(MechanizedScraper):
                     results.extend(page)
 
         return results
+
 
     def scrape_page(self, data, indicator):
 

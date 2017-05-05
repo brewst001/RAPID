@@ -101,7 +101,8 @@ def domain_thc(domain):
     record_source = RecordSource.THR
     record = ThreatCrowd.queryDomain(domain)
     record['domain'] = domain
-    logger.info("Retrieved ThreatCrowd data for domain %s. Data: %s" % (domain, json.dumps(record)))
+    #logger.info("Retrieved ThreatCrowd data for domain %s. Data: %s" % (domain, json.dumps(record)))
+    logger.info("Retrieved ThreatCrowd data for domain %s. " % (domain))
     if record:
         try:
             save_record(record_type, record_source, record)
@@ -277,7 +278,8 @@ def malware_samples(indicator, record_source):
 
     for entry in malware:
         try:
-            date = entry['date']
+            #date = entry['date']
+            date = datetime.date.utcnow()
             info = OrderedDict({"md5": entry['md5'],
                                 "sha1": entry['sha1'],
                                 "sha256": entry['sha256'],
@@ -480,6 +482,16 @@ def dnstwist_search(indicator):
         results = lookup_dnstwist(domain=indicator)
         info = OrderedDict({"indicator": indicator,
                             "results": results})
+
+        # print("printing dnstwist data...")
+        # for data in info.items():
+        #     for record in data:
+        #         # for rec in record.results:
+        #         if type(record) == list:
+        #             #     print(record)
+        #             for val in record:
+        #                 print(val)
+
         save_record(record_type, record_source, info)
     except Exception:
         logger.exception("Error saving dnstwist %s (%s) record from %s",
