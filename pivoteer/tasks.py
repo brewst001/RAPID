@@ -279,7 +279,7 @@ def malware_samples(indicator, record_source):
     for entry in malware:
         try:
             #date = entry['date']
-            date = datetime.date.utcnow()
+            date = datetime.datetime.date.utcnow()
             info = OrderedDict({"md5": entry['md5'],
                                 "sha1": entry['sha1'],
                                 "sha256": entry['sha256'],
