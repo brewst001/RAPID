@@ -6,16 +6,24 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from core.tasks import deliver_email
+from django.core.mail import EmailMessage
 
 
 def generate_token():
     return hashlib.md5(os.urandom(32)).hexdigest()
 
 
+def send_email(subject=None, body=None, recipient=None):
+    if recipient:
+        print("Sending registration email to:", recipient)
+        email = EmailMessage(subject, body, to=recipient)
+        email.send()
+
 class RegistrationToken(models.Model):
 
     token = models.CharField(max_length=32, primary_key=True, default=generate_token)
     email = models.EmailField()
+
 
     def save(self, *args, **kwargs):
         """ Custom save method to email token upon creation """
@@ -27,7 +35,8 @@ class RegistrationToken(models.Model):
         Please visit the following URL %s and fill out the necessary information in order to
         complete the registration process. ''' % (str(self.token), full_url)
 
-        deliver_email.delay(subject=subject, body=body, recipients=[str(self.email)])
+        send_email(subject=subject, body=body, recipient=[str(self.email)])
+        #deliver_email.delay(subject=subject, body=body, recipients=[str(self.email)])
         super(RegistrationToken, self).save(*args, **kwargs)
 
 
