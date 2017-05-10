@@ -279,7 +279,7 @@ def malware_samples(indicator, record_source):
     for entry in malware:
         try:
             #date = entry['date']
-            date = datetime.datetime.date.utcnow()
+            date = datetime.datetime.utcnow()
             info = OrderedDict({"md5": entry['md5'],
                                 "sha1": entry['sha1'],
                                 "sha256": entry['sha256'],
@@ -326,36 +326,37 @@ def malwr_ip_domain_search(indicator):
     else:
         query = "domain:" + indicator
 
-    raw_record = mw.search(search_word=query);
+    raw_record = mw.search(search_word=query)
 
-    if len(raw_record) > 0:
-        try:
-            mw_logger.info("Retrieved Malwr data for query %s Data: %s" % (query, raw_record))
+    if raw_record:
+        if len(raw_record) > 0:
+            try:
+                mw_logger.info("Retrieved Malwr data for query %s Data: %s" % (query, raw_record))
 
-            for entry in raw_record:
-                m_hash_link = "https://malwr.com" + entry['submission_url']
-                submission_time = parse(entry['submission_time'])
-                info = OrderedDict({"sha1": entry['hash'],
-                                    "indicator": indicator,
-                                    "link": m_hash_link,
-                                    "md5": "",
-                                    "sha256": ""})
-                save_record(record_type,
-                            record_source,
-                            info,
-                            date=submission_time)
+                for entry in raw_record:
+                    m_hash_link = "https://malwr.com" + entry['submission_url']
+                    submission_time = parse(entry['submission_time'])
+                    info = OrderedDict({"sha1": entry['hash'],
+                                        "indicator": indicator,
+                                        "link": m_hash_link,
+                                        "md5": "",
+                                        "sha256": ""})
+                    save_record(record_type,
+                                record_source,
+                                info,
+                                date=submission_time)
 
-            logger.info("%s %s for %s saved successfully",
-                        len(raw_record),
-                        record_type.title,
-                        record_source.title)
+                logger.info("%s %s for %s saved successfully",
+                            len(raw_record),
+                            record_type.title,
+                            record_source.title)
 
 
-        except Exception:
-            logger.exception("Error saving %s (%s) record from %s",
-                             record_type.name,
-                             record_type.title,
-                             record_source.title)
+            except Exception:
+                logger.exception("Error saving %s (%s) record from %s",
+                                 record_type.name,
+                                 record_type.title,
+                                 record_source.title)
     else:
         mw_logger.info("No Malwr data, save aborted")
 
