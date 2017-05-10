@@ -286,19 +286,22 @@ class VirusTotalScraper(MechanizedScraper):
 
 
         if not alert:
-            records = parsed_html.find('div', {'id': 'undetected-referrer'})
-            base_link_url = "https://www.virustotal.com/en/file/"
+            #records = parsed_html.find('div', {'id': 'undetected-referrer'})
+            records = parsed_html.find('div', {'id': lambda L: L and L.startswith('undetected')})
+            #base_link_url = "https://www.virustotal.com/en/file/"
+            base_link_url = "https://www.virustotal.com"
 
             if records is not None:
 
                 for item in records.find_all('div'):
-                    raw = item.text.splitlines()
-                    entries = [entry.strip() for entry in raw]
-                    cleaned = list(filter(None, entries))[1:]  # Remove detection ratio
-                    link = base_link_url + str(cleaned[0]) + "/analysis"
-
+                    sha256 = item.find('a').text.replace('\n', '').strip()
+                    #raw = item.text.splitlines()
+                    #entries = [entry.strip() for entry in raw]
+                    #cleaned = list(filter(None, entries))[1:]  # Remove detection ratio
+                    #link = base_link_url + str(cleaned[0]) + "/analysis"
+                    link = base_link_url + item.find('a').get('href')
                     results.append({"date": "", "link": link, "C2": indicator,
-                                    "md5": "", "sha1": "", "sha256": cleaned[0]})
+                                    "md5": "", "sha1": "", "sha256": sha256})
 
         return results
 
