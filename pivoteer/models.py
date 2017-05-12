@@ -129,10 +129,23 @@ class IndicatorManager(models.Manager):
         return records
 
     def malware_records(self, indicator):
+        # Updated by LNguyen
+        # Date: 12Mayl2017
+        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
         record_type = RecordType.MR
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info__contains=indicator))
+        records_complete = []
+        for record in records:
+            new_record = {
+                'info': record.info,
+                'info_date': record.info_date,
+                'info_hash':record.info_hash,
+                'get_info_source_display':record.get_info_source_display()
+            }
+            records_complete.append(new_record)
+
         return records
 
     def recent_malware(self, indicator):
@@ -168,14 +181,16 @@ class IndicatorManager(models.Manager):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-
+        # Updated by LNguyen
+        # Date: 12Mayl2017
+        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
         record_type = RecordType.WR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         if check_domain_valid(indicator):
             indicator = get_base_domain(indicator)
 
-        record = self.get_queryset().filter(Q(record_type=record_type.name),
+        records = self.get_queryset().filter(Q(record_type=record_type.name),
                                             Q(info_date__gte=time_frame),
                                             Q(info__contains=indicator)).values('info', 'info_date')
 
@@ -183,15 +198,27 @@ class IndicatorManager(models.Manager):
         #                                     Q(info_date__gte=time_frame),
         #                                     Q(info__at_query__endswith=indicator) |
         #                                     Q(info__at_domain_name__endswith=indicator)).values('info', 'info_date')
-        if record:
-            return record.latest('info_date')
+        complete_records = []
+        for record in records:
+            newrecord = {
+                'info_date': record.info_date,
+                'info': record.info
+               # 'latest':record.latest('info_date')
+            }
+            complete_records.append(newrecord)
 
-        return record
+     #   if record:
+     #       return record.latest('info_date')
+
+        return complete_records
 
     def historical_whois(self, indicator):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+        # Updated by LNguyen
+        # Date: 12Mayl2017
+        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
 
         record_type = RecordType.WR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
@@ -276,7 +303,6 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
-
 
         return records
 
