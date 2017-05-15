@@ -77,7 +77,7 @@ import hmac
 import xmltodict
 import re
 import xml
-
+import ssl
 
 def convert_function(p_str):
     return re.sub(r'\W+', '', p_str)
@@ -139,9 +139,16 @@ class TotalHashApi:
         return data
 
     def json_response(self, response, pretty=False):
-        opener = urllib.request.build_opener()
-        # response.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE+8.0; Windows NT 5.1; Trident/4.0;)')
-        data = opener.open(response).read().decode('utf-8').strip()
+        #Updated by Linda Nguyen
+        #Update Date: 15May2017
+        #Update API call to turn off verification mode for certificates because call was returning SSL Certificate Verify Failed Error
+        #
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        data = urllib.request.urlopen(response, context=ctx).read().decode('utf-8').strip()
+
         try:
             parsed_data = xmltodict.parse(data)
             if pretty:
@@ -150,6 +157,20 @@ class TotalHashApi:
                 return json.dumps(fix_nested_keys(parsed_data, convert_function))
         except xml.parsers.expat.ExpatError:
             return json.dumps([])
+
+    # def json_response(self, response, pretty=False):
+    #     opener = urllib.request.build_opener()
+    #     # response.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE+8.0; Windows NT 5.1; Trident/4.0;)')
+    #     data = opener.open(response).read().decode('utf-8').strip()
+    #     try:
+    #         parsed_data = xmltodict.parse(data)
+    #         if pretty:
+    #             return json.dumps(fix_nested_keys(parsed_data, convert_function), sort_keys=False, indent=4)
+    #         else:
+    #             return json.dumps(fix_nested_keys(parsed_data, convert_function))
+    #     except xml.parsers.expat.ExpatError:
+    #         return json.dumps([])
+
 
     def get_signature(self, query):
         return hmac.new(self.key.encode('utf-8'), msg=query.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
