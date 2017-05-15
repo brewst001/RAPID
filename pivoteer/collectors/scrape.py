@@ -455,7 +455,7 @@ class InternetIdentityScraper(MechanizedScraper):
     def check_cookie(self):
 
         url = "https://research.iad.internetidentity.com"
-        self.browser.open(url)
+        self.browser.open(url, verify=False)
         parser = self.browser.parsed
 
         # Verify login succeeded
@@ -483,12 +483,12 @@ class InternetIdentityScraper(MechanizedScraper):
     def login(self):
 
         url = "https://research.iad.internetidentity.com/login.php"
-        self.browser.open(url)
+        self.browser.open(url, verify=True)
 
         form = self.browser.get_form()
         form['username'].value = self.username
         form['password'].value = self.password
-        self.browser.submit_form(form,timelimit=10000)
+        self.browser.submit_form(form)
         self.save_cookie()
 
 
