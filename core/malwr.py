@@ -52,7 +52,7 @@ class MalwrApi(object):
             }
             login_request = self.session.post("https://malwr.com/account/login/",
                                               data=payload,
-                                              headers=self.headers)
+                                              headers=self.headers, verify=False)
 
             login_status = self.check_login_status(login_request)
             self.logged = login_status['loggedIn']
