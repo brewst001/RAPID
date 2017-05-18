@@ -18,13 +18,7 @@
                     <tr>
                         <td>{{ record.info_date|date:"N d, Y h:i A"  }}</td>
                         <td>{{ result.type }}</td>
-                        <td>
-                            {% if record.info.domain != origin %}
-                                {{ result.domain }}
-                            {% else %}
-                                <span class="pivot">{{ result.domain }}</span>
-                            {% endif %}
-                        </td>
+                        <td>{{ result.domain }}</td>
                        {#  <td>{{ result.domain }}</td>#}
                         <td>{{ result.IP }}</td>
 {#                        <td>{{ result.NS }}</td>#}
