@@ -412,8 +412,10 @@ def totalhash_ip_domain_search(indicator):
                              record_type.name,
                              record_type.title,
                              record_source.title)
+            return None
     else:
         logger.info("No Totalhash data, save aborted")
+        return None
 
 
 @app.task
