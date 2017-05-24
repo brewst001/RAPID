@@ -14,7 +14,7 @@
             <tr>
                 <td>{{ alert.indicator }}</td>
                 <td>{{ alert.message }}</td>
-                <td>{{ alert.created }}</td>
+                <td>{{ alert.created|date:"N d, Y h:i A"  }}</td>
             </tr>
         {% endfor %}
         </tbody>
