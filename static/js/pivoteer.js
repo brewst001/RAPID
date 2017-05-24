@@ -108,6 +108,14 @@ function initialize_table(record_element) {
             "aaSorting":      [[0, "desc"]]
         });
 
+        $('#CW_table').dataTable({
+            "iDisplayLength":  10,
+            "info":            false,
+            "bLengthChange":   false,
+            "bFilter":         false,
+            "aaSorting":      [[0, "desc"]]
+        });
+
     } else if (record_element == "#HistoricalPanel") {
         $('#HR_table').dataTable({
             "iDisplayLength":  50,

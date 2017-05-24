@@ -60,7 +60,7 @@
                 <tr>
                     {% if record.info.domain_name %}
                         <td>{{ record.earliest }}</td>
-                        <td>{{ record.latest }}</td>
+                        <td>{{ record.latest|date:"N d, Y h:i A" }}</td>
                         <td>
                             <b>Domain Name:</b><br>
                             {{ record.info.domain_name }}

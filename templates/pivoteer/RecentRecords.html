@@ -76,7 +76,7 @@ Jump to:
         {% if current_whois.info.domain_name %}
             <td>
                 <b>Lookup Date:</b><br>
-                {{ current_whois.info_date }}
+                {{ current_whois.info_date|date:"N d, Y h:i A" }}
                 <br><br>
 
                 <b>Domain Name:</b><br>
