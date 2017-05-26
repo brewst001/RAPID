@@ -440,17 +440,20 @@ def make_indicator_search_records(indicator, indicator_type):
     """
     record_type = RecordType.SR
     record_source = RecordSource.GSE
-    try:
-        domain = indicator if indicator_type == 'domain' else None
-        results = google_for_indicator(indicator, domain=domain)
-        info = OrderedDict({"indicator": indicator,
-                            "results": results})
-        save_record(record_type, record_source, info)
-    except Exception:
-        logger.exception("Error saving %s (%s) record from %s",
-                         record_type.name,
-                         record_type.title,
-                         record_source.title)
+
+    domain = indicator if indicator_type == 'domain' else None
+    results = google_for_indicator(indicator, domain=domain)
+
+    if results:
+        try:
+            info = OrderedDict({"indicator": indicator,
+                                "results": results})
+            save_record(record_type, record_source, info)
+        except Exception:
+            logger.exception("Error saving %s (%s) record from %s",
+                             record_type.name,
+                             record_type.title,
+                             record_source.title)
 
 
 
@@ -480,24 +483,27 @@ def dnstwist_search(indicator):
     """
     record_type = RecordType.DR
     record_source = RecordSource.DTW
+    records = lookup_dnstwist(domain=indicator)
 
-    try:
-        results = lookup_dnstwist(domain=indicator)
-        info = OrderedDict({"indicator": indicator,
-                            "results": results})
+    if records:
+       try:
 
-        # print("printing dnstwist data...")
-        # for data in info.items():
-        #     for record in data:
-        #         # for rec in record.results:
-        #         if type(record) == list:
-        #             #     print(record)
-        #             for val in record:
-        #                 print(val)
+            info = OrderedDict({"indicator": indicator,
+                                "results": records})
 
-        save_record(record_type, record_source, info)
-    except Exception:
-        logger.exception("Error saving dnstwist %s (%s) record from %s",
-                         record_type.name,
-                         record_type.title,
-                         record_source.title)
+            # print("printing dnstwist data...")
+            # for data in info.items():
+            #     for record in data:
+            #         # for rec in record.results:
+            #         if type(record) == list:
+            #             #     print(record)
+            #             for val in record:
+            #                 print(val)
+
+            save_record(record_type, record_source, info)
+
+       except Exception:
+            logger.exception("Error saving dnstwist %s (%s) record from %s",
+                             record_type.name,
+                             record_type.title,
+                             record_source.title)

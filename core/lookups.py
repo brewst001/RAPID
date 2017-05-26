@@ -438,30 +438,35 @@ def lookup_dnstwist(domain):
         url = "https://dnstwister.report/api/fuzz/" + value
 
         response = requests.get(url)
-        jsonObj = response.json()
-        session = requests.Session()
+        if response.status_code == 200:
+            jsonObj = response.json()
+            session = requests.Session()
 
-        newresult = []
+            newresult = []
 
-        for domainObj in jsonObj['fuzzy_domains']:
-           # print(domainObj)
-            domain = domainObj["domain"]
-            domainType = domainObj["fuzzer"]
-            ip_url = domainObj["resolve_ip_url"]
+            for domainObj in jsonObj['fuzzy_domains']:
+               # print(domainObj)
+                domain = domainObj["domain"]
+                domainType = domainObj["fuzzer"]
+                ip_url = domainObj["resolve_ip_url"]
 
-            ipdata = session.get(ip_url)
-            if (ipdata.status_code == 200):
-               ipObj = ipdata.json()
-               ip = str(ipObj['ip']).replace("False", "none")
+                ipdata = session.get(ip_url)
+                if (ipdata.status_code == 200):
+                   ipObj = ipdata.json()
+                   ip = str(ipObj['ip']).replace("False", "none")
 
-               newresult.append({'IP': ip, 'domain': domain, 'type': domainType})
+                   newresult.append({'IP': ip, 'domain': domain, 'type': domainType})
 
-        result = newresult
+            result = newresult
 
-       # print("final result length: ",len(result))
+           # print("final result length: ",len(result))
+
+        else:
+            errmsg = "Error with DNSTwist: " + str(response.status_code)
+            logger.exception(errmsg)
+
 
         return result
-
 
     except Exception as e:
         print(str(e))
