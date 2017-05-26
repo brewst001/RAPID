@@ -359,7 +359,7 @@ class CertificateSubmission(SubmissionWithHosts):
         # Finally, we can construct the actual monitor object for the certificate info and save it to the database.
         # updated by LNguyen on 29nov2016
         # added created field
-        print("saving Certificate Monitor...")
+        #print("saving Certificate Monitor...")
 
         monitor = CertificateMonitor(owner=user,
                                      created=current_time,

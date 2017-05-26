@@ -519,7 +519,7 @@ class IndicatorMonitoring(PeriodicTask):
         :param kwargs: Additional keyword arguments (this parameter is ignored)
         :return: This method returns no values
         """
-        print("running IndicatorMonitoring.run")
+       #print("running IndicatorMonitoring.run")
         LOGGER.debug("Running monitor lookups...")
         for subtask in IndicatorMonitoring.SUBTASKS:
              self.do_indicator_lookups(subtask)
@@ -548,10 +548,10 @@ class IndicatorMonitoring(PeriodicTask):
         :param subtask: The sub-task that defines how to retrieve and process lookups.
         :return: This method returns no values
         """
-        print("running tasks.do_indicator_lookups")
+        #print("running tasks.do_indicator_lookups")
         type_name = subtask.get_type_name()
         lookup_type = subtask.get_lookup_type()
-        print("lookuptype:",lookup_type)
+        #print("lookuptype:",lookup_type)
         LOGGER.debug("Running monitor lookups for %s indicators...", type_name)
 
         # Time values
@@ -569,11 +569,11 @@ class IndicatorMonitoring(PeriodicTask):
 
             indicator = subtask.get_indicator_value(lookup)
 
-            print("indicator:", indicator)
+            #print("indicator:", indicator)
 
             #print("calling get_owners...")
             owner = subtask.get_owners(indicator)
-            print("ownerlist:", owner)
+            #print("ownerlist:", owner)
 
             LOGGER.info("Processing lookup from %s for %s '%s'", owner, type_name, indicator)
 
@@ -588,8 +588,8 @@ class IndicatorMonitoring(PeriodicTask):
             current_hosts = subtask.resolve_hosts(indicator)
             #print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
             LOGGER.debug("New lookup hosts: %s", current_hosts)
-            print("current hosts length:",len(current_hosts))
-            print("last hosts length:", len(last_hosts))
+            #print("current hosts length:",len(current_hosts))
+            #print("last hosts length:", len(last_hosts))
 
 
             #print("last_hostsp:",last_hosts)
@@ -621,7 +621,7 @@ class IndicatorMonitoring(PeriodicTask):
                 # Just set new_hosts to the current host information and continue on.
                 #if not last_hosts:
                 else:
-                    print("This is an initial search and no historical data exists for current indicator")
+                    #print("This is an initial search and no historical data exists for current indicator")
                     LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
                     new_hosts = current_hosts
                     missing_hosts = []
@@ -637,9 +637,9 @@ class IndicatorMonitoring(PeriodicTask):
             lookup = subtask.update_lookup(lookup=lookup, current_time=current_time, hosts=current_hosts)
 
             #print("calling lookup.save()...")
-            print("current time: ",current_time)
+            #print("current time: ",current_time)
             subtask.save_lookup(indicator,lookup,current_time)
-            print("post save, next lookup time:",lookup.next_lookup)
+            #print("post save, next lookup time:",lookup.next_lookup)
             # lookup.save()
             # Added by LNguyen 1/13/2017
             # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
@@ -666,7 +666,7 @@ class IndicatorMonitoring(PeriodicTask):
             #print("missing_hosts: ", missing_hosts)
 
             if not missing_hosts and not new_hosts:
-                print("No host changes detected")
+                #print("No host changes detected")
                 LOGGER.info("No host changes detected for %s '%s'", type_name, indicator)
             # if LOGGER.isEnabledFor(logging.INFO):
             #     if 0 < len(missing_hosts):
@@ -718,9 +718,9 @@ class IndicatorMonitoring(PeriodicTask):
             #Update logic to send email alert if there are missing hosts or new hosts added
             if NeedToAlert:
                self.create_alert(indicator=indicator, alert_text=alert_text, recipients=owner)
-               print("sending email...")
+              # print("sending email...")
              #  print("body:", body)
-               print("recipients:", recipients)
+               #print("recipients:", recipients)
                self.send_email(indicator, subject, body, recipients)
 
     @staticmethod
@@ -734,7 +734,7 @@ class IndicatorMonitoring(PeriodicTask):
         :return: This method returns no values
         """
         try:
-            print("running IndicatorMonitoring.create_alert")
+            #print("running IndicatorMonitoring.create_alert")
             #print("recipients:",recipients)
             for owner in recipients:
                 #print("recipientowner:",owner)
@@ -766,7 +766,7 @@ class IndicatorMonitoring(PeriodicTask):
             #emails.append(list(owners))
         #emails = [owner.email for owner in recipients]
         try:
-            print("entering tasks.send_emails: ")
+            #print("entering tasks.send_emails: ")
             core.tasks.deliver_email(subject=subject, body=body, recipients=emails)
             LOGGER.debug("Sent email to %s:\n%s\n\n%s", emails, subject, body)
         except Exception:

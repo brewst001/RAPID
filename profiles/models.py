@@ -15,7 +15,7 @@ def generate_token():
 
 def send_email(subject=None, body=None, recipient=None):
     if recipient:
-        print("Sending registration email to:", recipient)
+        #print("Sending registration email to:", recipient)
         email = EmailMessage(subject, body, to=recipient)
         email.send()
 

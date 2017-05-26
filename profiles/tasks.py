@@ -24,9 +24,9 @@ class Update_Users(PeriodicTask):
 
     def run(self, **kwargs):
        LOGGER.debug("Running Update_Users task...")
-       print("Updating users alert flag...")
+       #print("Updating users alert flag...")
        current_time = datetime.datetime.utcnow()
        #print("current_time",current_time)
        expired_date = current_time - datetime.timedelta(days=90)
-       print("expired_date:",expired_date)
+       #print("expired_date:",expired_date)
        Profile.objects.filter(last_login__lte = expired_date).update(alerts=False,is_active=False)
