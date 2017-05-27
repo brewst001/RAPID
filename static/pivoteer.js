@@ -104,7 +104,7 @@ function initialize_table(record_element) {
             "iDisplayLength":  15,
             "info":            false,
             "bLengthChange":   false,
-            "bFilter":         false,
+            "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
         });
 
@@ -121,6 +121,7 @@ function initialize_table(record_element) {
             "iDisplayLength":  50,
             "info":            false,
             "bLengthChange":   false,
+            "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
         });
 
@@ -137,6 +138,7 @@ function initialize_table(record_element) {
             "iDisplayLength":  50,
             "info":            false,
             "bLengthChange":   false,
+            "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
         });
     } else if (record_element == "#SafeBrowsingPanel") {
@@ -144,6 +146,7 @@ function initialize_table(record_element) {
             "iDisplayLength": 50,
             "info": false,
             "bLengthChange": false,
+            "bFilter": true,
             "aaSorting":      [[0, "desc"]]
         });
     } else if (record_element == "#SearchPanel") {
@@ -158,6 +161,7 @@ function initialize_table(record_element) {
             "iDisplayLength":  50,
             "info":            false,
             "bLengthChange":   false,
+            "bFilter":true,
             "aaSorting":      [[0, "desc"]]
         })
 
