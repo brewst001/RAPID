@@ -102,7 +102,7 @@ function initialize_table(record_element) {
     if (record_element == '#RecentPanel') {
         $('#CR_table').dataTable({
             "iDisplayLength":  15,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
@@ -110,7 +110,7 @@ function initialize_table(record_element) {
 
         $('#CW_table').dataTable({
             "iDisplayLength":  10,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         false,
             "aaSorting":      [[0, "desc"]]
@@ -119,7 +119,7 @@ function initialize_table(record_element) {
     } else if (record_element == "#HistoricalPanel") {
         $('#HR_table').dataTable({
             "iDisplayLength":  50,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
@@ -127,7 +127,7 @@ function initialize_table(record_element) {
 
         $('#HW_table').dataTable({
             "iDisplayLength":  10,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         false,
             "aaSorting":      [[1, "desc"]]
@@ -136,7 +136,7 @@ function initialize_table(record_element) {
     } else if (record_element == "#MalwarePanel") {
         $('#MR_table').dataTable({
             "iDisplayLength":  50,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
@@ -152,14 +152,14 @@ function initialize_table(record_element) {
     } else if (record_element == "#SearchPanel") {
         $('#SR_table').dataTable({
             "iDisplayLength":  50,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bSort":           false
         });
     } else if (record_element == "#DNSTwistPanel") {
         $('#DT_table').dataTable({
             "iDisplayLength":  50,
-            "info":            false,
+            "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":true,
             "aaSorting":      [[0, "desc"]]
