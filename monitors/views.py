@@ -58,26 +58,8 @@ class DomainList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
 
-        # Updated by LNguyen
-        # Date: 12Mayl2017
-        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
-
-        monitored_domains = []
         records = DomainMonitor.objects.filter(domainsubscription=DomainSubscription.objects.filter(owner=self.request.user))
-
-        for x in records:
-            record = {
-                'domain_name': x.domain_name,
-                'last_hosts': x.last_hosts,
-                'next_lookup': x.next_lookup,
-                'modified': x.modified,
-                'created': x.created,
-                'tags': x.tags
-            }
-            monitored_domains.append(record)
-
-        return monitored_domains
-
+        return records
 
 
 class IpList(LoginRequiredMixin, ListView):
@@ -89,26 +71,8 @@ class IpList(LoginRequiredMixin, ListView):
     template_name = 'monitors/ip.html'
 
     def get_queryset(self):
-        # Updated by LNguyen
-        # Date: 12Mayl2017
-        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
-
-        monitored_ips = []
         records = IpMonitor.objects.filter(ipsubscription=IpSubscription.objects.filter(owner=self.request.user))
-
-        for x in records:
-            record = {
-                'ip_address': x.ip_address,
-                'last_hosts': x.last_hosts,
-                'next_lookup': x.next_lookup,
-                'modified': x.modified,
-                'created': x.created,
-                'tags': x.tags
-            }
-            monitored_ips.append(record)
-
-        return monitored_ips
-
+        return records
 
 
 class CertificateList(LoginRequiredMixin, ListView):
@@ -126,24 +90,8 @@ class CertificateList(LoginRequiredMixin, ListView):
     template_name = 'monitors/certificate.html'
 
     def get_queryset(self):
-        # Updated by LNguyen
-        # Date: 12Mayl2017
-        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
-       monitored_certificates = []
        records = CertificateMonitor.objects.filter(certificatesubscription = CertificateSubscription.objects.filter(owner=self.request.user))
-
-       for x in records:
-           record = {
-               'certificate_value': x.certificate_value,
-               'resolutions': x.resolutions,
-               'next_lookup': x.next_lookup,
-               'modified': x.modified,
-               'created':x.created,
-               'tags': x.tags
-           }
-           monitored_certificates.append(record)
-
-       return monitored_certificates
+       return records
 
 
 class AlertList(LoginRequiredMixin, ListView):
@@ -154,23 +102,9 @@ class AlertList(LoginRequiredMixin, ListView):
     template_name = 'monitors/alerts.html'
 
     def get_queryset(self):
-        # Updated by LNguyen
-        # Date: 12Mayl2017
-        # Description: Update to store dataset in array variable because dates were not being handled as datetime and date sorting was not working
-
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(days=-7)
-        alerts = []
         records = IndicatorAlert.objects.filter(recipient=self.request.user,created__gte=time_frame)
-
-        for alert in records:
-            record = {
-               'indicator':alert.indicator,
-               'message': alert.message,
-               'created':alert.created
-            }
-            alerts.append(record)
-
-        return alerts
+        return records
 
 
 class AddIndicator(LoginRequiredMixin, FormView):
