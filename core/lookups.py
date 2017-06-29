@@ -453,9 +453,9 @@ def lookup_dnstwist(domain):
                 ipdata = session.get(ip_url)
                 if (ipdata.status_code == 200):
                    ipObj = ipdata.json()
-                   ip = str(ipObj['ip']).replace("False", "none")
-
-                   newresult.append({'IP': ip, 'domain': domain, 'type': domainType})
+                   #ip = str(ipObj['ip']).replace("False", "none")
+                   if (ipObj['ip'] != False):
+                      newresult.append({'IP': str(ipObj['ip']), 'domain': domain, 'type': domainType})
 
             result = newresult
 
