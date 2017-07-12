@@ -47,7 +47,7 @@
                     </td>
                     <td>{{ monitor.next_lookup }}</td>
                     <td>
-                        {% for tagging in monitor.tags.all %}
+                        {% for tagging in monitor.tags.all|filtertags:request.user %}
                             <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
                             {{ tagging.tag }} <br>
                         {% endfor %}
