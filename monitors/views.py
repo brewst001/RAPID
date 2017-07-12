@@ -11,7 +11,6 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-
 from core.utilities import discover_type
 
 from .models import CertificateMonitor, DomainMonitor, IpMonitor, IndicatorAlert, IndicatorTag, CertificateSubscription, DomainSubscription, IpSubscription
@@ -49,7 +48,6 @@ class MonitorDashboard(LoginRequiredMixin, TemplateView):
 
 
 class DomainList(LoginRequiredMixin, ListView):
-
     login_url = "login"
     redirect_unauthenticated_users = True
 
@@ -57,13 +55,12 @@ class DomainList(LoginRequiredMixin, ListView):
     template_name = 'monitors/domain.html'
 
     def get_queryset(self):
+        records = DomainMonitor.objects.filter(domainsubscription__owner=self.request.user)
 
-        records = DomainMonitor.objects.filter(domainsubscription=DomainSubscription.objects.filter(owner=self.request.user))
         return records
 
 
 class IpList(LoginRequiredMixin, ListView):
-
     login_url = "login"
     redirect_unauthenticated_users = True
 
@@ -71,7 +68,7 @@ class IpList(LoginRequiredMixin, ListView):
     template_name = 'monitors/ip.html'
 
     def get_queryset(self):
-        records = IpMonitor.objects.filter(ipsubscription=IpSubscription.objects.filter(owner=self.request.user))
+        records = IpMonitor.objects.filter(ipsubscription__owner=self.request.user)
         return records
 
 
@@ -83,6 +80,7 @@ class CertificateList(LoginRequiredMixin, ListView):
     will be available as "monitored_certificates."
 
     Login is required in order to use this view.
+
     """
     login_url = "login"
     redirect_unauthenticated_users = True
@@ -90,7 +88,7 @@ class CertificateList(LoginRequiredMixin, ListView):
     template_name = 'monitors/certificate.html'
 
     def get_queryset(self):
-       records = CertificateMonitor.objects.filter(certificatesubscription = CertificateSubscription.objects.filter(owner=self.request.user))
+       records = CertificateMonitor.objects.filter(certificatesubscription__owner=self.request.user)
        return records
 
 
@@ -130,17 +128,8 @@ class AddIndicator(LoginRequiredMixin, FormView):
         """
         if self.request.path=='/monitors/update_certificate':
             form.update_submission(self.request)
-         #   self.msg_success = "Indicator has been updated"
-         #   self.msg_failure = "Indicator has not been updated because duplicate value exists"
-        #if self.request.path=='/monitors/add_certificate':
         else:
             form.save_submission(self.request)
-         #   self.msg_success = "Indicator(s) added for monitoring"
-         #   self.msg_failure = "No indicator added for monitoring because duplicate certificate exists"
-        # elif self.request.path=='/monitors/update_certificate':
-        #     form.update_submission(self.request)
-        #     self.msg_success = "Indicator has been updated"
-        #     self.msg_failure = "Indicator has not been updated because duplicate value exists"
 
         if self.request.success == True:
             messages.add_message(self.request, messages.SUCCESS, self.request.msg)
@@ -191,7 +180,6 @@ class DeleteIndicator(LoginRequiredMixin, View):
             if indicator_type == "domain":
 
                 try:
-                   # DomainMonitor.objects.get(domain_name=indicator,owner=request.user).delete()
                    DomainSubscription.objects.get(owner=request.user, domain_name=indicator).delete()
                    CertificateSubscription.objects.get(owner=request.user, certificate=indicator).delete()
 
@@ -201,7 +189,6 @@ class DeleteIndicator(LoginRequiredMixin, View):
             if indicator_type == "ip":
 
                 try:
-                    #IpMonitor.objects.get(ip_address=indicator,owner=request.user).delete()
                    IpSubscription.objects.get(owner=request.user, ip_address=indicator).delete()
                 except:
                     LOGGER.exception("Error deleting IP monitor for value: %s", indicator)
@@ -214,9 +201,6 @@ class DeleteIndicator(LoginRequiredMixin, View):
                    # any historical search results
                    CertificateSubscription.objects.get(owner=request.user, certificate=indicator).delete()
 
-                #except:
-                #    LOGGER.exception("Error deleting certificate monitor for value: %s", indicator)
-
                 except Exception as err:
                     LOGGER.exception("Error deleting certificate monitor for value: %s", indicator, str(err))
 
@@ -228,7 +212,11 @@ class DeleteIndicator(LoginRequiredMixin, View):
 
 
 class TagIndicator(LoginRequiredMixin, View):
-
+    """
+    Updated by: LNguyen
+    Date: July 7, 2017
+    Update tagging indicator logic to correctly add tags based on subscription user only
+    """
     login_url = "login"
     redirect_unauthenticated_users = True
     template_name = "monitors/tagging.html"
@@ -250,8 +238,7 @@ class TagIndicator(LoginRequiredMixin, View):
                 if indicator_type == "domain":
 
                     try:
-                        monitor = DomainMonitor.objects.get(domain_name=indicator,
-                                                            owner=request.user)
+                        monitor = DomainMonitor.objects.get(domain_name=indicator, domainsubscription__owner=request.user)
                     except:
                         LOGGER.exception("Error retrieving domain indicator '%s'", indicator)
 
@@ -263,8 +250,7 @@ class TagIndicator(LoginRequiredMixin, View):
                 if indicator_type == "ip":
 
                     try:
-                        monitor = IpMonitor.objects.get(ip_address=indicator,
-                                                        owner=request.user)
+                        monitor = IpMonitor.objects.get(ip_address=indicator, ipsubscription__owner=request.user)
                     except:
                         LOGGER.exception("Error retrieving IP indicator '%s'", indicator)
 
@@ -275,8 +261,7 @@ class TagIndicator(LoginRequiredMixin, View):
 
                 if indicator_type == "other":
                     try:
-                        monitor = CertificateMonitor.objects.get(certificate_value=indicator,
-                                                                 owner=request.user)
+                        monitor = CertificateMonitor.objects.get(certificate_value=indicator,certificatesubscription__owner=request.user)
                     except:
                         LOGGER.exception("Error retrieving certificate indicator '%s'", indicator)
                     else:
@@ -295,7 +280,11 @@ class TagIndicator(LoginRequiredMixin, View):
 
 
 class UntagIndicator(LoginRequiredMixin, View):
-
+    """
+    Updated by: LNguyen
+    Date: July 7, 2017
+    Update untagging indicator logic to correctly remove tags based on user only
+    """
     login_url = "login"
     redirect_unauthenticated_users = True
     template_name = "monitors/untag.html"
@@ -312,32 +301,38 @@ class UntagIndicator(LoginRequiredMixin, View):
 
                 try:
                     monitor = DomainMonitor.objects.get(domain_name=indicator,
-                                                        owner=request.user)
+                                                        domainsubscription__owner=self.request.user)
                 except:
                     pass
 
                 else:
-                    monitor.tags.clear()
+                    tag = monitor.tags.get(owner=self.request.user)
+                    monitor.tags.remove(tag)
+                   #monitor.tags.clear()
 
             if indicator_type == "ip":
 
                 try:
                     monitor = IpMonitor.objects.get(ip_address=indicator,
-                                                    owner=request.user)
+                                                    ipsubscription__owner=request.user)
                 except:
                     pass
 
                 else:
-                    monitor.tags.clear()
+                    tag = monitor.tags.get(owner=self.request.user)
+                    monitor.tags.remove(tag)
+                    # monitor.tags.clear()
 
             if indicator_type == "other":
                 try:
                     monitor = CertificateMonitor.objects.get(certificate_value=indicator,
-                                                             owner=request.user)
+                                                             certificatesubscription__owner=self.request.user)
                 except:
                     pass
                 else:
-                    monitor.tags.clear()
+                    tag = monitor.tags.get(owner=self.request.user)
+                    monitor.tags.remove(tag)
+                    # monitor.tags.clear()
 
         messages.add_message(request, messages.SUCCESS, self.msg_success)
         return redirect('monitor_dashboard')
