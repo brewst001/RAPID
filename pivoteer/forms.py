@@ -69,9 +69,11 @@ class SubmissionForm(forms.Form):
 
         elif record_type == "Historical":
             if self.indicator_type != "other":
-                new_task = group([passive_hosts.s(indicator, RecordSource.VTO),
-                                  # passive_hosts.s(indicator, RecordSource.PTO),
+                new_task = group([threatlabs_search.s(indicator),
+                                  passive_hosts.s(indicator, RecordSource.VTO),
+                                 # passive_hosts.s(indicator, RecordSource.PTO),
                                   passive_hosts.s(indicator, RecordSource.IID)])()
+
             else:
                 new_task = None
 

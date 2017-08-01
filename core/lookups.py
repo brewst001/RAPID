@@ -1,6 +1,5 @@
 # Important: This module is NOT implemented with support for Python 2.x
 
-import unittest
 import json
 import requests
 import os
@@ -13,7 +12,7 @@ import censys.base
 import core.google
 import pycountry
 import urllib.request
-import subprocess
+import datetime
 
 from ipwhois import IPWhois
 from collections import OrderedDict
@@ -21,6 +20,7 @@ from ipwhois.ipwhois import IPDefinedError
 from censys.ipv4 import CensysIPv4
 from censys.certificates import CensysCertificates
 from django.conf import settings
+from core.utilities import discover_type
 
 logger = logging.getLogger(__name__)
 current_directory = os.path.dirname(__file__)
@@ -474,6 +474,70 @@ def lookup_dnstwist(domain):
         logger.exception(errmsg)
         return result
 
+
+
+def lookup_threatlabs(indicator):
+    """
+    Created by: Linda Nguyen
+    Date: Apr2017
+    Find all passive DNS A type records for a given indicator from Threatlabs.IO
+
+    :param indicator: The indicator value for which to search.
+    :return: A list of passive DNS records and attributes
+    """
+
+    result = []
+    api_key = settings.THREATLABS_API_ID
+    indicator_type =  discover_type(indicator)
+
+    try:
+        type = 'A'
+
+        # Use this API for ip address type indicators
+        if indicator_type == "ip":
+            url = "https://api.threatlabs.io/pdns/rdata/ip/" + indicator
+
+        # Else use this API for domain type indicators
+        elif indicator_type == "domain":
+            url = "https://api.threatlabs.io/pdns/rrset/name/" + indicator + "/" + type
+
+        # Else invalid indicator type, so log error
+        else:
+            errmsg = "Indicator invalid for threatlabs API: " + indicator
+            logger.exception(errmsg)
+            return result
+
+        response = requests.get(url, headers={'X-API-Key': api_key})
+
+        if response.status_code == 200:
+            arrayObj = json.loads(json.dumps(response.content.decode('utf-8').split()))
+
+            newresult = []
+            result = []
+
+            for domainObj in arrayObj:
+                jsonObj = json.loads(domainObj)
+                domain = jsonObj["rrname"]
+                rdata = ''.join(jsonObj["rdata"])
+                firstseen = datetime.datetime.fromtimestamp(json.loads(domainObj)["time_first"])
+                lastseen = datetime.datetime.fromtimestamp(json.loads(domainObj)["time_last"])
+                newresult.append(
+                    {'ip': rdata, 'domain': domain, 'date': firstseen, 'firstseen': firstseen,'lastseen': lastseen, 'ip_location': {}})
+
+            result = newresult
+
+        else:
+            errmsg = "Error with ThreatLabs.IO.PDNS: " + str(response.status_code)
+            logger.exception(errmsg)
+
+
+        return result
+
+    except Exception as e:
+        print(str(e))
+        errmsg = "Error with DNSTwist: "+ str(e)
+        logger.exception(errmsg)
+        return result
 
 
 def lookup_certs_censys(other, count):

@@ -56,6 +56,7 @@ class RecordType(__TitledEnum):
     TR = "ThreatCrowd Record"
     WR = "Whois Record"
     DR = "DNSTwist Record"
+    TL = "ThreatLabs Record"
 
 
 @enum.unique
@@ -77,3 +78,4 @@ class RecordSource(__TitledEnum):
     VTO = "Virus Total"
     WIS = "WHOIS"
     DTW = "DNSTwist"
+    PDS = "PDNS A"

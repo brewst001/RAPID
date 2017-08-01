@@ -257,10 +257,11 @@ class VirusTotalScraper(MechanizedScraper):
                     entry = list(filter(None, entry))
 
                     if indicator_type == "ip":
-                        results.append({'ip': indicator, 'domain': entry[1], 'date': entry[0], 'ip_location': {}})
+                        results.append({'ip': indicator, 'domain': entry[1], 'date': entry[0], 'firstseen': entry[0], 'lastseen':'','ip_location': {}})
 
                     elif indicator_type == "domain":
-                        results.append({'ip': entry[1], 'domain': indicator, 'date': entry[0], 'ip_location': {}})
+                        results.append({'ip': entry[1], 'domain': indicator, 'date': entry[0], 'firstseen': entry[0], 'lastseen':'','ip_location': {}})
+                       # results.append({'ip': entry[1], 'domain': indicator, 'date': entry[0], 'ip_location': {}})
 
         return results
 
@@ -545,7 +546,7 @@ class InternetIdentityScraper(MechanizedScraper):
                     IID_qType = tds[2]
                     IID_ip = tds[3]
 
-                    passive_table.append({'ip': IID_ip, 'domain': IID_host, 'date': IID_seen, 'ip_location': {}})
+                    passive_table.append({'ip': IID_ip, 'domain': IID_host, 'date': IID_seen, 'firstseen': IID_seen,'lastseen': {}, 'ip_location': {}})
 
                 tds[:] = []
 

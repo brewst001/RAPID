@@ -83,10 +83,13 @@ class IndicatorManager(models.Manager):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+        # Date: 1Aug2017
+        # Description: Update query to exclude PDNS Data since it only contains passive DNS info
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
-        records = self.get_queryset().filter(Q(record_type=record_type.name),
+        records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                             Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
                                              Q(info__contains=indicator))
 
@@ -100,32 +103,30 @@ class IndicatorManager(models.Manager):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+        # Date: 1Aug2017
+        # Description: Update to include PDNS Data into Historical dataset
         record_type = RecordType.HR
+        record_source = RecordSource.PDS
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         if request.user.is_staff:
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
+            records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                                 Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
+                                                 Q(info__contains=indicator)) | \
+                      self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(info__contains=indicator))
-
-            # records = self.get_queryset().filter(Q(record_type=record_type.name),
-            #                                        Q(info_date__lt=time_frame),
-            #                                        Q(info__at_domain__endswith)=indicator) |
-            #                                        Q(info__at_ip__endswith=indicator))
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
                                                  ~Q(info_source=RecordSource.IID.name),
+                                                 ~Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
+                                                 Q(info__contains=indicator)) | \
+                      self.get_queryset().filter(Q(info_source=record_source.PDS.name),
                                                  Q(info__contains=indicator))
 
-            # records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
-            #                                      ~Q(info_source=RecordSource.IID.name),
-            #                                      Q(record_type=record_type.name),
-            #                                      Q(info_date__lt=time_frame),
-            #                                      Q(info__at_domain__endswith=indicator) |
-            #                                      Q(info__at_ip__endswith=indicator))
         return records
 
     def malware_records(self, indicator):
@@ -240,6 +241,43 @@ class IndicatorManager(models.Manager):
                 tracking.append(hash_value)
 
         return unique_records
+
+
+    def get_threatlab_record(self, indicator):
+        """
+        Retrieve DNSTwist records for an indicator from the database.
+
+        :param indicator: The indicator value
+        :return:  The DNSTwist records for the indicator
+        """
+        import dateutil.parser
+
+        record_type = RecordType.TL
+
+        records = self.get_queryset().filter(Q(record_type=record_type.name),
+                                             Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
+
+        # records_complete = []
+        #
+        # for record in records:
+        #
+        #     for result in record['info']['results']:
+        #
+        #         new_record = {
+        #             'domain': result['domain'],
+        #             'ip': result['rdata'][0],
+        #             'timefirst': dateutil.parser.parse(result['timefirst']),
+        #             'timelast': dateutil.parser.parse(result['timelast']),
+        #             'type': result['type'],
+        #             'info_date':record['info_date']
+        #         }
+        #         records_complete.append(new_record)
+
+        # for record in records_complete:
+        #     print(record.info_date)
+        #     print(record.domain)
+
+        return records
 
     def safebrowsing_record(self, indicator):
         record_type = RecordType.SB

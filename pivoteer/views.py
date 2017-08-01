@@ -2,6 +2,7 @@ import csv
 import json
 import datetime
 import logging
+import dateutil.parser
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -135,40 +136,6 @@ class CheckTask(LoginRequiredMixin, View):
             cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
 
-        # Updated by LNguyen
-        # Date: 26April2017
-        # Description: Update to handle new data format returned from historical_hosts method
-        # elif record_type == "Historical":
-        #
-        #     self.template_name = "pivoteer/HistoricalRecords.html"
-        #
-        #     # Historical hosting records
-        #     host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
-        #
-        #     # We must lookup the country for each IP address for use in the template.
-        #     # We do this outside the task because we don't know the IP addresses until the task completes.
-        #     host_records_complete = []
-        #     for record in host_records:
-        #         date = record['info_date']
-        #         info = record['info']
-        #         location = geolocate_ip(info['ip'])
-        #
-        #         new_record = {
-        #             'info_date': date,
-        #             'info': info,
-        #             'location':location
-        #         }
-        #
-        #         host_records_complete.append(new_record)
-        #         #host_records_complete.append(record)
-        #
-        #     self.template_vars["hosting_records"] = host_records_complete
-        #
-        #     # Historical WHOIS records
-        #     whois_record = IndicatorRecord.objects.historical_whois(indicator)
-        #     self.template_vars["historical_whois"] = whois_record
-
-        # ORIGINAL VERSION
         elif record_type == "Historical":
 
             self.template_name = "pivoteer/HistoricalRecords.html"
@@ -179,16 +146,51 @@ class CheckTask(LoginRequiredMixin, View):
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
             host_records_complete = []
+
             for record in host_records:
-                info = getattr(record, 'info')
-                record.location = geolocate_ip(info['ip'])
-                host_records_complete.append(record)
+
+                 info = getattr(record, 'info')
+
+                 if (record.info_source == 'PDS'):
+
+                     for result in info['results']:
+
+                          new_record = {
+                              'domain': result['domain'],
+                              'ip': result['ip'],
+                              'firstseen': dateutil.parser.parse(result['firstseen']),
+                              'lastseen': dateutil.parser.parse(result['lastseen']),
+                              'info_date': record.info_date,
+                              'location': geolocate_ip(result['ip']),
+                              'get_info_source_display': record.get_info_source_display()
+                          }
+
+                          host_records_complete.append(new_record)
+                 else:
+
+                     new_record = {
+                           'domain': info['domain'],
+                           'ip': info['ip'],
+                           'firstseen': record.info_date,
+                           'lastseen':'',
+                           'info_date': record.created,
+                           'location': geolocate_ip(info['ip']),
+                           'get_info_source_display': record.get_info_source_display()
+                     }
+
+                     if ('firstseen' in info) and (info['firstseen'] != ''):
+                       new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+                     if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}) :
+                       new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+
+                     host_records_complete.append(new_record)
 
             self.template_vars["hosting_records"] = host_records_complete
 
             # Historical WHOIS records
             whois_record = IndicatorRecord.objects.historical_whois(indicator)
             self.template_vars["historical_whois"] = whois_record
+
 
         elif record_type == "Malware":
 

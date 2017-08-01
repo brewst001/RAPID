@@ -9,6 +9,8 @@
             <th>Domain</th>
             <th>IP Address</th>
             <th>Country</th>
+            <th>First Seen</th>
+            <th>Last Seen</th>
             <th>Source</th>
           </tr>
         </thead>
@@ -18,22 +20,22 @@
                 <tr>
                     <td>{{ record.info_date|date:"N d, Y"  }}</td>
                     <td>
-                        {% if record.info.domain != origin %}
-                            <span class="pivot">{{ record.info.domain }}</span>
+                        {% if record.domain != origin %}
+                            <span class="pivot">{{ record.domain }}</span>
                         {% else %}
-                            {{ record.info.domain }}
+                            {{ record.domain }}
                         {% endif %}
                     </td>
                     <td>
-                        {% if record.info.ip != origin %}
-                            <span class="pivot">{{ record.info.ip }}</span>
+                        {% if record.ip != origin %}
+                            <span class="pivot">{{ record.ip }}</span>
                         {% else %}
-                            {{ record.info.ip }}
+                            {{ record.ip }}
                         {% endif %}
                     </td>
-                <td>
-                    {{ record.location.country }}
-                </td>
+                    <td>{{ record.location.country }}</td>
+                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
                     <td>{{ record.get_info_source_display }}</td>
                 </tr>
             {% endfor %}

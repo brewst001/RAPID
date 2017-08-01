@@ -13,7 +13,7 @@ from core.threatcrowd import ThreatCrowd
 from core.totalhash import TotalHashApi
 from core.malwr import MalwrApi
 from core.lookups import lookup_ip_whois, lookup_domain_whois, resolve_domain, geolocate_ip, lookup_ip_censys_https, \
-    lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException, lookup_dnstwist
+    lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException, lookup_dnstwist, lookup_threatlabs
 from pivoteer.collectors.scrape import RobtexScraper, InternetIdentityScraper
 from pivoteer.collectors.scrape import VirusTotalScraper, ThreatExpertScraper
 from pivoteer.collectors.api import PassiveTotal
@@ -253,14 +253,16 @@ def passive_hosts(indicator, record_source):
             date = entry['date']
             info = OrderedDict({"geo_location": entry['ip_location'],
                                 "ip": entry['ip'],
-                                "domain": entry['domain']})
+                                "date":entry['date'],
+                                "domain": entry['domain'],
+                                "firstseen": entry['firstseen'],
+                                "lastseen": entry['lastseen']})
             save_record(record_type, record_source, info, date=date)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
                              record_type.title,
                              record_source.title)
-
 
 @app.task
 def malware_samples(indicator, record_source):
@@ -499,6 +501,39 @@ def dnstwist_search(indicator):
             #             #     print(record)
             #             for val in record:
             #                 print(val)
+
+            save_record(record_type, record_source, info)
+
+       except Exception:
+            logger.exception("Error saving dnstwist %s (%s) record from %s",
+                             record_type.name,
+                             record_type.title,
+                             record_source.title)
+
+
+
+@app.task
+def threatlabs_search(indicator):
+    """
+    A Celery task for searching passive DNS entries from Threatlabs.IOS for an indicator.
+
+        indicator: The indicator value
+        results: A list of passive DNS entries.
+
+    :param indicator: The indicator being processed
+
+    :return: This returns a list of passive IP addresses and domains
+    """
+    record_type = RecordType.HR
+    record_source = RecordSource.PDS
+    records = lookup_threatlabs(indicator)
+    logger.info("Retrieved Threatlabs PDNS data for indicator %s. " % (indicator))
+
+    if records:
+       try:
+
+            info = OrderedDict({"indicator": indicator,
+                                "results": records})
 
             save_record(record_type, record_source, info)
 
