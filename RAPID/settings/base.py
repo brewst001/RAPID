@@ -15,7 +15,7 @@ STATICFILES_DIRS = (
     STATIC_ROOT.child("js"),
     STATIC_ROOT.child("bootstrap-3.3.2"),
     STATIC_ROOT.child("bootstrap-select-1.7.3"),
-    STATIC_ROOT.child("DataTables-1.10.5"),
+    STATIC_ROOT.child("DataTables-1.10.5")
 )
 
 TEMPLATE_DIRS = (
@@ -33,7 +33,6 @@ STATIC_URL = "/static/"
 #updated by LNguyen -- added path for secrets.json
 with open("/home/ubuntu/RAPID/secrets.json", "r") as f:
     secrets = json.loads(f.read())
-
 
 def retrieve_secret_configuration(setting, config=secrets):
     """
@@ -53,6 +52,7 @@ SECRET_KEY = retrieve_secret_configuration("SECRET_KEY")
 AUTH_USER_MODEL = 'profiles.Profile'
 
 # Third-party service settings
+THREATLABS_API_ID = retrieve_secret_configuration("THREATLABS_API_ID")
 IID_USER = retrieve_secret_configuration("IID_USER")
 IID_PASS = retrieve_secret_configuration("IID_PASS")
 PASSIVE_TOTAL_API = retrieve_secret_configuration("PASSIVE_TOTAL_API")
