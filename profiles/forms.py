@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import default_token_generator
 
 from .models import RegistrationToken
+
 from core.tasks import deliver_email
 
 
@@ -237,7 +238,8 @@ class ForgotPasswordForm(forms.Form):
             password reset or were able to remember your previous password
             you may disregard this message. ''' % full_url
 
-            deliver_email.delay(subject=subject, body=body, recipients=[email])
+            #deliver_email.delay(subject=subject, body=body, recipients=[email])
+            deliver_email(subject=subject, body=body, recipients=[email])
 
         return email
 
