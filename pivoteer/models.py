@@ -17,7 +17,7 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.HR
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(info__at_domain__endswith=indicator) |
+                                             Q(info__at_domain__iendswith=indicator) |
                                              Q(info__at_ip__endswith=indicator))
         return records
 
@@ -42,7 +42,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__contains=indicator)).values('info', 'info_date')
+                                             Q(info__icontains=indicator)).values('info', 'info_date')
 
         # records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                      Q(info_date__gte=time_frame),
@@ -69,7 +69,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__contains=indicator)).values('info', 'info_date')
+                                             Q(info__icontains=indicator)).values('info', 'info_date')
         # records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                      Q(info_date__gte=time_frame),
         #                                      Q(info__at_domain__exact=indicator) |
@@ -91,7 +91,7 @@ class IndicatorManager(models.Manager):
         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                              Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__contains=indicator))
+                                             Q(info__icontains=indicator))
 
         # records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                      Q(info_date__gte=time_frame),
@@ -113,9 +113,9 @@ class IndicatorManager(models.Manager):
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__contains=indicator)) | \
+                                                 Q(info__icontains=indicator)) | \
                       self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__icontains=indicator))
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
@@ -123,9 +123,9 @@ class IndicatorManager(models.Manager):
                                                  ~Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__contains=indicator)) | \
+                                                 Q(info__icontains=indicator)) | \
                       self.get_queryset().filter(Q(info_source=record_source.PDS.name),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__icontains=indicator))
 
         return records
 
@@ -136,7 +136,7 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.MR
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(info__contains=indicator))
+                                             Q(info__icontains=indicator))
         records_complete = []
         for record in records:
             new_record = {
@@ -155,7 +155,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__contains=indicator))
+                                             Q(info__icontains=indicator))
         return records
 
     def historical_malware(self, indicator):
@@ -164,7 +164,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__lt=time_frame),
-                                             Q(info__contains=indicator))
+                                             Q(info__icontains=indicator))
         return records
 
     def whois_records(self, indicator):
@@ -174,8 +174,8 @@ class IndicatorManager(models.Manager):
             indicator = get_base_domain(indicator)
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                            Q(info__at_query__endswith=indicator) |
-                                            Q(info__at_domain_name__endswith=indicator)).values('info', 'info_date')
+                                            Q(info__at_query__iendswith=indicator) |
+                                            Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
         return records
 
     def recent_whois(self, indicator):
@@ -188,11 +188,10 @@ class IndicatorManager(models.Manager):
 
         if check_domain_valid(indicator):
             indicator = get_base_domain(indicator)
-
         record = self.get_queryset().filter(Q(record_type=record_type.name),
                                             Q(info_date__gte=time_frame),
-                                            Q(info__at_query__endswith=indicator) |
-                                            Q(info__at_domain_name__endswith=indicator)).values('info', 'info_date')
+                                            Q(info__at_query__iendswith=indicator) |
+                                            Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
 
         if record:
             return record.latest('info_date')
@@ -215,7 +214,7 @@ class IndicatorManager(models.Manager):
 
         raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__contains=indicator)).values('info_hash', 'info_date')
+                                                 Q(info__icontains=indicator)).values('info_hash', 'info_date')
 
         # raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                          Q(info_date__lt=time_frame),
@@ -255,7 +254,7 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.TL
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
+                                             Q(info__at_indicator__iexact=indicator)).values('info', 'info_date')
 
         # records_complete = []
         #
@@ -282,7 +281,7 @@ class IndicatorManager(models.Manager):
     def safebrowsing_record(self, indicator):
         record_type = RecordType.SB
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(info__at_indicator__exact=indicator))
+                                             Q(info__at_indicator__iexact=indicator))
         return records
 
     def get_search_records(self, indicator):
@@ -300,7 +299,7 @@ class IndicatorManager(models.Manager):
         LOGGER.debug("Using search value: %s", value)
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
-                                             Q(info__at_indicator__exact=value)).values('info', 'info_date')
+                                             Q(info__at_indicator__iexact=value)).values('info', 'info_date')
         if LOGGER.isEnabledFor(logging.INFO):
             rank = 0
             msg = "Found %d search record(s):" % len(records)
@@ -326,7 +325,7 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.DR
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(info__at_indicator__exact=indicator)).values('info', 'info_date')
+                                             Q(info__at_indicator__iexact=indicator)).values('info', 'info_date')
 
         return records
 
