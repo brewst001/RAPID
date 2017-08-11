@@ -21,7 +21,7 @@ class WhoIsCsvWriter(CsvWriter):
         return ["Lookup Date", "WHOIS Information"]
 
     def create_rows(self, record):
-        if record is not None:
+        if (record is not None and len(record) > 0):
             date = record.get("info_date", None)
             info = record.get("info", None)
             if date and info:

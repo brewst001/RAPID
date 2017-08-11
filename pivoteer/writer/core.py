@@ -126,5 +126,5 @@ class CsvWriter(Writer):
         for record in records:
             rows = self.create_rows(record)
             for row in rows:
-                if row is not None:
+                if (row is not None and len(row) > 0):
                     self.writer.writerow(row)
