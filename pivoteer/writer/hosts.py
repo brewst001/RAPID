@@ -34,7 +34,7 @@ class HostCsvWriter(CsvWriter):
                 new_record = {
                     'domain': result['domain'],
                     'ip': result['ip'],
-                    'geo_location': geolocate_ip(result['ip']),
+                    'geo_location': geolocate_ip(result['ip'])['country'],
                     'firstseen': dateutil.parser.parse(result['firstseen']),
                     'lastseen': dateutil.parser.parse(result['lastseen'])
                 }
@@ -55,7 +55,7 @@ class HostCsvWriter(CsvWriter):
                 new_record = {
                     'domain': record.info["domain"],
                     'ip': record.info["ip"],
-                    'geo_location': geolocate_ip(record.info["ip"]),
+                    'geo_location': geolocate_ip(record.info["ip"])['country'],
                     'firstseen': record.created,
                     'lastseen': ''
                 }
