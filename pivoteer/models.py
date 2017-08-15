@@ -110,23 +110,15 @@ class IndicatorManager(models.Manager):
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         if request.user.is_staff:
-            records = self.get_queryset().filter(Q(info_source=RecordSource.VTO.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(info__icontains=indicator)) | \
-                      self.get_queryset().filter(Q(info_source=RecordSource.IID.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(info__icontains=indicator)) | \
-                      self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-                                                 Q(info__icontains=indicator))
+            records = self.get_queryset().filter(Q(record_type=record_type.name),
+                                                  Q(info_date__lt=time_frame),
+                                                  Q(info__icontains=indicator))
 
         else:
-            records = self.get_queryset().filter(Q(info_source=RecordSource.VTO.name),
+            records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
+                                                 ~Q(info_source=RecordSource.IID.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(info__icontains=indicator)) | \
-                      self.get_queryset().filter(Q(info_source=record_source.PDS.name),
                                                  Q(info__icontains=indicator))
 
         return records
