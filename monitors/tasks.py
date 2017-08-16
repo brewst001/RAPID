@@ -575,19 +575,19 @@ class IndicatorMonitoring(PeriodicTask):
             owner = subtask.get_owners(indicator)
             #print("ownerlist:", owner)
 
-            LOGGER.info("Processing lookup from %s for %s '%s'", owner, type_name, indicator)
+            #LOGGER.info("Processing lookup from %s for %s '%s'", owner, type_name, indicator)
 
             # Get the historical list of hosts.  (For some monitors, if this is the first time they've run, there are none.)
             last_hosts = list() if lookup.last_hosts is None else list(lookup.last_hosts)
             #print("historical last hosts: ", last_hosts)  # ['95.215.44.38', '185.86.151.180', '89.238.132.210', '89.34.111.119', '185.25.50.117']
-            LOGGER.debug("Previous lookup hosts: %s", last_hosts)
+            #LOGGER.debug("Previous lookup hosts: %s", last_hosts)
 
             # Do a lookup for any new hosts.  Note that this returns a list of resolved hosts if successful and an error message
             # string if unsuccessful.
             #print("calling subtask.resolve_hosts...")
             current_hosts = subtask.resolve_hosts(indicator)
             #print("new current hosts lookup: ",current_hosts)  # ['95.215.44.38', '89.238.132.210', '89.34.111.119', '185.25.50.117']
-            LOGGER.debug("New lookup hosts: %s", current_hosts)
+            #LOGGER.debug("New lookup hosts: %s", current_hosts)
             #print("current hosts length:",len(current_hosts))
             #print("last hosts length:", len(last_hosts))
 
@@ -622,7 +622,7 @@ class IndicatorMonitoring(PeriodicTask):
                 #if not last_hosts:
                 else:
                     #print("This is an initial search and no historical data exists for current indicator")
-                    LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
+                    #LOGGER.debug("Initial search for %s '%s'", type_name, indicator)
                     new_hosts = current_hosts
                     missing_hosts = []
 
@@ -644,7 +644,7 @@ class IndicatorMonitoring(PeriodicTask):
             # Added by LNguyen 1/13/2017
             # Replace lookup.save with custom save to save results in Certificate Monitor table by certificate value
             #CertificateMonitor.objects.filter(certificate_value=indicator).update(last_hosts=lookup.last_hosts,resolutions=lookup.resolutions,next_lookup=lookup.next_lookup)
-            LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
+            #LOGGER.info("Next lookup time will be %s", lookup.next_lookup)
 
             # If resolving hosts returned a string, it is an error message.  We need to create an alert, and then
             # processing is done for this lookup and we can continue to the next.
@@ -652,7 +652,7 @@ class IndicatorMonitoring(PeriodicTask):
                 #alert_text = current_hosts
                 alert_text = 'Resolved hosts returned a string: ' + current_hosts
                 self.create_alert(indicator, alert_text, owner)
-                LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
+                #LOGGER.error("Alert created for %s '%s' from %s: %s", type_name, indicator, owner, alert_text)
                 continue
 
             # Otherwise, this should actually be a list of hosts.  We need to save Pivoteer IndicatorRecords in the
@@ -665,9 +665,9 @@ class IndicatorMonitoring(PeriodicTask):
             #print("new_Hosts: ", new_hosts)
             #print("missing_hosts: ", missing_hosts)
 
-            if not missing_hosts and not new_hosts:
+            #if not missing_hosts and not new_hosts:
                 #print("No host changes detected")
-                LOGGER.info("No host changes detected for %s '%s'", type_name, indicator)
+                #LOGGER.info("No host changes detected for %s '%s'", type_name, indicator)
             # if LOGGER.isEnabledFor(logging.INFO):
             #     if 0 < len(missing_hosts):
             #         LOGGER.info("Detected %d missing host(s) for %s '%s': %s",
