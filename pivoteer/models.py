@@ -2,12 +2,14 @@ import pickle
 import hashlib
 import datetime
 import logging
+import dateutil.parser
 from django.db import models
 from django.db.models import Q
 from django.db.models import Max, Min
 from django_pgjson.fields import JsonField
 from core.utilities import check_domain_valid, get_base_domain
 from pivoteer.records import RecordType, RecordSource
+from core.lookups import geolocate_ip
 
 LOGGER = logging.getLogger(__name__)
 
@@ -107,11 +109,13 @@ class IndicatorManager(models.Manager):
         # Description: Update to include PDNS Data into Historical dataset
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-
+        min_time = datetime.datetime.utcnow()  - datetime.timedelta(days=365)
         if request.user.is_staff:
             records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                  Q(info_date__lt=time_frame),
-                                                  Q(info__icontains=indicator))
+                                                 Q(info_date__lt=time_frame),
+                                                 #Q(info__icontains=indicator))
+                                                 Q(info__icontains=indicator))
+
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
@@ -120,7 +124,49 @@ class IndicatorManager(models.Manager):
                                                  Q(info_date__lt=time_frame),
                                                  Q(info__icontains=indicator))
 
-        return records
+
+        if len(records) > 1000:
+            records = records.order_by('-created')[:500]
+
+        host_records_complete = []
+
+        for record in records:
+
+            info = getattr(record, 'info')
+
+            if (record.info_source == 'PDS'):
+
+                for result in info['results']:
+                    new_record = {
+                        'domain': result['domain'],
+                        'ip': result['ip'],
+                        'firstseen': dateutil.parser.parse(result['firstseen']),
+                        'lastseen': dateutil.parser.parse(result['lastseen']),
+                        'info_date': record.info_date,
+                        'get_info_source_display': record.get_info_source_display()
+                    }
+
+                    host_records_complete.append(new_record)
+            else:
+
+                new_record = {
+                    'domain': info['domain'],
+                    'ip': info['ip'],
+                    'firstseen': record.info_date,
+                    'lastseen': '',
+                    'info_date': record.created,
+                    'location': geolocate_ip(info['ip']),
+                    'get_info_source_display': record.get_info_source_display()
+                }
+
+                if ('firstseen' in info) and (info['firstseen'] != ''):
+                    new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+                if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}):
+                    new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+
+                host_records_complete.append(new_record)
+
+        return host_records_complete
 
     def malware_records(self, indicator):
         # Updated by LNguyen

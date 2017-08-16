@@ -143,49 +143,51 @@ class CheckTask(LoginRequiredMixin, View):
             # Historical hosting records
             host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
 
+            self.template_vars["hosting_records"] = host_records
+
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            host_records_complete = []
+            #host_records_complete = []
 
-            for record in host_records:
+            # for record in host_records:
+            #
+            #      info = getattr(record, 'info')
+            #
+            #      if (record.info_source == 'PDS'):
+            #
+            #          for result in info['results']:
+            #
+            #               new_record = {
+            #                   'domain': result['domain'],
+            #                   'ip': result['ip'],
+            #                   'firstseen': dateutil.parser.parse(result['firstseen']),
+            #                   'lastseen': dateutil.parser.parse(result['lastseen']),
+            #                   'info_date': record.info_date,
+            #                   'location': geolocate_ip(result['ip']),
+            #                   'get_info_source_display': record.get_info_source_display()
+            #               }
+            #
+            #               host_records_complete.append(new_record)
+            #      else:
+            #
+            #          new_record = {
+            #                'domain': info['domain'],
+            #                'ip': info['ip'],
+            #                'firstseen': record.info_date,
+            #                'lastseen':'',
+            #                'info_date': record.created,
+            #                'location': geolocate_ip(info['ip']),
+            #                'get_info_source_display': record.get_info_source_display()
+            #          }
+            #
+            #          if ('firstseen' in info) and (info['firstseen'] != ''):
+            #            new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+            #          if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}) :
+            #            new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+            #
+            #          host_records_complete.append(new_record)
 
-                 info = getattr(record, 'info')
-
-                 if (record.info_source == 'PDS'):
-
-                     for result in info['results']:
-
-                          new_record = {
-                              'domain': result['domain'],
-                              'ip': result['ip'],
-                              'firstseen': dateutil.parser.parse(result['firstseen']),
-                              'lastseen': dateutil.parser.parse(result['lastseen']),
-                              'info_date': record.info_date,
-                              'location': geolocate_ip(result['ip']),
-                              'get_info_source_display': record.get_info_source_display()
-                          }
-
-                          host_records_complete.append(new_record)
-                 else:
-
-                     new_record = {
-                           'domain': info['domain'],
-                           'ip': info['ip'],
-                           'firstseen': record.info_date,
-                           'lastseen':'',
-                           'info_date': record.created,
-                           'location': geolocate_ip(info['ip']),
-                           'get_info_source_display': record.get_info_source_display()
-                     }
-
-                     if ('firstseen' in info) and (info['firstseen'] != ''):
-                       new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
-                     if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}) :
-                       new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
-
-                     host_records_complete.append(new_record)
-
-            self.template_vars["hosting_records"] = host_records_complete
+            #self.template_vars["hosting_records"] = host_records_complete
 
             # Historical WHOIS records
             whois_record = IndicatorRecord.objects.historical_whois(indicator)
