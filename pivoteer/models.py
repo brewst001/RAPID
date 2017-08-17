@@ -143,6 +143,7 @@ class IndicatorManager(models.Manager):
                         'firstseen': dateutil.parser.parse(result['firstseen']),
                         'lastseen': dateutil.parser.parse(result['lastseen']),
                         'info_date': record.info_date,
+                        'location': geolocate_ip(result['ip']),
                         'get_info_source_display': record.get_info_source_display()
                     }
 
@@ -158,11 +159,6 @@ class IndicatorManager(models.Manager):
                     'location': geolocate_ip(info['ip']),
                     'get_info_source_display': record.get_info_source_display()
                 }
-
-                if ('firstseen' in info) and (info['firstseen'] != ''):
-                    new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
-                if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}):
-                    new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
 
                 host_records_complete.append(new_record)
 
