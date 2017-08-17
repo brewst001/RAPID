@@ -31,5 +31,5 @@ class HostCsvWriter(CsvWriter):
                    record["info"]["domain"],
                    record["info"]["ip"],
                    record["location"]["country"],
-                   record["info"]["firstseen"],
-                   record["info"]["lastseen"]]
+                   record["firstseen"],
+                   record["lastseen"]]

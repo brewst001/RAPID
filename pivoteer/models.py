@@ -129,8 +129,8 @@ class IndicatorManager(models.Manager):
                      'info': result,
                 #     'domain': result['domain'],
                 #     'ip': result['ip'],
-                #     'firstseen': dateutil.parser.parse(result['firstseen']),
-                #     'lastseen': dateutil.parser.parse(result['lastseen']),
+                     'firstseen': dateutil.parser.parse(result['firstseen']),
+                     'lastseen': dateutil.parser.parse(result['lastseen']),
                      'info_date': record.info_date,
                      'location': geolocate_ip(result['ip']),
                      'get_info_source_display': record.get_info_source_display()
@@ -168,8 +168,8 @@ class IndicatorManager(models.Manager):
                 'info': info,
                 #'domain': info['domain'],
                 #'ip': info['ip'],
-                #'firstseen': record.info_date,
-               # 'lastseen': '',
+                'firstseen': record.info_date,
+                'lastseen': '',
                 'info_date': record.created,
                 'location': geolocate_ip(info['ip']),
                 'get_info_source_display': record.get_info_source_display()
