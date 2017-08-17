@@ -116,12 +116,11 @@ class IndicatorManager(models.Manager):
 
             info = getattr(record, 'info')
 
-            # if len(info['results']) > 1000:
-            #     displaylist = info['results'][:500]
-            # else:
-            #     displaylist = info['results']
+            if len(info['results']) > 1000:
+                 displaylist = info['results'][:500]
+            else:
+                 displaylist = info['results']
 
-            displaylist = info['results']
 
             for result in displaylist:
                 new_record = {
