@@ -20,25 +20,50 @@
                 <tr>
                     <td>{{ record.info_date|date:"N d, Y"  }}</td>
                     <td>
-                        {% if record.domain != origin %}
-                            <span class="pivot">{{ record.domain }}</span>
+                        {% if record.info.domain != origin %}
+                            <span class="pivot">{{ record.info.domain }}</span>
                         {% else %}
-                            {{ record.domain }}
+                            {{ record.info.domain }}
                         {% endif %}
                     </td>
                     <td>
-                        {% if record.ip != origin %}
-                            <span class="pivot">{{ record.ip }}</span>
+                        {% if record.info.ip != origin %}
+                            <span class="pivot">{{ record.info.ip }}</span>
                         {% else %}
                             {{ record.ip }}
                         {% endif %}
                     </td>
                     <td>{{ record.location.country }}</td>
-                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
-                    <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
+                    <td>{{ record.info.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.info.lastseen|date:"N d, Y h:i A"   }}</td>
                     <td>{{ record.get_info_source_display }}</td>
                 </tr>
             {% endfor %}
+
+            {% for record in historical_records %}
+                <tr>
+                    <td>{{ record.info_date|date:"N d, Y"  }}</td>
+                    <td>
+                        {% if record.info.domain != origin %}
+                            <span class="pivot">{{ record.info.domain }}</span>
+                        {% else %}
+                            {{ record.info.domain }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if record.info.ip != origin %}
+                            <span class="pivot">{{ record.info.ip }}</span>
+                        {% else %}
+                            {{ record.ip }}
+                        {% endif %}
+                    </td>
+                    <td>{{ record.location.country }}</td>
+                    <td>{{ record.info.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.info.lastseen|date:"N d, Y h:i A"   }}</td>
+                    <td>{{ record.get_info_source_display }}</td>
+                </tr>
+            {% endfor %}
+
         </tbody>
     </table>
 {% else %}
