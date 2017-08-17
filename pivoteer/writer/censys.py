@@ -18,6 +18,7 @@ class CensysCsvWriter(CsvWriter):
         """
         super(CensysCsvWriter, self).__init__(writer)
 
+
     def create_title_rows(self, indicator, records):
         yield ["Certificate Search Results"]
 
@@ -25,14 +26,15 @@ class CensysCsvWriter(CsvWriter):
         return ["Subject", "Issuer", "SHA256", "Validity Start", "Validity End"]
 
     def create_rows(self, record):
-        info = record["info"]
-        records = info["records"]
-        for record in records:
-            parsed = record["parsed"]
-            subject = parsed["subject_dn"]
-            issuer = parsed["issuer_dn"]
-            sha256 = parsed["fingerprint_sha256"]
-            validity = parsed["validity"]
-            start = validity["start"]
-            end = validity["end"]
-            yield [subject, issuer, sha256, start, end]
+        if (record is not None and len(record) > 0):
+            info = record["info"]
+            records = info["records"]
+            for record in records:
+                parsed = record["parsed"]
+                subject = parsed["subject_dn"]
+                issuer = parsed["issuer_dn"]
+                sha256 = parsed["fingerprint_sha256"]
+                validity = parsed["validity"]
+                start = validity["start"]
+                end = validity["end"]
+                yield [subject, issuer, sha256, start, end]
