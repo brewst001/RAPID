@@ -157,7 +157,7 @@ class IndicatorManager(models.Manager):
         host_records_complete = []
 
         if len(historicalrecords) > 1000:
-            historicalrecordsdisplay = historicalrecords.order_by('-created')[:1000]
+            historicalrecordsdisplay = historicalrecords.order_by('-created')[:500]
         else:
             historicalrecordsdisplay = historicalrecords
 
