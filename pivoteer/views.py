@@ -141,9 +141,13 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_name = "pivoteer/HistoricalRecords.html"
 
             # Historical hosting records
-            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+            host_records = IndicatorRecord.objects.pds_hosts(indicator, request)
 
             self.template_vars["hosting_records"] = host_records
+
+            historical_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+
+            self.template_vars["historical_records"] = historical_records
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
