@@ -34,8 +34,8 @@
                         {% endif %}
                     </td>
                     <td>{{ record.location.country }}</td>
-                    <td>{{ record.info.firstseen|date:"N d, Y h:i A"  }}</td>
-                    <td>{{ record.info.lastseen|date:"N d, Y h:i A"   }}</td>
+                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
                     <td>{{ record.get_info_source_display }}</td>
                 </tr>
             {% endfor %}
@@ -58,8 +58,8 @@
                         {% endif %}
                     </td>
                     <td>{{ record.location.country }}</td>
-                    <td>{{ record.info.firstseen|date:"N d, Y h:i A"  }}</td>
-                    <td>{{ record.info.lastseen|date:"N d, Y h:i A"   }}</td>
+                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
                     <td>{{ record.get_info_source_display }}</td>
                 </tr>
             {% endfor %}
