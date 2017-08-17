@@ -28,8 +28,8 @@ class HostCsvWriter(CsvWriter):
         if record is not None:
             yield [record["info_date"],
                    record["get_info_source_display"],
-                   record["domain"],
-                   record["ip"],
+                   record["info"]["domain"],
+                   record["info"]["ip"],
                    record["location"]["country"],
-                   record["firstseen"],
-                   record["lastseen"]]
+                   record["info"]["firstseen"],
+                   record["info"]["lastseen"]]
