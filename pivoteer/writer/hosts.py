@@ -25,54 +25,11 @@ class HostCsvWriter(CsvWriter):
         return ["Date", "Source", "Domain", "IP", "IP Location", "First Seen", "Last Seen"]
 
     def create_rows(self, record):
-
         if record is not None:
-
-          if (record.info_source == 'PDS'):
-            for result in record.info['results']:
-
-                new_record = {
-                    'domain': result['domain'],
-                    'ip': result['ip'],
-                    'geo_location': geolocate_ip(result['ip'])['country'],
-                    'firstseen': dateutil.parser.parse(result['firstseen']),
-                    'lastseen': dateutil.parser.parse(result['lastseen'])
-                }
-
-                row = [
-                    record.info_date,
-                    record.info_source,
-                    new_record['domain'],
-                    new_record['ip'],
-                    new_record['geo_location'],
-                    new_record['firstseen'],
-                    new_record['lastseen']]
-
-                yield row
-
-          else:
-
-                new_record = {
-                    'domain': record.info["domain"],
-                    'ip': record.info["ip"],
-                    'geo_location': geolocate_ip(record.info["ip"])['country'],
-                    'firstseen': record.created,
-                    'lastseen': ''
-                }
-
-                if ('firstseen' in record.info) and (record.info['firstseen'] != ''):
-                    new_record['firstseen'] = dateutil.parser.parse(record.info['firstseen'])
-                if ('lastseen' in record.info) and (record.info['lastseen'] != '') and (record.info['lastseen'] != {}):
-                    new_record['lastseen'] = dateutil.parser.parse(record.info['lastseen'])
-
-                row = [
-                    record.created,
-                    record.info_source,
-                    new_record['domain'],
-                    new_record['ip'],
-                    new_record['geo_location'],
-                    new_record['firstseen'],
-                    new_record['lastseen']]
-
-                yield row
-
+            yield [record["info_date"],
+                   record["get_info_source_display"],
+                   record["domain"],
+                   record["ip"],
+                   record["location"]["country"],
+                   record["firstseen"],
+                   record["lastseen"]]
