@@ -157,7 +157,7 @@ class IndicatorManager(models.Manager):
         host_records_complete = []
 
         if len(historicalrecords) > 1000:
-            historicalrecordsdisplay = historicalrecords.order_by('-created')[:500]
+            historicalrecordsdisplay = historicalrecords.order_by('-created')[:1000]
         else:
             historicalrecordsdisplay = historicalrecords
 
@@ -180,79 +180,6 @@ class IndicatorManager(models.Manager):
         return host_records_complete
 
 
-
-    # def historical_hosts(self, indicator, request):
-    #     # Updated by LNguyen
-    #     # Date: 26April2017
-    #     # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-    #     # Date: 1Aug2017
-    #     # Description: Update to include PDNS Data into Historical dataset
-    #     record_type = RecordType.HR
-    #     time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-    #
-    #     if request.user.is_staff:
-    #         PDSrecords = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-    #                                              Q(record_type=record_type.name),
-    #                                              Q(info_date__lt=time_frame),
-    #                                              Q(info__icontains=indicator))
-    #
-    #         historicalrecords = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-    #                                             Q(record_type=record_type.name),
-    #                                             Q(info_date__lt=time_frame),
-    #                                             Q(info__icontains=indicator))
-    #
-    #     host_records_complete = []
-    #
-    #     for record in PDSrecords:
-    #
-    #         info = getattr(record, 'info')
-    #
-    #         # if len(info['results']) > 1000:
-    #         #     displaylist = info['results'][:500]
-    #         # else:
-    #         #     displaylist = info['results']
-    #
-    #         displaylist = info['results']
-    #
-    #         if (record.info_source == 'PDS'):
-    #
-    #             for result in displaylist:
-    #                 new_record = {
-    #                     'info': record.info,
-    #                     #'domain': result['domain'],
-    #                     #'ip': result['ip'],
-    #                     #'firstseen': dateutil.parser.parse(result['firstseen']),
-    #                     #'lastseen': dateutil.parser.parse(result['lastseen']),
-    #                     'info_date': record.info_date,
-    #                     'location': geolocate_ip(result['ip']),
-    #                     'get_info_source_display': record.get_info_source_display()
-    #                 }
-    #
-    #                 host_records_complete.append(new_record)
-    #
-    #
-    #     if len(historicalrecords) > 1000:
-    #         historicalrecordsdisplay = historicalrecords.order_by('-created')[:500]
-    #     else:
-    #         historicalrecordsdisplay = historicalrecords
-    #
-    #     for record in historicalrecordsdisplay:
-    #
-    #         info = getattr(record, 'info')
-    #
-    #         new_record = {
-    #             'domain': info['domain'],
-    #             'ip': info['ip'],
-    #             'firstseen': record.info_date,
-    #             'lastseen': '',
-    #             'info_date': record.created,
-    #             'location': geolocate_ip(info['ip']),
-    #             'get_info_source_display': record.get_info_source_display()
-    #         }
-    #
-    #         host_records_complete.append(new_record)
-    #
-    #     return host_records_complete
     # #
     # def historical_hosts(self, indicator, request):
     #     # Updated by LNguyen
@@ -536,6 +463,9 @@ class IndicatorRecord(models.Model):
 
     class Meta:
         unique_together = (("info_hash", "info_source", "info_date"),)
+
+        index_together = (("info_source", "record_type", "info_date", "created"))
+
 
     def generate_hash(self):
         info_pickle = pickle.dumps(self.info)
