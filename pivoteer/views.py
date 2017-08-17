@@ -392,6 +392,8 @@ class ExportRecords(LoginRequiredMixin, View):
         :param request: The request being processed
         :return: This method returns no values
         """
+        pdshosts = IndicatorRecord.objects.pds_hosts(indicator, request)
+        self._write_records(RecordType.HR, indicator, pdshosts)
         hosts = IndicatorRecord.objects.historical_hosts(indicator, request)
         self._write_records(RecordType.HR, indicator, hosts)
 
