@@ -101,42 +101,6 @@ class IndicatorManager(models.Manager):
         #                                      Q(info__at_ip__endswith=indicator))
         return records
 
-    def pds_hosts(self, indicator, request):
-        record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-
-        records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-                                             Q(record_type=record_type.name),
-                                             Q(info_date__lt=time_frame),
-                                             Q(info__icontains=indicator))
-
-        host_records_complete = []
-
-        for record in records:
-
-            info = getattr(record, 'info')
-
-            if len(info['results']) > 1000:
-                 displaylist = info['results'][:500]
-            else:
-                 displaylist = info['results']
-
-
-            for result in displaylist:
-                new_record = {
-                     'info': result,
-                #     'domain': result['domain'],
-                #     'ip': result['ip'],
-                     'firstseen': dateutil.parser.parse(result['firstseen']),
-                     'lastseen': dateutil.parser.parse(result['lastseen']),
-                     'info_date': record.info_date,
-                     'location': geolocate_ip(result['ip']),
-                     'get_info_source_display': record.get_info_source_display()
-                }
-
-                host_records_complete.append(new_record)
-        return host_records_complete
-
     def historical_hosts(self, indicator, request):
         # Updated by LNguyen
         # Date: 26April2017
@@ -146,39 +110,82 @@ class IndicatorManager(models.Manager):
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
-      #  if request.user.is_staff:
-        historicalrecords = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                                        Q(record_type=record_type.name),
-                                                        Q(info_date__lt=time_frame),
-                                                        Q(info__icontains=indicator))
+        if request.user.is_staff:
+            records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__icontains=indicator))
 
-        host_records_complete = []
-
-        if len(historicalrecords) > 1000:
-            historicalrecordsdisplay = historicalrecords.order_by('-created')[:500]
         else:
-            historicalrecordsdisplay = historicalrecords
+            records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                                 ~Q(info_source=RecordSource.PTO.name),
+                                                 ~Q(info_source=RecordSource.IID.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__icontains=indicator))
 
-        for record in historicalrecordsdisplay:
-            info = getattr(record, 'info')
-
-            new_record = {
-                'info': info,
-                #'domain': info['domain'],
-                #'ip': info['ip'],
-                'firstseen': record.info_date,
-                'lastseen': '',
-                'info_date': record.created,
-                'location': geolocate_ip(info['ip']),
-                'get_info_source_display': record.get_info_source_display()
-            }
-
-            host_records_complete.append(new_record)
-
-        return host_records_complete
+        return records
 
 
-    # #
+    def pds_hosts(self, indicator, request):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+        # Date: 1Aug2017
+        # Description: Update to include PDNS Data into Historical dataset
+        record_type = RecordType.HR
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+
+        records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__icontains=indicator))
+
+        return records
+
+
+    #
+    # def pds_hosts(self, indicator, request):
+    #     record_type = RecordType.HR
+    #     time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+    #
+    #     records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
+    #                                          Q(record_type=record_type.name),
+    #                                          Q(info_date__lt=time_frame),
+    #                                          Q(info__icontains=indicator))
+    #
+    #  #   if len(records) > 0:
+    #   #      pdsrecords = records.last()
+    #  #   else:
+    #   #      pdsrecords = records
+    #
+    #     host_records_complete = []
+    #
+    #     for record in records:
+    #
+    #         info = getattr(record, 'info')
+    #
+    #         if len(info['results']) > 1000:
+    #              displaylist = info['results'][:500]
+    #         else:
+    #              displaylist = info['results']
+    #
+    #
+    #         for result in displaylist:
+    #             new_record = {
+    #                  'info': result,
+    #             #     'domain': result['domain'],
+    #             #     'ip': result['ip'],
+    #                  'firstseen': dateutil.parser.parse(result['firstseen']),
+    #                  'lastseen': dateutil.parser.parse(result['lastseen']),
+    #                  'info_date': record.info_date,
+    #                  'location': geolocate_ip(result['ip']),
+    #                  'get_info_source_display': record.get_info_source_display()
+    #             }
+    #
+    #             host_records_complete.append(new_record)
+    #     return host_records_complete
+    #
     # def historical_hosts(self, indicator, request):
     #     # Updated by LNguyen
     #     # Date: 26April2017
@@ -187,60 +194,45 @@ class IndicatorManager(models.Manager):
     #     # Description: Update to include PDNS Data into Historical dataset
     #     record_type = RecordType.HR
     #     time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-    #     min_time = datetime.datetime.utcnow()  - datetime.timedelta(days=365)
+    #
     #     if request.user.is_staff:
-    #         records = self.get_queryset().filter(Q(record_type=record_type.name),
-    #                                              Q(info_date__lt=time_frame),
-    #                                              #Q(info__icontains=indicator))
-    #                                              Q(info__icontains=indicator))
-    #
-    #
+    #         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+    #                                                         Q(record_type=record_type.name),
+    #                                                         Q(info_date__lt=time_frame),
+    #                                                         Q(info__icontains=indicator))
     #     else:
-    #         records = self.get_queryset().filter(~Q(info_source=RecordSource.PTO.name),
-    #                                              ~Q(info_source=RecordSource.IID.name),
-    #                                              Q(record_type=record_type.name),
-    #                                              Q(info_date__lt=time_frame),
-    #                                              Q(info__icontains=indicator))
-    #
-    #
-    #     if len(records) > 1000:
-    #         displayrecords = records.filter(info_source=RecordSource.PDS.name) | records.filter(~Q(info_source=RecordSource.PDS.name)).order_by('-created')[:500]
+    #         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+    #                                                        ~Q(info_source=RecordSource.IID.name),
+    #                                                        ~Q(info_source=RecordSource.PTO.name),
+    #                                                        Q(record_type=record_type.name),
+    #                                                        Q(info_date__lt=time_frame),
+    #                                                        Q(info__icontains=indicator))
     #
     #     host_records_complete = []
     #
-    #     for record in displayrecords:
+    #     if len(records) > 1000:
+    #         recordsdisplay = records.order_by('-created')[:500]
+    #     else:
+    #         recordsdisplay = records
     #
+    #     for record in recordsdisplay:
     #         info = getattr(record, 'info')
     #
-    #         if (record.info_source == 'PDS'):
+    #         new_record = {
+    #             'info': info,
+    #             #'domain': info['domain'],
+    #             #'ip': info['ip'],
+    #             'firstseen': record.info_date,
+    #             'lastseen': '',
+    #             'info_date': record.created,
+    #             'location': geolocate_ip(info['ip']),
+    #             'get_info_source_display': record.get_info_source_display()
+    #         }
     #
-    #             for result in info['results']:
-    #                 new_record = {
-    #                     'domain': result['domain'],
-    #                     'ip': result['ip'],
-    #                     'firstseen': dateutil.parser.parse(result['firstseen']),
-    #                     'lastseen': dateutil.parser.parse(result['lastseen']),
-    #                     'info_date': record.info_date,
-    #                     'location': geolocate_ip(result['ip']),
-    #                     'get_info_source_display': record.get_info_source_display()
-    #                 }
-    #
-    #                 host_records_complete.append(new_record)
-    #         else:
-    #
-    #             new_record = {
-    #                 'domain': info['domain'],
-    #                 'ip': info['ip'],
-    #                 'firstseen': record.info_date,
-    #                 'lastseen': '',
-    #                 'info_date': record.created,
-    #                 'location': geolocate_ip(info['ip']),
-    #                 'get_info_source_display': record.get_info_source_display()
-    #             }
-    #
-    #             host_records_complete.append(new_record)
+    #         host_records_complete.append(new_record)
     #
     #     return host_records_complete
+
 
     def malware_records(self, indicator):
         # Updated by LNguyen
@@ -461,8 +453,6 @@ class IndicatorRecord(models.Model):
 
     class Meta:
         unique_together = (("info_hash", "info_source", "info_date"),)
-
-        index_together = (("info_source", "record_type", "info_date", "created"))
 
 
     def generate_hash(self):
