@@ -141,7 +141,6 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
                                                  Q(info__contains=indicator))
 
         return records
