@@ -158,11 +158,10 @@ class CheckTask(LoginRequiredMixin, View):
 
                 info = getattr(record, 'info')
 
-        #        if len(info['results']) > 1000:
-        #            displaylist = info['results'][:500]
-        #        else:
-        #            displaylist = info['results']
-                displaylist = info['results']
+                if len(info['results']) > 1000:
+                    displaylist = info['results'].order_by('-created')[:500]
+                else:
+                    displaylist = info['results']
 
                 for result in displaylist:
                     new_record = {
@@ -182,12 +181,11 @@ class CheckTask(LoginRequiredMixin, View):
 
          #   history_records_complete = []
 
-          #  if len(host_records) > 1000:
-          #      recordsdisplay = host_records.order_by('-created')[:500]
-          #  else:
-          #      recordsdisplay = host_records
-            recordsdisplay = host_records
-            
+            if len(host_records) > 1000:
+                recordsdisplay = host_records.order_by('-created')[:500]
+            else:
+                recordsdisplay = host_records
+
             for record in recordsdisplay:
 
                 info = getattr(record, 'info')
