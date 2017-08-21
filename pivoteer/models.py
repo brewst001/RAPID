@@ -109,13 +109,13 @@ class IndicatorManager(models.Manager):
         # Description: Update to include PDNS Data into Historical dataset
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-        time_start = datetime.datetime.utcnow() + datetime.timedelta(days=365)
+        time_start = datetime.datetime.utcnow() - datetime.timedelta(days=366)
 
         if request.user.is_staff:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(created__lt=time_start),
+                                                 Q(created__gte=time_start),
                                                  Q(info__contains=indicator))
 
         else:
@@ -124,7 +124,7 @@ class IndicatorManager(models.Manager):
                                                  ~Q(info_source=RecordSource.IID.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(created__lt=time_start),
+                                                 Q(created__gte=time_start),
                                                  Q(info__contains=indicator))
 
         return records
