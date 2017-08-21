@@ -159,7 +159,7 @@ class CheckTask(LoginRequiredMixin, View):
                 info = getattr(record, 'info')
 
                 if len(info['results']) > 1000:
-                    displaylist = info['results'].order_by('-created')[:500]
+                    displaylist = info['results'][:500]
                 else:
                     displaylist = info['results']
 
