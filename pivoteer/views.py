@@ -140,68 +140,87 @@ class CheckTask(LoginRequiredMixin, View):
 
             self.template_name = "pivoteer/HistoricalRecords.html"
 
-            # Historical hosting records
-            pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
-
-         #   self.template_vars["hosting_records"] = pds_records
-            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
-
-
-          #  self.template_vars["historical_records"] = host_records
-
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
+            #  self.template_vars["historical_records"] = host_records
 
             host_records_complete = []
 
-            for record in pds_records:
+            # Process PDS hosting records
+            try:
+                pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
 
-                info = getattr(record, 'info')
+                pds_count = len(pds_records)
+                LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
 
-                if len(info['results']) > 1000:
-                    displaylist = info['results'][:500]
+                # We must lookup the country for each IP address for use in the template.
+                # We do this outside the task because we don't know the IP addresses until the task completes.
+
+                for record in pds_records:
+
+                    info = getattr(record, 'info')
+
+                    resultcount = len(info['results'])
+                    LOGGER.warn("pds_records.info count for indicator '%s': '%s' ", indicator, resultcount)
+
+                    # Set dataset limit if it's too large
+                    if resultcount > 1000:
+                        displaylist = info['results'][:500]
+                    else:
+                        displaylist = info['results']
+
+                    for result in displaylist:
+                        new_record = {
+                            'info':result,
+                            #'domain': result['domain'],
+                            #'ip': result['ip'],
+                            'firstseen': dateutil.parser.parse(result['firstseen']),
+                            'lastseen': dateutil.parser.parse(result['lastseen']),
+                            'info_date': record.info_date,
+                            'location': geolocate_ip(result['ip']),
+                            'get_info_source_display': record.get_info_source_display()
+                        }
+
+                        host_records_complete.append(new_record)
+
+            except Exception as err:
+                LOGGER.error("Historical PDS processing failed for indicator '%s': %s ", indicator, str(err))
+
+
+
+            # Process Historical hosting records
+            try:
+                host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+
+                host_count = len(host_records)
+                LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+
+             # Set dataset limit if it's too large
+                if host_count > 1000:
+                    recordsdisplay = host_records.order_by('-created')[:500]
                 else:
-                    displaylist = info['results']
+                    recordsdisplay = host_records
 
-                for result in displaylist:
+                # We must lookup the country for each IP address for use in the template.
+                # We do this outside the task because we don't know the IP addresses until the task completes.
+                for record in recordsdisplay:
+
+                    info = getattr(record, 'info')
+
                     new_record = {
-                        'info':result,
-                        #'domain': result['domain'],
-                        #'ip': result['ip'],
-                        'firstseen': dateutil.parser.parse(result['firstseen']),
-                        'lastseen': dateutil.parser.parse(result['lastseen']),
-                        'info_date': record.info_date,
-                        'location': geolocate_ip(result['ip']),
+                        'info': info,
+                        #'domain': info['domain'],
+                        #'ip': info['ip'],
+                        'firstseen': record.info_date,
+                        'lastseen': '',
+                        'info_date': record.created,
+                        'location': geolocate_ip(info['ip']),
                         'get_info_source_display': record.get_info_source_display()
                     }
 
                     host_records_complete.append(new_record)
 
-        #    self.template_vars["hosting_records"] = host_records_complete
+            except Exception as err:
+                LOGGER.error("Historical host processing failed for indicator '%s': %s ", indicator, str(err))
 
-         #   history_records_complete = []
-
-            if len(host_records) > 1000:
-                recordsdisplay = host_records.order_by('-created')[:500]
-            else:
-                recordsdisplay = host_records
-
-            for record in recordsdisplay:
-
-                info = getattr(record, 'info')
-
-                new_record = {
-                    'info': info,
-                    #'domain': info['domain'],
-                    #'ip': info['ip'],
-                    'firstseen': record.info_date,
-                    'lastseen': '',
-                    'info_date': record.created,
-                    'location': geolocate_ip(info['ip']),
-                    'get_info_source_display': record.get_info_source_display()
-                }
-
-                host_records_complete.append(new_record)
 
             self.template_vars["hosting_records"] = host_records_complete
 
