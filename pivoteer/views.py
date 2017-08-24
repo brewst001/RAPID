@@ -159,7 +159,7 @@ class CheckTask(LoginRequiredMixin, View):
                     info = getattr(record, 'info')
 
                     resultcount = len(info['results'])
-                    LOGGER.warn("pds_records.info count for indicator '%s': '%s' ", indicator, resultcount)
+                    LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator, record.info_date, resultcount)
 
                     # Set dataset limit if it's too large
                     if resultcount > 1000:
