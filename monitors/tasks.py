@@ -491,7 +491,7 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
         return lookup
 
 
-class IndicatorMonitoring(PeriodicTask):
+class IndicatorMonitoring():
     """
     Monitor indicators as a periodic task.
 
@@ -505,26 +505,25 @@ class IndicatorMonitoring(PeriodicTask):
     """
     #print("entering tasks.IndicatorMonitoring")
 
-   # SUBTASKS = [DomainLookupSubTask(), IpLookupSubTask(), CertificateLookupSubTask()]
-    SUBTASKS = [CertificateLookupSubTask(), DomainLookupSubTask(), IpLookupSubTask()]
+    #SUBTASKS = [CertificateLookupSubTask(), DomainLookupSubTask(), IpLookupSubTask()]
 
-    run_every = crontab()
-
-    def run(self, **kwargs):
-        """
-        Run this task.
-
-        This method will call 'monitor_lookups' for every sub-task defined in the 'SUBTASKS' member.
-
-        :param kwargs: Additional keyword arguments (this parameter is ignored)
-        :return: This method returns no values
-        """
-       #print("running IndicatorMonitoring.run")
-        LOGGER.debug("Running monitor lookups...")
-        for subtask in IndicatorMonitoring.SUBTASKS:
-             self.do_indicator_lookups(subtask)
-
-        LOGGER.debug("Monitor lookups complete.")
+   # run_every = crontab()
+   #
+   #  def run(self, **kwargs):
+   #      """
+   #      Run this task.
+   #
+   #      This method will call 'monitor_lookups' for every sub-task defined in the 'SUBTASKS' member.
+   #
+   #      :param kwargs: Additional keyword arguments (this parameter is ignored)
+   #      :return: This method returns no values
+   #      """
+   #     #print("running IndicatorMonitoring.run")
+   #      LOGGER.debug("Running monitor lookups...")
+   #      for subtask in IndicatorMonitoring.SUBTASKS:
+   #           self.do_indicator_lookups(subtask)
+   #
+   #      LOGGER.debug("Monitor lookups complete.")
 
     @staticmethod
     def get_lookups(lookup_type, current_time):
@@ -776,3 +775,101 @@ class IndicatorMonitoring(PeriodicTask):
             #for owner in recipients:
             #    message = "Error sending alert email to '%s'.  Please consult server log." % owner.email
             #    IndicatorMonitoring.create_alert(indicator, message, owner)
+
+
+class CertificateMonitoring(IndicatorMonitoring, PeriodicTask):
+    """
+    Monitor certificate indicators as a periodic task.
+
+    This class is designed for handling monitoring tasks defined in the database by a subclass of IndicatorLookupBase.
+    Adding a new type is pretty easy:
+        1. Create a new *Monitor class in monitors/models.py by subclassing IndicatorLookupBase.  Make sure it's
+           imported in this module.
+        2. Create a new subclass of IndicatorLookupSubTask for your new monitor.  (Remember to make sure of the existing
+           functions in core/lookups.py if possible!)
+        3. Add an instance of this subclass to the 'SUBTASKS' member of this class
+    """
+    run_every=crontab()
+
+    def run(self, **kwargs):
+        """
+        Run this task.
+
+        This method will call 'monitor_lookups' for every sub-task defined in the 'SUBTASKS' member.
+
+        :param kwargs: Additional keyword arguments (this parameter is ignored)
+        :return: This method returns no values
+        """
+        print("running CertificateMonitoring.run")
+        LOGGER.debug("Running monitor lookups...")
+        IndicatorMonitoring.do_indicator_lookups(self, CertificateLookupSubTask())
+
+        LOGGER.debug("Monitor lookups complete.")
+
+
+
+class DomainMonitoring(IndicatorMonitoring,PeriodicTask):
+    """
+    Monitor domain indicators as a periodic task.
+
+    This class is designed for handling monitoring tasks defined in the database by a subclass of IndicatorLookupBase.
+    Adding a new type is pretty easy:
+        1. Create a new *Monitor class in monitors/models.py by subclassing IndicatorLookupBase.  Make sure it's
+           imported in this module.
+        2. Create a new subclass of IndicatorLookupSubTask for your new monitor.  (Remember to make sure of the existing
+           functions in core/lookups.py if possible!)
+        3. Add an instance of this subclass to the 'SUBTASKS' member of this class
+    """
+    run_every=crontab()
+
+    def run(self, **kwargs):
+        """
+        Run this task.
+
+        This method will call 'monitor_lookups' for every sub-task defined in the 'SUBTASKS' member.
+
+        :param kwargs: Additional keyword arguments (this parameter is ignored)
+        :return: This method returns no values
+        """
+
+        print("running DomainMonitoring.run")
+        LOGGER.debug("Running monitor lookups...")
+
+        IndicatorMonitoring.do_indicator_lookups(self,DomainLookupSubTask())
+
+        LOGGER.debug("Monitor lookups complete.")
+
+
+class IPMonitoring(IndicatorMonitoring, PeriodicTask):
+    """
+    Monitor IP indicators as a periodic task.
+
+    This class is designed for handling monitoring tasks defined in the database by a subclass of IndicatorLookupBase.
+    Adding a new type is pretty easy:
+        1. Create a new *Monitor class in monitors/models.py by subclassing IndicatorLookupBase.  Make sure it's
+           imported in this module.
+        2. Create a new subclass of IndicatorLookupSubTask for your new monitor.  (Remember to make sure of the existing
+           functions in core/lookups.py if possible!)
+        3. Add an instance of this subclass to the 'SUBTASKS' member of this class
+    """
+    run_every = crontab()
+
+    def run(self, **kwargs):
+        """
+        Run this task.
+
+        This method will call 'monitor_lookups' for every sub-task defined in the 'SUBTASKS' member.
+
+        :param kwargs: Additional keyword arguments (this parameter is ignored)
+        :return: This method returns no values
+        """
+        print("running IPMonitoring.run")
+        LOGGER.debug("Running monitor lookups...")
+
+        IndicatorMonitoring.do_indicator_lookups(self, IpLookupSubTask())
+
+        LOGGER.debug("Monitor lookups complete.")
+
+
+
+
