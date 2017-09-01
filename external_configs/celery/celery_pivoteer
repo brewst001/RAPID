@@ -1,5 +1,5 @@
 # Names of nodes to start
-CELERYD_NODES="p1 p2"
+CELERYD_NODES="p1 p2 p3 p4"
 
 # Absolute or relative path to the 'celery' command:
 CELERY_BIN="/usr/local/bin/celery"
@@ -8,14 +8,14 @@ CELERY_BIN="/usr/local/bin/celery"
 CELERY_APP="RAPID"
 
 # Where to chdir at start.
-CELERYD_CHDIR="/vagrant/"
+CELERYD_CHDIR="/apps/RAPID/"
 
 # %N will be replaced with the first part of the nodename.
 CELERYD_LOG_FILE="/var/log/celery/%N.log"
 CELERYD_PID_FILE="/var/run/celery/%N.pid"
 
 # Extra command-line arguments to the worker
-CELERYD_OPTS="-Q pivoteer --time-limit=300 --concurrency=3"
+CELERYD_OPTS="-Q pivoteer --time-limit=300 --concurrency=5"
 
 # Workers should run as an unprivileged user.
 CELERYD_USER="celery"
