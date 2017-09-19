@@ -147,13 +147,16 @@ Jump to:
 
 <hr class="linebreak" id="threatcrowd">
 <h3>Most Recent ThreatCrowd Record</h3>
-<a href="#top">Back to top</a><br><br>
 {% if tc_info %}
-  <b>Lookup Date:</b><br>
-  {{ tc_info.info_date }}
-  <br><br>
-  {% if tc_info.info.error %}
-  Error retrieving TC data: {{ tc_info.info.error }}
+<a href="#top">Back to top</a><br><br>
+  {% if tc_info.info.response_code != "1" %}
+      <h4>No Records Found</h4>
+  {% elif tc_info.info.error %}
+      Error retrieving TC data: {{ tc_info.info.error }}
+  {%  else %}
+      <b>Lookup Date:</b><br>
+      {{ tc_info.info_date }}
+      <br><br>
   {% endif %}
   {% if tc_info.info.permalink %}
   <b>Permalink:</b><br>
