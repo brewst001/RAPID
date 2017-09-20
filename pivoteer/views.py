@@ -126,8 +126,10 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_vars["current_hosts"] = host_records_complete
 
             # Current WHOIS record
+
             whois_record = IndicatorRecord.objects.recent_whois(indicator)
             self.template_vars["current_whois"] = whois_record
+
 
             # Current ThreatCrowd record
             tc_info = IndicatorRecord.objects.recent_tc(indicator)
@@ -135,6 +137,18 @@ class CheckTask(LoginRequiredMixin, View):
 
             cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
+
+            # Pull data according to the record type
+        elif record_type == "RecentThreat":
+
+            self.template_name = "pivoteer/RecentThreat.html"
+
+
+                # Current ThreatCrowd record
+            tc_info = IndicatorRecord.objects.recent_tc(indicator)
+            self.template_vars["tc_info"] = tc_info
+
+
 
         elif record_type == "Historical":
 
