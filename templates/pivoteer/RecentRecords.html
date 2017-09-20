@@ -134,6 +134,7 @@ Jump to:
                     {% for key, item in net.items %}
                         <b>{{ key|title }}:</b> {{ item }}<br>
                     {% endfor %}
+
                 {% endfor %}
             </td>
             <td></td>
@@ -157,58 +158,55 @@ Jump to:
       <b>Lookup Date:</b><br>
       {{ tc_info.info_date }}
       <br><br>
+
+
+      <b>Permalink:</b><br>
+      <a target="_blank" href="{{ tc_info.info.permalink }}">{{ tc_info.info.permalink }}</a>
+      <br><br>
+
+
+      <b>Emails:</b><br>
+      {{ tc_info.info.emails|join:", " }}
+      <br><br>
+
+      <table class="table display">
+      <thead>
+        <tr>
+          <th>Subdomains</th>
+          <th>Resolutions</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+          {% for item in tc_info.info.subdomains %}
+            <br><span class="pivot">{{ item }}</span>
+          {% endfor %}
+          </td>
+
+          <td>
+          {% for item in tc_info.info.resolutions %}
+            <br>{{item.last_resolved}} <span class="pivot">{{ item.domain }}</span><span class="pivot">{{ item.ip_address }}</span>
+          {% endfor %}
+          </td>
+
+
+          <td>
+          {% for item in tc_info.info.hashes %}
+            <br>{{ item }}
+          {% endfor %}
+          </td>
+
+        </tr>
+      </tbody>
+      </table>
+
+      <b>References:</b><br>
+      {{ tc_info.info.references|join:", " }}
+      <br><br>
   {% endif %}
-  {% if tc_info.info.permalink %}
-  <b>Permalink:</b><br>
-  <a target="_blank" href="{{ tc_info.info.permalink }}">{{ tc_info.info.permalink }}</a>
-  <br><br>
-  {% endif %}
-  {% if tc_info.info.emails %}
-  <b>Emails:</b><br>
-  {{ tc_info.info.emails|join:", " }}
-  <br><br>
-  {% endif %}
-  <table class="table display">
-  <thead>
-    <tr>
-      {% if tc_info.info.subdomains %}<th>Subdomains</th>{% endif %}
-      {% if tc_info.info.resolutions %}
-      <th>Resolutions</th>
-      {% endif %}
-      {% if tc_info.info.hashes %}<th>Hashes</th>{% endif %}
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      {% if tc_info.info.subdomains %}
-      <td>
-      {% for item in tc_info.info.subdomains %}
-        <br><span class="pivot">{{ item }}</span>
-      {% endfor %}
-      </td>
-      {% endif %}
-      {% if tc_info.info.resolutions %}
-      <td>
-      {% for item in tc_info.info.resolutions %}
-        <br>{{item.last_resolved}} {% if item.domain %}<span class="pivot">{{ item.domain }}</span>{% endif %}{% if item.ip_address %}<span class="pivot">{{ item.ip_address }}</span>{% endif %}       
-      {% endfor %}
-      </td>
-      {% endif %}
-      {% if tc_info.info.hashes %}
-      <td>
-      {% for item in tc_info.info.hashes %}
-        <br>{{ item }}
-      {% endfor %}
-      </td>
-      {% endif %}
-    </tr>
-  </tbody>
-  </table>
-  {% if tc_info.info.references %}
-  <b>References:</b><br>
-  {{ tc_info.info.references|join:", " }}
-  <br><br>
-  {% endif %}
+
 {% else %}
 <h4>No Records Found</h4>
 {% endif %}
