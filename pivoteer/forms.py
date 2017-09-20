@@ -53,27 +53,33 @@ class SubmissionForm(forms.Form):
 
             if self.indicator_type == "domain":
                 new_task = group([domain_whois.s(indicator),
-                                  domain_hosts.s(indicator),
-                                  domain_thc.s(indicator),
-                                  certificate_cen.s(indicator)])()
+                                  domain_hosts.s(indicator)])()
+                # new_task = group([domain_whois.s(indicator),
+                #                   domain_hosts.s(indicator),
+                #                   domain_thc.s(indicator),
+                #                   certificate_cen.s(indicator)])()
 
             elif self.indicator_type == "ip":
                 new_task = group([ip_whois.s(indicator),
-                                  ip_hosts.s(indicator),
-                                  ip_thc.s(indicator),
-                                  certificate_cen.s(indicator)])()
-            elif self.indicator_type == "other":
-                new_task = group([certificate_cen.s(indicator)])()
+                                  ip_hosts.s(indicator)])()
+                # new_task = group([ip_whois.s(indicator),
+                #                   ip_hosts.s(indicator),
+                #                   ip_thc.s(indicator),
+                #                   certificate_cen.s(indicator)])()
+           # elif self.indicator_type == "other":
+           #     new_task = group([certificate_cen.s(indicator)])()
             else:
                 new_task = None
 
         if record_type == "RecentThreat":
 
             if self.indicator_type == "domain":
-                new_task = group([domain_thc.s(indicator)])()
+                new_task = group([domain_thc.s(indicator),
+                                  certificate_cen.s(indicator)])()
 
             elif self.indicator_type == "ip":
-                new_task = group([ip_thc.s(indicator)])()
+                new_task = group([ip_thc.s(indicator),
+                                  certificate_cen.s(indicator)])()
 
             else:
                 new_task = None
