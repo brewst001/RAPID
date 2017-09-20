@@ -148,10 +148,11 @@ Jump to:
 
 <hr class="linebreak" id="threatcrowd">
 <h3>Most Recent ThreatCrowd Record</h3>
-{% if tc_info %}
 <a href="#top">Back to top</a><br><br>
+{% if tc_info %}
+
   {% if tc_info.info.response_code != "1" %}
-      <h4>No Records Found</h4>
+      <h4>No Response Found from API </h4>
   {% elif tc_info.info.error %}
       Error retrieving TC data: {{ tc_info.info.error }}
   {%  else %}
