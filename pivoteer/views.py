@@ -143,10 +143,13 @@ class CheckTask(LoginRequiredMixin, View):
 
             self.template_name = "pivoteer/RecentThreat.html"
 
-
                 # Current ThreatCrowd record
             tc_info = IndicatorRecord.objects.recent_tc(indicator)
             self.template_vars["tc_info"] = tc_info
+
+        elif record_type == "RecentCert":
+
+            self.template_name = "pivoteer/RecentCert.html"
 
             cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
