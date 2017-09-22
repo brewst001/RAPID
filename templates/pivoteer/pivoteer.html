@@ -47,71 +47,71 @@
     <!-- Nav tabs -->
 
   <div class="row">
-    <div class="nav column-menus nav-stacked col-sm-3" role="tablist" >
+    <ul class="nav nav-pills nav-stacked col-sm-3" >
 
-        <li role="presentation" class="active">
-            <a href="#RecentPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
+        <li class="active">
+            <a href="#RecentPanel" data-toggle="pill" >
                 Recent
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#RecentThreatPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
+            <a href="#RecentThreatPanel" data-toggle="pill" >
                 Recent Threat
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#RecentCertPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
+            <a href="#RecentCertPanel" data-toggle="pill" >
                 Recent Cert
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#HistoricalPanel" aria-controls="HostingPanel" role="tab" data-toggle="tab"  >
+            <a href="#HistoricalPanel" data-toggle="pill" >
                 Historical
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#MalwarePanel" aria-controls="MalwarePanel" role="tab" data-toggle="tab" >
+            <a href="#MalwarePanel" data-toggle="pill" >
                 Malware
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-           <a href="#SafeBrowsingPanel" aria-controls="SafeBrowsingPanel" role="tab" data-toggle="tab" >
+           <a href="#SafeBrowsingPanel" data-toggle="pill" >
             SafeBrowsing
             <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
-        <li role = "presentation">
-            <a href ="#SearchPanel" aria-controls="SearchPanel" role="tab" data-toggle="tab" >
+        <li role="presentation">
+            <a href ="#SearchPanel" data-toggle="pill" >
                 Search Results
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
-        <li role = "presentation">
-            <a href ="#ExternalPanel" aria-controls="ExternalPanel" role="tab" data-toggle="tab" >
+        <li role="presentation">
+            <a href ="#ExternalPanel" data-toggle="pill" >
                 External
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
-        <li role = "presentation">
-            <a href ="#DNSTwistPanel" aria-controls="DNSTwistPanel" role="tab" data-toggle="tab" >
+        <li role="presentation">
+            <a href ="#DNSTwistPanel" data-toggle="pill" >
                 DNSTwist
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
-    </div>
+    </ul>
 
     <div>
       <div class="pull-right">
@@ -147,17 +147,17 @@
     </div>
     <!-- End nav tabs -->
     <!-- Panel panes -->
-      <div class="tab-content col-sm-9">
-        <div role="" class="tab-pane active" id="RecentPanel"></div>
-        <div role="" class="tab-pane" id="RecentThreatPanel"></div>
-        <div role="" class="tab-pane" id="RecentCertPanel"></div>
-        <div role="" class="tab-pane" id="HistoricalPanel"></div>
-        <div role="" class="tab-pane" id="MalwarePanel"></div>
-        <div role="" class="tab-pane" id="SafeBrowsingPanel"></div>
-        <div role="" class="tab-pane" id="SearchPanel"></div>
-        <div role="" class="tab-pane" id="ExternalPanel"></div>
-        <div role="" class="tab-pane" id="DNSTwistPanel"></div>
-      </div>
+    <div class="tab-content col-sm-9">
+        <div role="tabpanel" class="tab-pane fade in active" id="RecentPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="RecentThreatPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="RecentCertPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="HistoricalPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="MalwarePanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="SafeBrowsingPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="SearchPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="ExternalPanel"></div>
+        <div role="tabpanel" class="tab-pane fade" id="DNSTwistPanel"></div>
+    </div>
 
   </div>
     <!-- End tab panes -->
