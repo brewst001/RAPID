@@ -157,7 +157,7 @@ class CheckTask(LoginRequiredMixin, View):
 
         elif record_type == "WhoIs":
 
-            self.template_name = "pivoteer/WhoisRecords.html"
+            self.template_name = "pivoteer/WhoIsRecords.html"
 
             whois_record = IndicatorRecord.objects.recent_whois(indicator)
             self.template_vars["current_whois"] = whois_record

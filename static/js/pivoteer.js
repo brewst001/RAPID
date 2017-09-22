@@ -108,7 +108,7 @@ function initialize_table(record_element) {
             "aaSorting": [[0, "desc"]]
         });
 
-    }  else if (record_element == '#WhoisPanel') {
+    }  else if (record_element == '#WhoIsPanel') {
 
         $('#CW_table').dataTable({
             "iDisplayLength":  10,
