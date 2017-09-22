@@ -1,9 +1,5 @@
-{% load pivoteer_extras %}
-
-
-<hr class="linebreak" id="threatcrowd">
+<span id="top"></span>
 <h3>Most Recent ThreatCrowd Record</h3>
-<a href="#top">Back to top</a><br><br>
 {% if tc_info %}
 
   {% if tc_info.info.response_code != "1" %}
@@ -62,7 +58,7 @@
       {{ tc_info.info.references|join:", " }}
       <br><br>
   {% endif %}
-
+<a href="#top">Back to top</a><br><br>
 {% else %}
 <h4>No Records Found</h4>
 {% endif %}
