@@ -187,14 +187,14 @@ class CheckTask(LoginRequiredMixin, View):
 
                     info = getattr(record, 'info')
 
-                    resultcount = len(info['results'])
+                    #resultcount = len(info['results'])
                     LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator, record.info_date, resultcount)
 
                     # Set dataset limit if it's too large
-                    if resultcount > 1000:
-                        displaylist = info['results'][:500]
-                    else:
-                        displaylist = info['results']
+                    #if resultcount > 1000:
+                    #    displaylist = info['results'][:500]
+                    #else:
+                    displaylist = info['results']
 
                     for result in displaylist:
                         new_record = {
@@ -223,10 +223,10 @@ class CheckTask(LoginRequiredMixin, View):
                 LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
 
              # Set dataset limit if it's too large
-                if host_count > 1000:
-                    recordsdisplay = host_records.order_by('-created')[:500]
-                else:
-                    recordsdisplay = host_records
+                #if host_count > 1000:
+                #    recordsdisplay = host_records.order_by('-created')[:500]
+                #else:
+                recordsdisplay = host_records
 
                 # We must lookup the country for each IP address for use in the template.
                 # We do this outside the task because we don't know the IP addresses until the task completes.
