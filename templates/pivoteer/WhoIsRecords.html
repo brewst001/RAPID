@@ -1,0 +1,168 @@
+<span id="top"></span>
+<h3 id="whois">Most Recent WHOIS Record</h3>
+{% if current_whois %}
+    <table id="CW_table" class="table display">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+
+        {% if current_whois.info.domain_name %}
+            <td>
+                <b>Lookup Date:</b><br>
+                {{ current_whois.info_date|date:"N d, Y h:i A" }}
+                <br><br>
+
+                <b>Domain Name:</b><br>
+                {{ current_whois.info.domain_name }}
+                <br><br>
+
+                <b>Status:</b><br>
+                {{ current_whois.info.status|join:", " }}
+                <br><br>
+
+                <b>Registrar:</b><br>
+                {{ current_whois.info.registrar|join:", " }}
+                <br><br>
+
+                <b>Updated:</b><br>
+                {{ current_whois.info.updated_date|join:", " }}
+                <br><br>
+
+                <b>Expires:</b><br>
+                {{ current_whois.info.expiration_date|join:", " }}
+                <br><br>
+
+                <b>Name Servers:</b><br>
+                {{ current_whois.info.nameservers|join:", " }}
+                <br><br>
+            </td>
+            <td>
+                {% for key, item in current_whois.info.contacts.items %}
+                    {% if item %}
+                        <b>{{ key|title }}</b><br>
+                        {% for subkey, subitem in item.items %}
+                            {{ subkey }}: {{ subitem }}<br>
+                        {% endfor %}
+                        <br>
+                    {% endif %}
+                {% endfor %}
+            </td>
+        {% elif current_whois.info.query %}
+            <td>
+                <b>Lookup Date:</b> {{ current_whois.info_date }}<br>
+                <b>IP Address:</b> {{ current_whois.info.query }}<br>
+                <b>ASN CIDR:</b> {{ current_whois.info.asn_cidr }}<br>
+                <b>ASN ID:</b> {{ current_whois.info.asn }}<br>
+                <b>ASN Registry:</b> {{ current_whois.info.asn_registry }}<br>
+                <b>ASN Country Code:</b> {{ current_whois.info.asn_country_code }}<br>
+                <b>ASN Date:</b> {{ current_whois.info.asn_date }}<br>
+                <b>Referral:</b> {{ current_whois.info.referral }}<br>
+
+                {% for net in current_whois.info.nets %}
+                    <br>
+                    {% for key, item in net.items %}
+                        <b>{{ key|title }}:</b> {{ item }}<br>
+                    {% endfor %}
+
+                {% endfor %}
+            </td>
+            <td></td>
+        {% endif %}
+        </tr>
+        </tbody>
+    </table>
+    <a href="#top">Back to top</a><br><br>
+{% else %}
+    <h4>No Records Found</h4>
+{% endif %}
+
+
+<h3>WHOIS Records Beyond Last 24 hours</h3>
+{% if historical_whois %}
+    <table id="HW_table" class="table display">
+        <thead>
+            <tr>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for record in historical_whois %}
+                <tr>
+                    {% if record.info.domain_name %}
+                        <td>{{ record.earliest }}</td>
+                        <td>{{ record.latest|date:"N d, Y h:i A" }}</td>
+                        <td>
+                            <b>Domain Name:</b><br>
+                            {{ record.info.domain_name }}
+                            <br><br>
+
+                            <b>Status:</b><br>
+                            {{ record.info.status|join:", " }}
+                            <br><br>
+
+                            <b>Registrar:</b><br>
+                            {{ record.info.registrar|join:", " }}
+                            <br><br>
+
+                            <b>Updated:</b><br>
+                            {{ record.info.updated_date|join:", " }}
+                            <br><br>
+
+                            <b>Expires:</b><br>
+                            {{ record.info.expiration_date|join:", " }}
+                            <br><br>
+
+                            <b>Name Servers:</b><br>
+                            {{ record.info.nameservers|join:", " }}
+                            <br><br>
+                        </td>
+                        <td>
+                            {% for key, item in record.info.contacts.items %}
+                                {% if item %}
+                                    <b>{{ key|title }}</b><br>
+                                    {% for subkey, subitem in item.items %}
+                                        {{ subkey }}: {{ subitem }}<br>
+                                    {% endfor %}
+                                    <br>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% elif record.info.query %}
+                        <td>{{ record.earliest }}</td>
+                        <td>{{ record.latest }}</td>
+                        <td>
+                            <b>Lookup Date:</b> {{ record.info_date|date:"N d, Y" }}<br>
+                            <b>IP Address:</b> {{ record.info.query }}<br>
+                            <b>ASN CIDR:</b> {{ record.info.asn_cidr }}<br>
+                            <b>ASN ID:</b> {{ record.info.asn }}<br>
+                            <b>ASN Registry:</b> {{ record.info.asn_registry }}<br>
+                            <b>ASN Country Code:</b> {{ record.info.asn_country_code }}<br>
+                            <b>ASN Date:</b> {{ record.info.asn_date|date:"N d, Y" }}<br>
+                            <b>Referral:</b> {{ record.info.referral }}<br>
+
+                            {% for net in record.info.nets %}
+                                <br>
+                                {% for key, item in net.items %}
+                                    <b>{{ key|title }}:</b> {{ item }}<br>
+                                {% endfor %}
+                            {% endfor %}
+                        </td>
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="#top">Back to top</a><br><br>
+{% else %}
+    <h4>No Records Found</h4>
+{% endif %}

@@ -52,16 +52,14 @@ class SubmissionForm(forms.Form):
         if record_type == "Recent":
 
             if self.indicator_type == "domain":
-                new_task = group([domain_whois.s(indicator),
-                                  domain_hosts.s(indicator)])()
+                new_task = group([domain_hosts.s(indicator)])()
                 # new_task = group([domain_whois.s(indicator),
                 #                   domain_hosts.s(indicator),
                 #                   domain_thc.s(indicator),
                 #                   certificate_cen.s(indicator)])()
 
             elif self.indicator_type == "ip":
-                new_task = group([ip_whois.s(indicator),
-                                  ip_hosts.s(indicator)])()
+                new_task = group([ip_hosts.s(indicator)])()
                 # new_task = group([ip_whois.s(indicator),
                 #                   ip_hosts.s(indicator),
                 #                   ip_thc.s(indicator),
@@ -85,6 +83,17 @@ class SubmissionForm(forms.Form):
         elif record_type == "RecentCert":
 
             new_task = group([certificate_cen.s(indicator)])()
+
+        elif record_type == "WhoIs":
+
+            if self.indicator_type == "domain":
+                new_task = group([domain_whois.s(indicator)])()
+
+            elif self.indicator_type == "ip":
+                new_task = group([ip_whois.s(indicator)])()
+
+            else:
+                new_task = None
 
         elif record_type == "Historical":
             if self.indicator_type != "other":

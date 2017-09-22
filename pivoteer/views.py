@@ -126,9 +126,9 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_vars["current_hosts"] = host_records_complete
 
             # Current WHOIS record
-
-            whois_record = IndicatorRecord.objects.recent_whois(indicator)
-            self.template_vars["current_whois"] = whois_record
+            #
+            # whois_record = IndicatorRecord.objects.recent_whois(indicator)
+            # self.template_vars["current_whois"] = whois_record
 
 
             # Current ThreatCrowd record
@@ -153,6 +153,17 @@ class CheckTask(LoginRequiredMixin, View):
 
             cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
+
+
+        elif record_type == "WhoIs":
+
+            self.template_name = "pivoteer/WhoisRecords.html"
+
+            whois_record = IndicatorRecord.objects.recent_whois(indicator)
+            self.template_vars["current_whois"] = whois_record
+
+            whois_record = IndicatorRecord.objects.historical_whois(indicator)
+            self.template_vars["historical_whois"] = whois_record
 
         elif record_type == "Historical":
 
@@ -243,8 +254,8 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_vars["hosting_records"] = host_records_complete
 
             # Historical WHOIS records
-            whois_record = IndicatorRecord.objects.historical_whois(indicator)
-            self.template_vars["historical_whois"] = whois_record
+            # whois_record = IndicatorRecord.objects.historical_whois(indicator)
+            # self.template_vars["historical_whois"] = whois_record
 
 
         # elif record_type == "Historical":

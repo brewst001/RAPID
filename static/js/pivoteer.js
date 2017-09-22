@@ -11,7 +11,7 @@ function kill_ajax() {
 // Submit for all records
 function run_records(form_data) {
 
-    var records = [ "Recent", "RecentThreat", "RecentCert", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
+    var records = [ "Recent", "RecentThreat",  "RecentCert", "WhoIs", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
 
     $.each(records, function( index, record ) {
         // Clear out old information from DOM elements and submit new ajax requests
@@ -101,27 +101,20 @@ function initialize_table(record_element) {
 
     if (record_element == '#RecentPanel') {
         $('#CR_table').dataTable({
-            "iDisplayLength":  15,
-            "bInfo":            false,
-            "bLengthChange":   false,
-            "bFilter":         true,
-            "aaSorting":      [[0, "desc"]]
+            "iDisplayLength": 15,
+            "bInfo": false,
+            "bLengthChange": false,
+            "bFilter": true,
+            "aaSorting": [[0, "desc"]]
         });
+
+    }  else if (record_element == '#WhoisPanel') {
 
         $('#CW_table').dataTable({
             "iDisplayLength":  10,
             "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         false,
-            "aaSorting":      [[0, "desc"]]
-        });
-
-    } else if (record_element == "#HistoricalPanel") {
-        $('#HR_table').dataTable({
-            "iDisplayLength":  50,
-            "bInfo":            false,
-            "bLengthChange":   false,
-            "bFilter":         true,
             "aaSorting":      [[0, "desc"]]
         });
 
@@ -132,6 +125,17 @@ function initialize_table(record_element) {
             "bFilter":         false,
             "aaSorting":      [[1, "desc"]]
         });
+
+
+    } else if (record_element == "#HistoricalPanel") {
+        $('#HR_table').dataTable({
+            "iDisplayLength":  50,
+            "bInfo":            false,
+            "bLengthChange":   false,
+            "bFilter":         true,
+            "aaSorting":      [[0, "desc"]]
+        });
+
 
     } else if (record_element == "#MalwarePanel") {
         $('#MR_table').dataTable({
