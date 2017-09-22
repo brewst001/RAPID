@@ -45,71 +45,76 @@
     <!-- End Alert Messages -->
 
     <!-- Nav tabs -->
-      <ul class="nav nav-tabs" role="tablist">
+
+  <div class="row">
+    <div class="nav column-menus nav-stacked col-sm-3" role="tablist" >
+
         <li role="presentation" class="active">
-            <a href="#RecentPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab">
+            <a href="#RecentPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
                 Recent
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
-        <li role="presentation" >
-            <a href="#RecentThreatPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab">
+        <li role="presentation">
+            <a href="#RecentThreatPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
                 Recent Threat
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
-        <li role="presentation" >
-            <a href="#RecentCertPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab">
+        <li role="presentation">
+            <a href="#RecentCertPanel" aria-controls="LookupPanel" role="tab" data-toggle="tab" >
                 Recent Cert
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#HistoricalPanel" aria-controls="HostingPanel" role="tab" data-toggle="tab">
+            <a href="#HistoricalPanel" aria-controls="HostingPanel" role="tab" data-toggle="tab"  >
                 Historical
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-            <a href="#MalwarePanel" aria-controls="MalwarePanel" role="tab" data-toggle="tab">
+            <a href="#MalwarePanel" aria-controls="MalwarePanel" role="tab" data-toggle="tab" >
                 Malware
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role="presentation">
-           <a href="#SafeBrowsingPanel" aria-controls="SafeBrowsingPanel" role="tab" data-toggle="tab">
+           <a href="#SafeBrowsingPanel" aria-controls="SafeBrowsingPanel" role="tab" data-toggle="tab" >
             SafeBrowsing
             <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role = "presentation">
-            <a href ="#SearchPanel" aria-controls="SearchPanel" role="tab" data-toggle="tab">
+            <a href ="#SearchPanel" aria-controls="SearchPanel" role="tab" data-toggle="tab" >
                 Search Results
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role = "presentation">
-            <a href ="#ExternalPanel" aria-controls="ExternalPanel" role="tab" data-toggle="tab">
+            <a href ="#ExternalPanel" aria-controls="ExternalPanel" role="tab" data-toggle="tab" >
                 External
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
 
         <li role = "presentation">
-            <a href ="#DNSTwistPanel" aria-controls="DNSTwistPanel" role="tab" data-toggle="tab">
+            <a href ="#DNSTwistPanel" aria-controls="DNSTwistPanel" role="tab" data-toggle="tab" >
                 DNSTwist
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
         </li>
+    </div>
 
-        <li class="pull-right">
+    <div>
+      <div class="pull-right">
             <div class="btn-group dropdown" id="export">
               <button class="btn btn-primary btn-md dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                   Export
@@ -125,35 +130,36 @@
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=dnstwist">DNSTwist Records</a></li>
               </ul>
             </div>
-        </li>
-
-        <li class="pull-right">
-            <form class="form-inline" role="form" action="{% url 'app_Pivoteer' %}" method="post" id="research_indicator">
-              {% csrf_token %}
-              <div class="form-group">
-                {{ SubmissionForm.indicator|attr:"class:form-control"|attr:"placeholder:Enter Indicator" }}
-              </div>
-              <button class="btn btn-success btn-md" type="submit" value="Research">
-                 Research
-                 <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-              </button>
-            </form>
-          </li>
-      </ul>
-    <!-- End nav tabs -->
-
-    <!-- Panel panes -->
-      <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="RecentPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="RecentThreatPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="RecentCertPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="HistoricalPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="MalwarePanel"></div>
-        <div role="tabpanel" class="tab-pane" id="SafeBrowsingPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="SearchPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="ExternalPanel"></div>
-        <div role="tabpanel" class="tab-pane" id="DNSTwistPanel"></div>
       </div>
+
+      <div class="pull-right">
+        <form class="form-inline" role="form" action="{% url 'app_Pivoteer' %}" method="post" id="research_indicator">
+          {% csrf_token %}
+          <div class="form-group">
+            {{ SubmissionForm.indicator|attr:"class:form-control"|attr:"placeholder:Enter Indicator" }}
+          </div>
+          <button class="btn btn-success btn-md" type="submit" value="Research">
+             Research
+             <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- End nav tabs -->
+    <!-- Panel panes -->
+      <div class="tab-content col-sm-9">
+        <div role="" class="tab-pane active" id="RecentPanel"></div>
+        <div role="" class="tab-pane" id="RecentThreatPanel"></div>
+        <div role="" class="tab-pane" id="RecentCertPanel"></div>
+        <div role="" class="tab-pane" id="HistoricalPanel"></div>
+        <div role="" class="tab-pane" id="MalwarePanel"></div>
+        <div role="" class="tab-pane" id="SafeBrowsingPanel"></div>
+        <div role="" class="tab-pane" id="SearchPanel"></div>
+        <div role="" class="tab-pane" id="ExternalPanel"></div>
+        <div role="" class="tab-pane" id="DNSTwistPanel"></div>
+      </div>
+
+  </div>
     <!-- End tab panes -->
 {% endblock content %}
 
