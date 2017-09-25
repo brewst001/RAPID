@@ -258,68 +258,6 @@ class CheckTask(LoginRequiredMixin, View):
             # self.template_vars["historical_whois"] = whois_record
 
 
-        # elif record_type == "Historical":
-        #
-        #     self.template_name = "pivoteer/HistoricalRecords.html"
-        #
-        #     # Historical hosting records
-        #     #host_records = IndicatorRecord.objects.pds_hosts(indicator, request)
-        #
-        #     #self.template_vars["hosting_records"] = host_records
-        #
-        #     host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
-        #
-        #     self.template_vars["historical_records"] = historical_records
-        #
-        #     # We must lookup the country for each IP address for use in the template.
-        #     # We do this outside the task because we don't know the IP addresses until the task completes.
-        #     host_records_complete = []
-        #
-        #     for record in host_records:
-        #
-        #          info = getattr(record, 'info')
-        #
-        #          if (record.info_source == 'PDS'):
-        #
-        #              for result in info['results']:
-        #
-        #                   new_record = {
-        #                       'domain': result['domain'],
-        #                       'ip': result['ip'],
-        #                       'firstseen': dateutil.parser.parse(result['firstseen']),
-        #                       'lastseen': dateutil.parser.parse(result['lastseen']),
-        #                       'info_date': record.info_date,
-        #                       'location': geolocate_ip(result['ip']),
-        #                       'get_info_source_display': record.get_info_source_display()
-        #                   }
-        #
-        #                   host_records_complete.append(new_record)
-        #          else:
-        #
-        #              new_record = {
-        #                    'domain': info['domain'],
-        #                    'ip': info['ip'],
-        #                    'firstseen': record.info_date,
-        #                    'lastseen':'',
-        #                    'info_date': record.created,
-        #                    'location': geolocate_ip(info['ip']),
-        #                    'get_info_source_display': record.get_info_source_display()
-        #              }
-        #
-        #              if ('firstseen' in info) and (info['firstseen'] != ''):
-        #                new_record['firstseen'] = dateutil.parser.parse(info['firstseen'])
-        #              if ('lastseen' in info) and (info['lastseen'] != '') and (info['lastseen'] != {}) :
-        #                new_record['lastseen'] = dateutil.parser.parse(info['lastseen'])
-        #
-        #              host_records_complete.append(new_record)
-        #
-        #     self.template_vars["hosting_records"] = host_records_complete
-        #
-        #     # Historical WHOIS records
-        #     whois_record = IndicatorRecord.objects.historical_whois(indicator)
-        #     self.template_vars["historical_whois"] = whois_record
-
-
         elif record_type == "Malware":
 
             self.template_name = "pivoteer/MalwareRecords.html"
@@ -399,7 +337,16 @@ class ExportRecords(LoginRequiredMixin, View):
             self.export_dnstwist_records(indicator)
 
         elif indicator and filtering == 'recent':
-            self.export_recent(indicator)
+            self.export_recent_hosts(indicator)
+
+        elif indicator and filtering == 'threatcrowd':
+            self.export_recent_threatcrowd(indicator)
+
+        elif indicator and filtering == 'certificate':
+            self.export_recent_certificates(indicator)
+
+        elif indicator and filtering == 'whois':
+            self.export_recent_whois(indicator)
 
         elif indicator and filtering == 'historical':
             self.export_historical(indicator, request)
@@ -451,6 +398,21 @@ class ExportRecords(LoginRequiredMixin, View):
         """
         hosts = IndicatorRecord.objects.recent_hosts(indicator)
         self._write_records(RecordType.HR, indicator, hosts)
+
+
+    def export_whois(self, indicator):
+        """
+        Export recent 'WR' (Whois Record) indicator records to CSV.
+
+        This method is called as part of 'export_recent'
+
+        :param indicator: The indicator to be exported
+        :return: This method returns no values
+        """
+        self.export_recent_whois(self, indicator)
+        self.line_separator()
+        self.export_historical_whois(self, indicator)
+
 
     def export_recent_whois(self, indicator):
         """
@@ -538,8 +500,8 @@ class ExportRecords(LoginRequiredMixin, View):
         :return: This method returns no values
         """
         self.export_historical_hosts(indicator, request)
-        self.line_separator()
-        self.export_historical_whois(indicator)
+       # self.line_separator()
+       # self.export_historical_whois(indicator)
 
     def export_malware(self, indicator):
         """
