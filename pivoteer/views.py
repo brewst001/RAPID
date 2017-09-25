@@ -324,7 +324,14 @@ class ExportRecords(LoginRequiredMixin, View):
         LOGGER.debug("EXPORTING '%s' with filter: %s", indicator, filtering)
 
         if indicator and filtering == '':
-            self.export_recent(indicator)
+            #self.export_recent(indicator)
+            self.export_recent_hosts(indicator)
+            self.line_separator()
+            self.export_recent_threatcrowd(indicator)
+            self.line_separator()
+            self.export_recent_certificates(indicator)
+            self.line_separator()
+            self.export_whois(indicator)
             self.line_separator()
             self.export_historical(indicator, request)
             self.line_separator()
@@ -426,6 +433,7 @@ class ExportRecords(LoginRequiredMixin, View):
         """
         whois = IndicatorRecord.objects.recent_whois(indicator)
         self._write_records(RecordType.WR, indicator, [whois])
+
 
     def export_recent_threatcrowd(self, indicator):
         """
