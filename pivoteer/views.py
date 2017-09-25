@@ -346,7 +346,8 @@ class ExportRecords(LoginRequiredMixin, View):
             self.export_recent_certificates(indicator)
 
         elif indicator and filtering == 'whois':
-            self.export_recent_whois(indicator)
+            self.export_whois(indicator)
+            #self.export_recent_whois(indicator)
 
         elif indicator and filtering == 'historical':
             self.export_historical(indicator, request)
@@ -499,7 +500,12 @@ class ExportRecords(LoginRequiredMixin, View):
         :param request: The request being processed
         :return: This method returns no values
         """
-        self.export_historical_hosts(indicator, request)
+        pdshosts = IndicatorRecord.objects.pds_hosts(indicator, request)
+        self._write_records(RecordType.HR, indicator, pdshosts)
+        hosts = IndicatorRecord.objects.historical_hosts(indicator, request)
+        self._write_records(RecordType.HR, indicator, hosts)
+
+        #self.export_historical_hosts(indicator, request)
        # self.line_separator()
        # self.export_historical_whois(indicator)
 
