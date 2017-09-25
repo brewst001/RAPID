@@ -417,9 +417,9 @@ class ExportRecords(LoginRequiredMixin, View):
         :param indicator: The indicator to be exported
         :return: This method returns no values
         """
-        self.export_recent_whois(self, indicator)
+        self.export_recent_whois(indicator)
         self.line_separator()
-        self.export_historical_whois(self, indicator)
+        self.export_historical_whois(indicator)
 
 
     def export_recent_whois(self, indicator):
