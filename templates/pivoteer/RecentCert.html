@@ -1,4 +1,6 @@
-<span id="top"></span>
+{% load pivoteer_extras %}
+
+<span id="ctop"></span>
 <h3>Most Recent Certificate Search Results</h3>
 {% if cert_info %}
   {% if cert_info.info.status %}
@@ -34,7 +36,7 @@
     {% endfor %}
   </tbody>
 </table>
-<a href="#top">Back to top</a><br><br>
+<a href="#ctop">Back to top</a><br><br>
 {% else %}
 No certificate results loaded.
 {% endif %}

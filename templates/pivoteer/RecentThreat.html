@@ -1,4 +1,6 @@
-<span id="top"></span>
+{% load pivoteer_extras %}
+
+<span id="rctop"></span>
 <h3>Most Recent ThreatCrowd Record</h3>
 {% if tc_info %}
 
@@ -58,7 +60,7 @@
       {{ tc_info.info.references|join:", " }}
       <br><br>
   {% endif %}
-<a href="#top">Back to top</a><br><br>
+<a href="#rctop">Back to top</a><br><br>
 {% else %}
 <h4>No Records Found</h4>
 {% endif %}

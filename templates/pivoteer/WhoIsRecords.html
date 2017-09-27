@@ -1,4 +1,6 @@
-<span id="top"></span>
+{% load pivoteer_extras %}
+
+<span id="whtop"></span>
 <h3 id="whois">Most Recent WHOIS Record</h3>
 {% if current_whois %}
     <table id="CW_table" class="table display">
@@ -76,7 +78,7 @@
         </tr>
         </tbody>
     </table>
-    <a href="#top">Back to top</a><br><br>
+    <a href="#whtop">Back to top</a><br><br>
 {% else %}
     <h4>No Records Found</h4>
 {% endif %}
@@ -162,7 +164,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="#top">Back to top</a><br><br>
+    <a href="#whtop">Back to top</a><br><br>
 {% else %}
     <h4>No Records Found</h4>
 {% endif %}

@@ -1,5 +1,6 @@
 {% load pivoteer_extras %}
 
+<span id="htop"></span>
 <h3>Hosting Beyond Last 24 Hours</h3>
 {% if hosting_records %}
     <table id="HR_table" class="table display">
@@ -41,6 +42,7 @@
             {% endfor %}
         </tbody>
     </table>
+    <a href="#htop">Back to top</a><br><br>
 {% else %}
     <h4>No Records Found</h4>
 {% endif %}
