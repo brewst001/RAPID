@@ -113,6 +113,7 @@ class IndicatorManager(models.Manager):
 
         if request.user.is_staff:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                                 ~Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(created__gte=time_start),
@@ -120,8 +121,8 @@ class IndicatorManager(models.Manager):
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                                 ~Q(info_source=RecordSource.PTO.name),
                                                  ~Q(info_source=RecordSource.IID.name),
+                                                 ~Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(created__gte=time_start),
@@ -129,6 +130,19 @@ class IndicatorManager(models.Manager):
 
         return records
 
+
+    def pto_hosts(self, indicator, request):
+        # Updated by LNguyen
+        # Date: 24Oct2017
+        # Description: Update to include Passive Total Data into Historical dataset
+        record_type = RecordType.HR
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+
+        records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info__contains=indicator))
+
+        return records
 
     def pds_hosts(self, indicator, request):
         # Updated by LNguyen

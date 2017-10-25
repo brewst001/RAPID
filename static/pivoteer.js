@@ -133,7 +133,7 @@ function initialize_table(record_element) {
             "bInfo":            false,
             "bLengthChange":   false,
             "bFilter":         true,
-            "aaSorting":      [[0, "desc"]]
+            "aaSorting":      [[3, "desc"]]
         });
 
 

@@ -3,6 +3,7 @@ import json
 import datetime
 import logging
 import dateutil.parser
+#from promise import Promise
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -29,6 +30,9 @@ from pivoteer.writer.dnstwist import DNSTwistCsvWriter
 
 LOGGER = logging.getLogger(__name__)
 
+# promise = Promise(
+#     lambda resolve, reject:resolve('RESOLVED!')
+# )
 
 class PivotManager(LoginRequiredMixin, View):
 
@@ -84,6 +88,121 @@ class CheckTask(LoginRequiredMixin, View):
     def __init__(self):
         self.template_vars = {}
 
+    def pds_data(self, indicator, request):
+
+        pds_data = []
+        try:
+            pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
+
+            pds_count = len(pds_records)
+            LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+
+            for record in pds_records:
+
+                info = getattr(record, 'info')
+
+                resultcount = len(info['results'])
+                LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator,
+                            record.info_date, resultcount)
+
+                # Set dataset limit if it's too large
+                # if resultcount > 1000:
+                #    displaylist = info['results'][:500]
+                # else:
+                displaylist = info['results']
+
+                for result in displaylist:
+                    new_record = {
+                        'info': result,
+                        # 'domain': result['domain'],
+                        # 'ip': result['ip'],
+                        'firstseen': dateutil.parser.parse(result['firstseen']),
+                        'lastseen': dateutil.parser.parse(result['lastseen']),
+                       # 'info_date': record.info_date,
+                        'location': geolocate_ip(result['ip']),
+                        'get_info_source_display': record.get_info_source_display()
+                    }
+
+                    pds_data.append(new_record)
+
+        except Exception as err:
+            LOGGER.error("Historical PDS processing failed for indicator '%s': %s ", indicator, str(err))
+
+
+        return pds_data
+
+    def pto_data(self, indicator, request):
+        pto_data = []
+
+        try:
+            pto_records = IndicatorRecord.objects.pto_hosts(indicator, request)
+
+            pto_count = len(pto_records)
+            LOGGER.warn("pto_count for indicator '%s': '%s' ", indicator, pto_count)
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+            for record in pto_records:
+                info = getattr(record, 'info')
+
+                new_record = {
+                    'info': info,
+                    'firstseen': dateutil.parser.parse(info['firstseen']),
+                    'lastseen': dateutil.parser.parse(info['lastseen']),
+                   # 'info_date': dateutil.parser.parse(info['date']),
+                    'location': geolocate_ip(info['ip']),
+                    'get_info_source_display': record.get_info_source_display()
+                }
+
+                pto_data.append(new_record)
+
+        except Exception as err:
+            LOGGER.error("Historical PassiveTotal processing failed for indicator '%s': %s", indicator, str(err))
+
+        return pto_data
+
+    def host_data(self, indicator, request):
+        host_data = []
+
+        try:
+            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+
+            host_count = len(host_records)
+            LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+
+            # Set dataset limit if it's too large
+            # if host_count > 1000:
+            #    recordsdisplay = host_records.order_by('-created')[:500]
+            # else:
+            recordsdisplay = host_records
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+            for record in recordsdisplay:
+                info = getattr(record, 'info')
+
+                new_record = {
+                    'info': info,
+                    # 'domain': info['domain'],
+                    # 'ip': info['ip'],
+                    'firstseen': record.info_date,
+                    'lastseen': '',
+                    #'info_date': record.info_date,
+                    'location': geolocate_ip(info['ip']),
+                    'get_info_source_display': record.get_info_source_display()
+                }
+
+                host_data.append(new_record)
+
+        except Exception as err:
+            LOGGER.error("Historical processing failed for indicator '%s': %s", indicator, str(err))
+
+        return host_data
+
+
     def post(self, request):
 
         task = request.POST['task_id']
@@ -125,18 +244,6 @@ class CheckTask(LoginRequiredMixin, View):
 
             self.template_vars["current_hosts"] = host_records_complete
 
-            # Current WHOIS record
-            #
-            # whois_record = IndicatorRecord.objects.recent_whois(indicator)
-            # self.template_vars["current_whois"] = whois_record
-
-
-            # Current ThreatCrowd record
-            # tc_info = IndicatorRecord.objects.recent_tc(indicator)
-            # self.template_vars["tc_info"] = tc_info
-
-            #cert_info = IndicatorRecord.objects.recent_cert(indicator)
-            #self.template_vars["cert_info"] = cert_info
 
             # Pull data according to the record type
         elif record_type == "RecentThreat":
@@ -168,95 +275,9 @@ class CheckTask(LoginRequiredMixin, View):
         elif record_type == "Historical":
 
             self.template_name = "pivoteer/HistoricalRecords.html"
-
-            #  self.template_vars["historical_records"] = host_records
-
-            host_records_complete = []
-
-            # Process PDS hosting records
-            try:
-                pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
-
-                pds_count = len(pds_records)
-                LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
-
-                # We must lookup the country for each IP address for use in the template.
-                # We do this outside the task because we don't know the IP addresses until the task completes.
-
-                for record in pds_records:
-
-                    info = getattr(record, 'info')
-
-                    resultcount = len(info['results'])
-                    LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator, record.info_date, resultcount)
-
-                    # Set dataset limit if it's too large
-                    #if resultcount > 1000:
-                    #    displaylist = info['results'][:500]
-                    #else:
-                    displaylist = info['results']
-
-                    for result in displaylist:
-                        new_record = {
-                            'info':result,
-                            #'domain': result['domain'],
-                            #'ip': result['ip'],
-                            'firstseen': dateutil.parser.parse(result['firstseen']),
-                            'lastseen': dateutil.parser.parse(result['lastseen']),
-                            'info_date': record.info_date,
-                            'location': geolocate_ip(result['ip']),
-                            'get_info_source_display': record.get_info_source_display()
-                        }
-
-                        host_records_complete.append(new_record)
-
-            except Exception as err:
-                LOGGER.error("Historical PDS processing failed for indicator '%s': %s ", indicator, str(err))
-
-
-
-            # Process Historical hosting records
-            try:
-                host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
-
-                host_count = len(host_records)
-                LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
-
-             # Set dataset limit if it's too large
-                #if host_count > 1000:
-                #    recordsdisplay = host_records.order_by('-created')[:500]
-                #else:
-                recordsdisplay = host_records
-
-                # We must lookup the country for each IP address for use in the template.
-                # We do this outside the task because we don't know the IP addresses until the task completes.
-                for record in recordsdisplay:
-
-                    info = getattr(record, 'info')
-
-                    new_record = {
-                        'info': info,
-                        #'domain': info['domain'],
-                        #'ip': info['ip'],
-                        'firstseen': record.info_date,
-                        'lastseen': '',
-                        'info_date': record.created,
-                        'location': geolocate_ip(info['ip']),
-                        'get_info_source_display': record.get_info_source_display()
-                    }
-
-                    host_records_complete.append(new_record)
-
-            except Exception as err:
-                LOGGER.error("Historical host processing failed for indicator '%s': %s ", indicator, str(err))
-
-
-            self.template_vars["hosting_records"] = host_records_complete
-
-            # Historical WHOIS records
-            # whois_record = IndicatorRecord.objects.historical_whois(indicator)
-            # self.template_vars["historical_whois"] = whois_record
-
+            self.template_vars["pto_records"] = self.pto_data(indicator, request)
+            self.template_vars["pds_records"] = self.pds_data(indicator, request)
+            self.template_vars["hosting_records"] = self.host_data(indicator, request)
 
         elif record_type == "Malware":
 

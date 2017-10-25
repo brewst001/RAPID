@@ -99,7 +99,7 @@ class SubmissionForm(forms.Form):
             if self.indicator_type != "other":
                 new_task = group([threatlabs_search.s(indicator),
                                   passive_hosts.s(indicator, RecordSource.VTO),
-                                 # passive_hosts.s(indicator, RecordSource.PTO),
+                                  passive_hosts.s(indicator, RecordSource.PTO),
                                   passive_hosts.s(indicator, RecordSource.IID)])()
 
             else:
