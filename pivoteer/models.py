@@ -91,6 +91,7 @@ class IndicatorManager(models.Manager):
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
+                                             ~Q(info_source=RecordSource.PTO.name),
                                              Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
                                              Q(info__contains=indicator))
