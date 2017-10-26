@@ -239,6 +239,8 @@ class CheckTask(LoginRequiredMixin, View):
             host_records_complete = []
             for record in host_record:
                 info = getattr(record, 'info')
+                record.firstseen = record.info_date
+                record.lastseen = ''
                 record.location = geolocate_ip(info['ip'])
                 host_records_complete.append(record)
 
