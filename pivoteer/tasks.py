@@ -238,7 +238,8 @@ def passive_hosts(indicator, record_source):
 
     elif record_source is RecordSource.PTO:
         api_key = settings.PASSIVE_TOTAL_API
-        collector = PassiveTotal(api_key, api_version="v1")
+        api_username = settings.PASSIVE_TOTAL_USER
+        collector = PassiveTotal(api_username,api_key, api_version="v2")
         passive = collector.retrieve_data(indicator, "passive")
 
     elif record_source is RecordSource.VTO:

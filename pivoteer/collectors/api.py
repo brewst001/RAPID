@@ -5,13 +5,15 @@ import json
 
 class PassiveTotal(object):
 
-    base_url = "https://www.passivetotal.org/api"
+    base_url = "https://api.passivetotal.org"
 
-    api_versions = {"v1": "/v1",
+    headers = { 'Content-Type': 'application/json' }
+
+    api_versions = {"v2": "/v2",
                     "current": "/current"}
 
     GET_resources = {"metadata": "/metadata",
-                     "passive": "/passive",
+                     "passive": "/dns/passive",
                      "subdomains": "/subdomains",
                      "tags": "/user/tags",
                      "watch_status": "/watching",
@@ -30,16 +32,17 @@ class PassiveTotal(object):
                       "set_classification": "/classification",
                       "set_sinkhole_status": "/sinkhole"}
 
-    def __init__(self, api_key, api_version=None):
+    def __init__(self, api_username, api_key, api_version=None):
 
         self.__key = api_key
+        self.__username = api_username
 
         if api_version:
             try:
                 self.api_version = self.api_versions[api_version]
             except KeyError:
-                logging.warning("Unrecognized API version, defaulting to v1")
-                self.api_version = self.api_versions["v1"]
+                logging.warning("Unrecognized API version, defaulting to v2")
+                self.api_version = self.api_versions["v2"]
         else:
             self.api_version = self.api_versions["v1"]
 
@@ -47,12 +50,29 @@ class PassiveTotal(object):
 
         if self.__key:
             try:
+
+                data = '{"query": "' + query + '"}'
+
+                data_encode = data.encode('ascii')
                 api_call = self.GET_resources[resource]
                 url = self.base_url + self.api_version + api_call
-                params = {"api_key": self.__key, "query": query}
-                response = requests.get(url, params=params)
-                json_response = json.loads(response.content)
-                return json_response
+
+                response = requests.get(url, headers=self.headers, data=data_encode, auth=(self._PassiveTotal__username, self._PassiveTotal__key))
+                json_response = json.loads(response.content.decode('utf-8'))
+
+                records = json_response['results']
+                results = []
+                for entry in records:
+                    results.append({
+                        'date': entry['collected'],
+                        'firstseen': entry['firstSeen'],
+                        'lastseen': entry['lastSeen'],
+                        'ip': entry['resolve'],
+                        'domain': entry['value'],
+                        'ip_location': {}
+                    })
+
+                return results
 
             except KeyError:
                 logging.warning("Unrecognized API resource or malformed query")

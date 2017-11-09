@@ -69,7 +69,7 @@ class RecordSource(__TitledEnum):
     GSB = "Google Safe Browsing"
     GSE = "Google Search Engine"
     IID = "Internet Identity"
-    PTO = "Passive Total"
+    PTO = "PT"
     REX = "Robotex"
     TEX = "Threat Expert"
     THR = "ThreatCrowd"

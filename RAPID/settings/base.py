@@ -31,7 +31,7 @@ STATIC_URL = "/static/"
 # Open JSON-based secrets module
 #with open("secrets.json", "r") as f:
 #updated by LNguyen -- added path for secrets.json
-with open("/home/ubuntu/RAPID/secrets.json", "r") as f:
+with open("/home/lnguyen/RAPID/secrets.json", "r") as f:
     secrets = json.loads(f.read())
 
 def retrieve_secret_configuration(setting, config=secrets):
@@ -55,6 +55,7 @@ AUTH_USER_MODEL = 'profiles.Profile'
 THREATLABS_API_ID = retrieve_secret_configuration("THREATLABS_API_ID")
 IID_USER = retrieve_secret_configuration("IID_USER")
 IID_PASS = retrieve_secret_configuration("IID_PASS")
+PASSIVE_TOTAL_USER = retrieve_secret_configuration("PASSIVE_TOTAL_USER")
 PASSIVE_TOTAL_API = retrieve_secret_configuration("PASSIVE_TOTAL_API")
 CENSYS_API_ID = retrieve_secret_configuration("CENSYS_API_ID")
 CENSYS_API_SECRET = retrieve_secret_configuration("CENSYS_API_SECRET")
