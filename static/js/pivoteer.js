@@ -77,8 +77,8 @@ function poll_ajax(task, record_element){
             }
         },
 
-        error: function (){
-            $(record_element).html('<h3>Unable to retrieve records</h3>');
+        error: function (xhr, textStatus, errorThrown){
+            $(record_element).html('<h3>Unable to retrieve records</h3>' + ' ' + textStatus + ' ' + errorThrown);
         },
 
         success: function (task_results){
