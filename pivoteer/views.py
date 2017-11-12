@@ -103,30 +103,25 @@ class CheckTask(LoginRequiredMixin, View):
             for record in pds_records:
 
                 info = getattr(record, 'info')
-
-                resultcount = len(info['results'])
-                LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator,
-                            record.info_date, resultcount)
+             #   resultcount = len(info['results'])
+             #   LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator,
+             #               record.info_date, resultcount)
 
                 # Set dataset limit if it's too large
                 # if resultcount > 1000:
                 #    displaylist = info['results'][:500]
                 # else:
-                displaylist = info['results']
+                #displaylist = info['results']
 
-                for result in displaylist:
-                    new_record = {
-                        'info': result,
-                        # 'domain': result['domain'],
-                        # 'ip': result['ip'],
-                        'firstseen': dateutil.parser.parse(result['firstseen']),
-                        'lastseen': dateutil.parser.parse(result['lastseen']),
-                       # 'info_date': record.info_date,
-                        'location': geolocate_ip(result['ip']),
-                        'get_info_source_display': record.get_info_source_display()
-                    }
+                for result in info['results']:
 
-                    pds_data.append(new_record)
+                 #   info = getattr(record, 'info')
+                    result['location'] = geolocate_ip(result['ip'])
+                    result['firstseen'] = dateutil.parser.parse(result['firstseen'])
+                    result['lastseen'] = dateutil.parser.parse(result['lastseen'])
+                    result['info_source'] = record.info_source
+                    pds_data.append(result)
+
 
         except Exception as err:
             LOGGER.error("Historical PDS processing failed for indicator '%s': %s ", indicator, str(err))
@@ -147,17 +142,10 @@ class CheckTask(LoginRequiredMixin, View):
             # We do this outside the task because we don't know the IP addresses until the task completes.
             for record in pto_records:
                 info = getattr(record, 'info')
-
-                new_record = {
-                    'info': info,
-                    'firstseen': dateutil.parser.parse(info['firstseen']),
-                    'lastseen': dateutil.parser.parse(info['lastseen']),
-                   # 'info_date': dateutil.parser.parse(info['date']),
-                    'location': geolocate_ip(info['ip']),
-                    'get_info_source_display': record.get_info_source_display()
-                }
-
-                pto_data.append(new_record)
+                record.location = geolocate_ip(info['ip'])
+                record.firstseen = dateutil.parser.parse(info['firstseen'])
+                record.lastseen = dateutil.parser.parse(info['lastseen'])
+                pto_data.append(record)
 
         except Exception as err:
             LOGGER.error("Historical PassiveTotal processing failed for indicator '%s': %s", indicator, str(err))
@@ -177,25 +165,14 @@ class CheckTask(LoginRequiredMixin, View):
             # if host_count > 1000:
             #    recordsdisplay = host_records.order_by('-created')[:500]
             # else:
-            recordsdisplay = host_records
+            #recordsdisplay = host_records
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in recordsdisplay:
+            for record in host_records:
                 info = getattr(record, 'info')
-
-                new_record = {
-                    'info': info,
-                    # 'domain': info['domain'],
-                    # 'ip': info['ip'],
-                    'firstseen': record.info_date,
-                    'lastseen': '',
-                    #'info_date': record.info_date,
-                    'location': geolocate_ip(info['ip']),
-                    'get_info_source_display': record.get_info_source_display()
-                }
-
-                host_data.append(new_record)
+                record.location = geolocate_ip(info['ip'])
+                host_data.append(record)
 
         except Exception as err:
             LOGGER.error("Historical processing failed for indicator '%s': %s", indicator, str(err))
@@ -277,8 +254,12 @@ class CheckTask(LoginRequiredMixin, View):
         elif record_type == "Historical":
 
             self.template_name = "pivoteer/HistoricalRecords.html"
-            self.template_vars["pto_records"] = self.pto_data(indicator, request)
+         #   self.template_vars["pto_records"] = []
+       #     self.template_vars["pds_records"] = []
+          #  self.template_vars["hosting_records"] = []
+
             self.template_vars["pds_records"] = self.pds_data(indicator, request)
+            self.template_vars["pto_records"] = self.pto_data(indicator, request)
             self.template_vars["hosting_records"] = self.host_data(indicator, request)
 
         elif record_type == "Malware":
