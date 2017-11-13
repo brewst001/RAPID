@@ -2,7 +2,6 @@
 
 <span id="htop"></span>
 <h3>Hosting Beyond Last 24 Hours</h3>
-{% if hosting_records %}
     <table id="HR_table" class="table display">
         <thead>
           <tr>
@@ -16,6 +15,7 @@
         </thead>
 
         <tbody>
+        {% if pds_records %}
             {% for record in pds_records %}
                 <tr>
                     <td>
@@ -38,7 +38,8 @@
                     <td>{{ record.info_source }}</td>
                 </tr>
             {% endfor %}
-
+        {% endif %}
+        {% if pto_records %}
             {% for record in pto_records %}
                 <tr>
                     <td>
@@ -60,32 +61,7 @@
                     <td>{{ record.info_source }}</td>
                 </tr>
             {% endfor %}
-
-            {% for record in hosting_records %}
-                <tr>
-                    <td>
-                        {% if record.info.domain != origin %}
-                            <span class="pivot">{{ record.info.domain }}</span>
-                        {% else %}
-                            {{ record.info.domain }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if record.info.ip != origin %}
-                            <span class="pivot">{{ record.info.ip }}</span>
-                        {% else %}
-                            {{ record.info.ip }}
-                        {% endif %}
-                    </td>
-                    <td>{{ record.location.country }}</td>
-                    <td>{{ record.info_date|date:"N d, Y h:i A"  }}</td>
-                    <td></td>
-                    <td>{{ record.info_source }}</td>
-                </tr>
-            {% endfor %}
+        {% endif %}
         </tbody>
     </table>
     <a href="#htop">Back to top</a><br><br>
-{% else %}
-    <h4>No Records Found</h4>
-{% endif %}
