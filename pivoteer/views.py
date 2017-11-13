@@ -100,7 +100,7 @@ class CheckTask(LoginRequiredMixin, View):
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
 
-            for record in pds_records:
+            for record in pds_records.iterator():
                 info = record['info']
                # info_source = record.info_source
               #  info = getattr(record, 'info')
@@ -114,7 +114,7 @@ class CheckTask(LoginRequiredMixin, View):
                 # else:
                 #displaylist = info['results']
 
-                for result in info['results']:
+                for result in info['results'].iterator():
 
                  #   info = getattr(record, 'info')
                     result['location'] = geolocate_ip(result['ip'])
@@ -141,7 +141,7 @@ class CheckTask(LoginRequiredMixin, View):
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in pto_records:
+            for record in pto_records.iterator():
                 info = record['info']
                 record['location'] = geolocate_ip(info['ip'])
               #  info = getattr(record, 'info')
