@@ -94,15 +94,16 @@ class CheckTask(LoginRequiredMixin, View):
         try:
             pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
 
-            pds_count = len(pds_records)
-            LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
+    #        pds_count = len(pds_records)
+     #       LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
 
             for record in pds_records:
-
-                info = getattr(record, 'info')
+                info = record['info']
+               # info_source = record.info_source
+              #  info = getattr(record, 'info')
              #   resultcount = len(info['results'])
              #   LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator,
              #               record.info_date, resultcount)
@@ -119,7 +120,7 @@ class CheckTask(LoginRequiredMixin, View):
                     result['location'] = geolocate_ip(result['ip'])
                     result['firstseen'] = dateutil.parser.parse(result['firstseen'])
                     result['lastseen'] = dateutil.parser.parse(result['lastseen'])
-                    result['info_source'] = record.info_source
+                    result['info_source'] = record['info_source']
                     pds_data.append(result)
 
 
@@ -135,16 +136,18 @@ class CheckTask(LoginRequiredMixin, View):
         try:
             pto_records = IndicatorRecord.objects.pto_hosts(indicator, request)
 
-            pto_count = len(pto_records)
-            LOGGER.warn("pto_count for indicator '%s': '%s' ", indicator, pto_count)
+          #  pto_count = len(pto_records)
+          #  LOGGER.warn("pto_count for indicator '%s': '%s' ", indicator, pto_count)
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
             for record in pto_records:
-                info = getattr(record, 'info')
-                record.location = geolocate_ip(info['ip'])
-                record.firstseen = dateutil.parser.parse(info['firstseen'])
-                record.lastseen = dateutil.parser.parse(info['lastseen'])
+                info = record['info']
+                record['location'] = geolocate_ip(info['ip'])
+              #  info = getattr(record, 'info')
+              #  record.location = geolocate_ip(info['ip'])
+              #  record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+              #  record['lastseen'] = dateutil.parser.parse(info['lastseen'])
                 pto_data.append(record)
 
         except Exception as err:
@@ -158,8 +161,8 @@ class CheckTask(LoginRequiredMixin, View):
         try:
             host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
 
-            host_count = len(host_records)
-            LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+        #    host_count = len(host_records)
+        #    LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
 
             # Set dataset limit if it's too large
             # if host_count > 1000:
@@ -169,9 +172,12 @@ class CheckTask(LoginRequiredMixin, View):
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in host_records:
-                info = getattr(record, 'info')
-                record.location = geolocate_ip(info['ip'])
+            for record in host_records.iterator():
+                info = record['info']
+                record['location'] = geolocate_ip(info['ip'])
+              #  record['info_source'] = record.info_source
+              #  info = getattr(record, 'info')
+              #  record.location = geolocate_ip(info['ip'])
                 host_data.append(record)
 
         except Exception as err:
