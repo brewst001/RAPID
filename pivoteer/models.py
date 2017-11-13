@@ -118,7 +118,7 @@ class IndicatorManager(models.Manager):
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(created__gte=time_start),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
@@ -127,7 +127,7 @@ class IndicatorManager(models.Manager):
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(created__gte=time_start),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         return records
 
@@ -141,7 +141,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         return records
 
@@ -156,7 +156,7 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info__contains=indicator))
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         return records
 
