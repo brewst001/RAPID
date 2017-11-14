@@ -141,7 +141,7 @@ class CheckTask(LoginRequiredMixin, View):
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in pto_records:
+            for record in pto_records.iterator():
                 info = record['info']
                 record['location'] = geolocate_ip(info['ip'])
               #  info = getattr(record, 'info')
