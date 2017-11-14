@@ -114,7 +114,7 @@ class CheckTask(LoginRequiredMixin, View):
                 # else:
                 #displaylist = info['results']
 
-                for result in info['results'].iterator():
+                for result in info['results']:
 
                  #   info = getattr(record, 'info')
                     result['location'] = geolocate_ip(result['ip'])
@@ -141,7 +141,7 @@ class CheckTask(LoginRequiredMixin, View):
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in pto_records.iterator():
+            for record in pto_records:
                 info = record['info']
                 record['location'] = geolocate_ip(info['ip'])
               #  info = getattr(record, 'info')
@@ -257,6 +257,11 @@ class CheckTask(LoginRequiredMixin, View):
             whois_record = IndicatorRecord.objects.historical_whois(indicator)
             self.template_vars["historical_whois"] = whois_record
 
+        elif record_type == "HistoricalDNS":
+
+            self.template_name = "pivoteer/HistoricalRecordsDNS.html"
+            self.template_vars["hosting_records"] = self.host_data(indicator, request)
+
         elif record_type == "Historical":
 
             self.template_name = "pivoteer/HistoricalRecords.html"
@@ -266,7 +271,6 @@ class CheckTask(LoginRequiredMixin, View):
 
             self.template_vars["pds_records"] = self.pds_data(indicator, request)
             self.template_vars["pto_records"] = self.pto_data(indicator, request)
-            self.template_vars["hosting_records"] = self.host_data(indicator, request)
 
         elif record_type == "Malware":
 
