@@ -11,7 +11,7 @@ function kill_ajax() {
 // Submit for all records
 function run_records(form_data) {
 
-    var records = [ "Recent", "RecentThreat",  "RecentCert", "WhoIs", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
+    var records = [ "Recent", "RecentThreat",  "RecentCert", "WhoIs", "HistoricalDNS", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
 
     $.each(records, function( index, record ) {
         // Clear out old information from DOM elements and submit new ajax requests
@@ -77,8 +77,8 @@ function poll_ajax(task, record_element){
             }
         },
 
-        error: function (xhr, textStatus, errorThrown){
-            $(record_element).html('<h3>Unable to retrieve records</h3>' + ' ' + textStatus + ' ' + errorThrown);
+        error: function (){
+            $(record_element).html('<h3>Unable to retrieve records</h3>');
         },
 
         success: function (task_results){
@@ -127,8 +127,19 @@ function initialize_table(record_element) {
         });
 
 
-    } else if (record_element == "#HistoricalPanel") {
+    } else if (record_element == "#HistoricalDNSPanel") {
         $('#HR_table').dataTable({
+            "iDisplayLength":  50,
+            "bInfo":            false,
+            "bLengthChange":   false,
+            "bFilter":         true,
+            "aaSorting":      [[3, "desc"]]
+        });
+
+
+
+    } else if (record_element == "#HistoricalPanel") {
+        $('#HRD_table').dataTable({
             "iDisplayLength":  50,
             "bInfo":            false,
             "bLengthChange":   false,
