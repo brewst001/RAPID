@@ -117,7 +117,6 @@ class IndicatorManager(models.Manager):
                                                  ~Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(created__gte=time_start),
                                                  Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         else:
@@ -126,7 +125,6 @@ class IndicatorManager(models.Manager):
                                                  ~Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
-                                                 Q(created__gte=time_start),
                                                  Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
 
         return records
