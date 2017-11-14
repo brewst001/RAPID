@@ -155,6 +155,38 @@ class CheckTask(LoginRequiredMixin, View):
 
         return pto_data
 
+
+    def dns_host_data(self, indicator, request):
+        dnshost_data = []
+
+        try:
+            dnshost_records = IndicatorRecord.objects.dns_historical_hosts(indicator, request)
+
+        #    host_count = len(host_records)
+        #    LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+
+            # Set dataset limit if it's too large
+            # if host_count > 1000:
+            #    recordsdisplay = host_records.order_by('-created')[:500]
+            # else:
+            #recordsdisplay = host_records
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+            for record in dnshost_records.iterator():
+                info = record['info']
+                record['location'] = geolocate_ip(info['ip'])
+              #  record['info_source'] = record.info_source
+              #  info = getattr(record, 'info')
+              #  record.location = geolocate_ip(info['ip'])
+                dnshost_data.append(record)
+
+        except Exception as err:
+            LOGGER.error("DNS Historical processing failed for indicator '%s': %s", indicator, str(err))
+
+        return dnshost_data
+
+
     def host_data(self, indicator, request):
         host_data = []
 
@@ -175,7 +207,10 @@ class CheckTask(LoginRequiredMixin, View):
             for record in host_records.iterator():
                 info = record['info']
                 record['location'] = geolocate_ip(info['ip'])
-              #  record['info_source'] = record.info_source
+                if (record['info_source'] == "PT"):
+                    record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+                    record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+                    record['info_source'] = record['info_source']
               #  info = getattr(record, 'info')
               #  record.location = geolocate_ip(info['ip'])
                 host_data.append(record)
@@ -260,7 +295,7 @@ class CheckTask(LoginRequiredMixin, View):
         elif record_type == "HistoricalDNS":
 
             self.template_name = "pivoteer/HistoricalRecordsDNS.html"
-            self.template_vars["hosting_records"] = self.host_data(indicator, request)
+            self.template_vars["hosting_records"] = self.dns_host_data(indicator, request)
 
         elif record_type == "Historical":
 
@@ -269,8 +304,8 @@ class CheckTask(LoginRequiredMixin, View):
        #     self.template_vars["pds_records"] = []
           #  self.template_vars["hosting_records"] = []
 
+            self.template_vars["host_records"] = self.host_data(indicator, request)
             self.template_vars["pds_records"] = self.pds_data(indicator, request)
-            self.template_vars["pto_records"] = self.pto_data(indicator, request)
 
         elif record_type == "Malware":
 
