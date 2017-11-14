@@ -128,7 +128,7 @@ function initialize_table(record_element) {
 
 
     } else if (record_element == "#HistoricalDNSPanel") {
-        $('#HR_table').dataTable({
+        $('#HRD_table').dataTable({
             "iDisplayLength":  50,
             "bInfo":            false,
             "bLengthChange":   false,
@@ -137,9 +137,8 @@ function initialize_table(record_element) {
         });
 
 
-
     } else if (record_element == "#HistoricalPanel") {
-        $('#HRD_table').dataTable({
+        $('#HR_table').dataTable({
             "iDisplayLength":  50,
             "bInfo":            false,
             "bLengthChange":   false,
