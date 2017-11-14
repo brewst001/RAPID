@@ -102,6 +102,30 @@ class IndicatorManager(models.Manager):
         #                                      Q(info__at_ip__endswith=indicator))
         return records
 
+    def dns_historical_hosts(self, indicator, request):
+        # Updated by LNguyen
+        # Date: 26April2017
+        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
+        # Date: 1Aug2017
+        # Description: Update to include PDNS Data into Historical dataset
+        record_type = RecordType.HR
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+        time_start = datetime.datetime.utcnow() - datetime.timedelta(days=366)
+
+        if request.user.is_staff:
+            records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
+
+        else:
+            records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__lt=time_frame),
+                                                 Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
+
+        return records
+
     def historical_hosts(self, indicator, request):
         # Updated by LNguyen
         # Date: 26April2017
@@ -114,7 +138,7 @@ class IndicatorManager(models.Manager):
 
         if request.user.is_staff:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                                 ~Q(info_source=RecordSource.PTO.name),
+                                                 ~Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
@@ -122,7 +146,7 @@ class IndicatorManager(models.Manager):
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  ~Q(info_source=RecordSource.IID.name),
-                                                 ~Q(info_source=RecordSource.PTO.name),
+                                                 ~Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(info__contains=indicator)).values('info', 'info_date', 'info_source')
