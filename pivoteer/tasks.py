@@ -514,10 +514,10 @@ def dnstwist_search(indicator):
 
 
 @app.task
-def fecordthreatlabs_search(indicator):
+def threatlabs_search(indicator):
     """
     A Celery task for searching passive DNS entries from Threatlabs.IOS for an indicator.
-
+git branch
         indicator: The indicator value
         results: A list of passive DNS entries.
 
