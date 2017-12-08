@@ -286,9 +286,6 @@ class CheckTask(LoginRequiredMixin, View):
 
             self.template_name = "pivoteer/WhoIsRecords.html"
 
-            whois_record = IndicatorRecord.objects.recent_whois(indicator)
-            self.template_vars["current_whois"] = whois_record
-
             whois_record = IndicatorRecord.objects.historical_whois(indicator)
             self.template_vars["historical_whois"] = whois_record
 

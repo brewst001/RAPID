@@ -334,8 +334,12 @@ class IndicatorManager(models.Manager):
             indicator = get_base_domain(indicator)
         record = self.get_queryset().filter(Q(record_type=record_type.name),
                                             Q(info_date__gte=time_frame),
-                                            Q(info__at_query__iendswith=indicator) |
-                                            Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
+                                            Q(info__contains=indicator)).values('info', 'info_date')
+        # record = self.get_queryset().filter(Q(record_type=record_type.name),
+        #                                     Q(info_date__gte=time_frame),
+        #                                     Q(info__at_query__iendswith=indicator) |
+        #                                     Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
+
 
         if record:
             return record.latest('info_date')
@@ -357,7 +361,6 @@ class IndicatorManager(models.Manager):
             indicator = get_base_domain(indicator)
 
         raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
                                                  Q(info__contains=indicator)).values('info_hash', 'info_date')
 
         # raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
