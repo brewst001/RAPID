@@ -376,7 +376,8 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
 
     def resolve_hosts(self, value):
         try:
-            return core.lookups.accumulate_ip_for_certificate(value)
+            #return core.lookups.accumulate_ip_for_certificate(value)
+            return []
         except core.lookups.LookupException as e:
             LOGGER.error("Certificate search failed for fragment '%s': %s", value, e.message)
             return e.message
