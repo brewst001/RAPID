@@ -277,8 +277,8 @@ class CheckTask(LoginRequiredMixin, View):
         elif record_type == "RecentCert":
 
             self.template_name = "pivoteer/RecentCert.html"
-
-            cert_info = IndicatorRecord.objects.recent_cert(indicator)
+            cert_info = []
+            #cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
 
 

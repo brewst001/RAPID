@@ -82,7 +82,9 @@ class SubmissionForm(forms.Form):
 
         elif record_type == "RecentCert":
 
-            new_task = group([certificate_cen.s(indicator)])()
+            #new_task = group([certificate_cen.s(indicator)])()
+
+            new_task = None
 
         elif record_type == "WhoIs":
 
