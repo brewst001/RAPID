@@ -25,6 +25,7 @@ logger = logging.getLogger(None)
 def create_record(record_type,
                   record_source,
                   info,
+                  indicator,
                   date=None):
     """
     Create an indicator record.
@@ -39,6 +40,7 @@ def create_record(record_type,
     record = IndicatorRecord(record_type=record_type.name,
                              info_source=record_source.name,
                              info_date=current_time,
+                             indicator=indicator,
                              info=info)
     logger.info("Created %s (%s) record from %s: %s",
                 record_type.name,
@@ -51,6 +53,7 @@ def create_record(record_type,
 def save_record(record_type,
                 record_source,
                 info,
+                indicator,
                 date=None):
     """
     A convenience function that calls 'create_record' and also saves the resulting record.
@@ -61,7 +64,7 @@ def save_record(record_type,
     :param date: The date to use with this record, or None to use the current date
     :return: The new IndicatorRecord instance
     """
-    record = create_record(record_type, record_source, info, date)
+    record = create_record(record_type, record_source, info, indicator, date)
     record.save()
     logger.info("%s (%s) record from %s saved successfully",
                 record_type.name,
@@ -86,7 +89,7 @@ def certificate_cen(indicator):
     logger.info("Retrieved Censys.io search results for indicator %s" % indicator)
     if record:
         try:
-            save_record(record_type, record_source, record)
+            save_record(record_type, record_source, record, indicator)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -105,7 +108,7 @@ def domain_thc(domain):
     logger.info("Retrieved ThreatCrowd data for domain %s. " % (domain))
     if record:
         try:
-            save_record(record_type, record_source, record)
+            save_record(record_type, record_source, record, domain)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -122,7 +125,7 @@ def ip_thc(ip):
     record['ip'] = ip
     if record:
         try:
-            save_record(record_type, record_source, record)
+            save_record(record_type, record_source, record, ip)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -145,7 +148,7 @@ def domain_whois(domain):
                                 'expiration_date': record['expiration_date'],
                                 'nameservers': record['nameservers'],
                                 'contacts': record['contacts']})
-            save_record(record_type, record_source, info)
+            save_record(record_type, record_source, info, domain)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -169,7 +172,7 @@ def ip_whois(ip_address):
                                 'asn_date': record['asn_date'],
                                 'referral': record['referral'],
                                 'nets': record['nets']})
-            save_record(record_type, record_source, info)
+            save_record(record_type, record_source, info, ip_address)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -196,7 +199,8 @@ def domain_hosts(domain):
             try:
                 save_record(record_type,
                             record_source,
-                            info)
+                            info,
+                            domain)
             except Exception:
                 logger.exception("Error saving %s (%s) record from %s",
                                  record_type.name,
@@ -221,7 +225,8 @@ def ip_hosts(ip_address):
                                     "ip": ip_address, "domain": host})
                 save_record(record_type,
                             record_source,
-                            info)
+                            info,
+                            ip_address)
             except Exception:
                 logger.exception("Error saving %s (%s) record from %s",
                                  record_type.name,
@@ -258,7 +263,7 @@ def passive_hosts(indicator, record_source):
                                 "domain": entry['domain'],
                                 "firstseen": entry['firstseen'],
                                 "lastseen": entry['lastseen']})
-            save_record(record_type, record_source, info, date=date)
+            save_record(record_type, record_source, info, indicator, date=date, )
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -288,7 +293,7 @@ def malware_samples(indicator, record_source):
                                 "sha256": entry['sha256'],
                                 "indicator": entry['C2'],
                                 "link": entry['link']})
-            save_record(record_type, record_source, info, date=date)
+            save_record(record_type, record_source, info, indicator, date=date)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -307,7 +312,7 @@ def google_safebrowsing(indicator):
                         "statusCode": safebrowsing_status,
                         "body": safebrowsing_body})
     try:
-        save_record(record_type, record_source, info)
+        save_record(record_type, record_source, info, indicator)
     except Exception:
         logger.exception("Error saving %s (%s) record from %s",
                          record_type.name,
@@ -347,6 +352,7 @@ def malwr_ip_domain_search(indicator):
                     save_record(record_type,
                                 record_source,
                                 info,
+                                indicator,
                                 date=submission_time)
 
                 logger.info("%s %s for %s saved successfully",
@@ -407,6 +413,7 @@ def totalhash_ip_domain_search(indicator):
                 save_record(record_type,
                             record_source,
                             info,
+                            indicator,
                             date=current_time)
 
             logger.info("%s TH record_entries saved successfully" % record_count)
@@ -451,7 +458,7 @@ def make_indicator_search_records(indicator, indicator_type):
         try:
             info = OrderedDict({"indicator": indicator,
                                 "results": results})
-            save_record(record_type, record_source, info)
+            save_record(record_type, record_source, info, indicator)
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
@@ -503,7 +510,7 @@ def dnstwist_search(indicator):
             #             for val in record:
             #                 print(val)
 
-            save_record(record_type, record_source, info)
+            save_record(record_type, record_source, info, indicator)
 
        except Exception:
             logger.exception("Error saving dnstwist %s (%s) record from %s",
@@ -536,7 +543,7 @@ git branch
             info = OrderedDict({"indicator": indicator,
                                 "results": records})
 
-            save_record(record_type, record_source, info)
+            save_record(record_type, record_source, info, indicator)
 
        except Exception:
             logger.exception("Error saving dnstwist %s (%s) record from %s",
