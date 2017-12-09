@@ -490,11 +490,12 @@ class IndicatorRecord(models.Model):
     info_source = models.CharField(max_length=3, choices=source_choices)
     info_hash = models.CharField(max_length=40)
     info_date = models.DateTimeField()
+    indicator = models.CharField(max_length=253, blank=True, null=True)
 
     objects = IndicatorManager()
 
     class Meta:
-        unique_together = (("info_hash", "info_source", "info_date"),)
+        unique_together = (("indicator", "info_hash", "info_source", "info_date"),)
 
 
     def generate_hash(self):
