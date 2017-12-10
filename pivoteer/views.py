@@ -244,6 +244,8 @@ class CheckTask(LoginRequiredMixin, View):
             record_type = None
             indicator = None
 
+        IndicatorRecord.objects.update_indicator(indicator)
+
         # Pull data according to the record type
         if record_type == "Recent":
 
