@@ -285,6 +285,7 @@ class DomainLookupSubTask(IndicatorLookupSubTask):
                 record = IndicatorRecord(record_type=RecordType.HR.name,
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
+                                         indicator=domain,
                                          info=info)
                 #print("saves the Domain record to the Pivoteer_IndicatorRecord table")
                 self._save_record(record)
@@ -338,6 +339,7 @@ class IpLookupSubTask(IndicatorLookupSubTask):
                 record = IndicatorRecord(record_type=RecordType.HR.name,
                                          info_source=RecordSource.DNS.name,
                                          info_date=date,
+                                         indicator=ip,
                                          info=info)
                 #print("saves the IP record to the Pivoteer_IndicatorRecord table")
                 self._save_record(record)
@@ -415,17 +417,19 @@ class CertificateLookupSubTask(IndicatorLookupSubTask):
             for ip in lookup.resolutions:
                 resolution = lookup.resolutions[ip]
                 location = resolution[GEOLOCATION_KEY]
-                for domain in resolution[DOMAIN_KEY]:
-                    info = {GEOLOCATION_KEY: location,
-                            IP_KEY: ip,
-                            DOMAIN_KEY: domain}
-                    record = IndicatorRecord(record_type=RecordType.HR.name,
-                                             info_source=RecordSource.DNS.name,
-                                             info_date=date,
-                                             info=info)
-                    #print("saving the certificate records to the Pivoteer_IndicatorRecord table")
-                    self._save_record(record)
-                    LOGGER.debug("Created host record: %s", info)
+                if type(resolution[DOMAIN_KEY]) is list:
+                    for domain in resolution[DOMAIN_KEY]:
+                        info = {GEOLOCATION_KEY: location,
+                                IP_KEY: ip,
+                                DOMAIN_KEY: domain}
+                        record = IndicatorRecord(record_type=RecordType.HR.name,
+                                                 info_source=RecordSource.DNS.name,
+                                                 info_date=date,
+                                                 indicator=domain,
+                                                 info=info)
+                        #print("saving the certificate records to the Pivoteer_IndicatorRecord table")
+                        self._save_record(record)
+                        LOGGER.debug("Created host record: %s", info)
 
     def save_lookup(self, indicator,lookup, date):
        # print("updates the Certificate record in the Monitors_CertificateMonitor table")
