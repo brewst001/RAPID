@@ -15,15 +15,6 @@ LOGGER = logging.getLogger(__name__)
 
 class IndicatorManager(models.Manager):
 
-    def update_indicator(self, indicator):
-        record_type = RecordType.HR
-
-        if (self.get_queryset().filter(Q(indicator__isnull=True),
-                                       Q(info__contains=indicator))).count() > 0:
-
-            self.get_queryset().filter(Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
     def host_records(self, indicator):
         record_type = RecordType.HR
 

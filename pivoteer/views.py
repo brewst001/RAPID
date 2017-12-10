@@ -235,6 +235,7 @@ class CheckTask(LoginRequiredMixin, View):
             record_type = task_origin.type
             indicator = task_origin.keyword
 
+
         except MultipleObjectsReturned:
             task_origin = TaskTracker.objects.filter(group_id=task).latest('date')
             record_type = task_origin.type
@@ -243,8 +244,6 @@ class CheckTask(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             record_type = None
             indicator = None
-
-        IndicatorRecord.objects.update_indicator(indicator)
 
         # Pull data according to the record type
         if record_type == "Recent":
