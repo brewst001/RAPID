@@ -226,8 +226,7 @@ class IndicatorManager(models.Manager):
             indicator = get_base_domain(indicator)
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                            Q(info__at_query__iendswith=indicator) |
-                                            Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
+                                             Q(indicator=indicator)).values('info', 'info_date')
         return records
 
     def recent_whois(self, indicator):
