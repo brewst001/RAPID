@@ -76,17 +76,6 @@ class IndicatorManager(models.Manager):
         #                                      Q(info__at_ip__exact=indicator)).values('info', 'info_date')
 
 
-        if (records.count() < 5):
-            self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                       ~Q(info_source=RecordSource.PTO.name),
-                                       Q(record_type=record_type.name),
-                                       Q(info_date__gte=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(info_date__gte=time_frame),
-                                                 Q(indicator=indicator)).values('info', 'info_date')
         if records:
             return records.latest('info_date')
         LOGGER.info("Failed to retrieve ThreatCrowd data for indicator %s" % indicator)
@@ -112,19 +101,6 @@ class IndicatorManager(models.Manager):
         #                                      Q(info__at_domain__endswith=indicator) |
         #                                      Q(info__at_ip__endswith=indicator))
 
-        if (records.count() < 5):
-            self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                       ~Q(info_source=RecordSource.PTO.name),
-                                       Q(record_type=record_type.name),
-                                       Q(info_date__gte=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                                 ~Q(info_source=RecordSource.PTO.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(info_date__gte=time_frame),
-                                                 Q(indicator=indicator))
 
         return records
 
@@ -143,7 +119,7 @@ class IndicatorManager(models.Manager):
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-        if (records.count() < 50):
+        if (records.count() == 0):
             self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
                                        Q(record_type=record_type.name),
                                        Q(info_date__lt=time_frame),
@@ -182,7 +158,7 @@ class IndicatorManager(models.Manager):
                                                  Q(info_date__lt=time_frame),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
 
-        if (records.count() < 50):
+        if (records.count() == 0):
             self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                        ~Q(info_source=RecordSource.DNS.name),
                                        Q(record_type=record_type.name),
@@ -209,7 +185,7 @@ class IndicatorManager(models.Manager):
         records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-        if (records.count() < 50):
+        if (records.count() == 0):
             self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
                                                  Q(record_type=record_type.name),
                                                  Q(indicator__isnull=True),
@@ -234,7 +210,7 @@ class IndicatorManager(models.Manager):
                                                  Q(record_type=record_type.name),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
 
-        if (records.count() < 1):
+        if (records.count() == 0):
             self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(indicator__isnull=True),
@@ -257,14 +233,6 @@ class IndicatorManager(models.Manager):
                                              Q(indicator=indicator))
 
 
-        if (records.count() < 25):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator__isnull=True),
-                                                 Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator=indicator))
-
         records_complete = []
         for record in records:
             new_record = {
@@ -284,14 +252,7 @@ class IndicatorManager(models.Manager):
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__gte=time_frame),
                                              Q(indicator=indicator))
-        if (records.count() < 25):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator__isnull=True),
-                                                 Q(info__contains=indicator)).update(indicator=indicator)
 
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(info_date__gte=time_frame),
-                                                 Q(indicator=indicator))
         return records
 
     def historical_malware(self, indicator):
@@ -301,15 +262,7 @@ class IndicatorManager(models.Manager):
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(info_date__lt=time_frame),
                                              Q(indicator=indicator))
-        if (records.count() < 25):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                       Q(info_date__lt=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
 
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(indicator=indicator))
         return records
 
     def whois_records(self, indicator):
@@ -320,14 +273,6 @@ class IndicatorManager(models.Manager):
 
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(indicator=indicator)).values('info', 'info_date')
-
-        if (records.count() < 25):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator=indicator)).values('info', 'info_date')
 
         return records
 
@@ -349,15 +294,6 @@ class IndicatorManager(models.Manager):
         #                                     Q(info__at_query__iendswith=indicator) |
         #                                     Q(info__at_domain_name__iendswith=indicator)).values('info', 'info_date')
 
-        if (record.count() < 1):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                       Q(info_date__gte=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            record = self.get_queryset().filter(Q(record_type=record_type.name),
-                                            Q(info_date__gte=time_frame),
-                                            Q(indicator=indicator)).values('info', 'info_date')
 
         if record:
             return record.latest('info_date')
@@ -387,7 +323,7 @@ class IndicatorManager(models.Manager):
         #                                          Q(info__at_domain_name__endswith=indicator)).values('info_hash',
         #                                                                                              'info_date')
 
-        if (raw_records.count() < 2):
+        if (raw_records.count() == 0):
             self.get_queryset().filter(Q(record_type=record_type.name),
                                        Q(indicator__isnull=True),
                                        Q(info__contains=indicator)).update(indicator=indicator)
@@ -430,14 +366,6 @@ class IndicatorManager(models.Manager):
         records = self.get_queryset().filter(Q(record_type=record_type.name),
                                              Q(indicator=indicator)).values('info', 'info_date')
 
-
-        if (records.count() < 10):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator=indicator)).values('info', 'info_date')
 
         # records_complete = []
         #
