@@ -1,6 +1,7 @@
 from django.views.generic import FormView, RedirectView
 from django.views.generic import DetailView, UpdateView
-from django.contrib.auth import login, logout, authenticate
+#from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -11,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from .forms import LoginForm, RegistrationForm, SetPasswordForm
 from .forms import ForgotPasswordForm, ChangePasswordForm
 from .models import Profile
+from .backends import CaseInsensitiveModelBackend
 
 from braces.views import LoginRequiredMixin
 
@@ -100,8 +102,10 @@ class ChangePassword(LoginRequiredMixin, FormView):
         form.change_password()
 
         # Automatically re-authenticate so user doesn't have to login again
-        user = authenticate(email=self.request.user,
-                            password=form.cleaned_data['new_password2'])
+        #user = authenticate(email=self.request.user,
+        #                    password=form.cleaned_data['new_password2'])
+
+        user = CaseInsensitiveModelBackend.authenticate(email=self.request.user, password=form.cleaned_data['new_password2'])
 
         login(self.request, user)
 

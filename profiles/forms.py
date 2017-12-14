@@ -4,10 +4,12 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import get_user_model, authenticate
+#from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 
 from .models import RegistrationToken
+from .backends import CaseInsensitiveModelBackend
 
 from core.tasks import deliver_email
 
@@ -59,8 +61,8 @@ class LoginForm(forms.Form):
         inactive_error = "The account is inactive"
 
         if email and password:
-            self.user_cache = authenticate(email=email,
-                                           password=password)
+            #self.user_cache = authenticate(email=email, password=password)
+            self.user_cache = CaseInsensitiveModelBackend.authenticate(email=email, password=password)
 
             if not self.user_cache:
                 raise forms.ValidationError(credential_error)
@@ -165,10 +167,11 @@ class ChangePasswordForm(forms.Form):
         super(ChangePasswordForm, self).__init__(*args, **kwargs)
 
     def clean_current_password(self):
-        current_password = self.cleaned_data.get('current_password')
-        authenticated = authenticate(email=self.user,
-                                     password=current_password)
 
+
+        current_password = self.cleaned_data.get('current_password')
+        authenticated = CaseInsensitiveModelBackend.authenticate(email=self.user, password=current_password)
+        #authenticated = authenticate(email=self.user, password=current_password)
         authentication_error = "Current password was incorrect"
 
         if authenticated:
