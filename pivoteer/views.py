@@ -235,6 +235,7 @@ class CheckTask(LoginRequiredMixin, View):
             record_type = task_origin.type
             indicator = task_origin.keyword
 
+
         except MultipleObjectsReturned:
             task_origin = TaskTracker.objects.filter(group_id=task).latest('date')
             record_type = task_origin.type

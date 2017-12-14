@@ -49,12 +49,17 @@ function send_ajax(form_data, record){
             },
 
             success: function (task){
-                if (task.errors) {
-                    $( record_element ).html(task.errors.indicator);
-                    $('a[href='+record_element+']').find("span").attr("class", "glyphicon glyphicon-exclamation-sign");
-                } else {
+                 if (task.errors) {
+                    if (record == "RecentCert") {
+                        $( record_element ).html('<h3>Certificate Search is unavailable at this time</h3>');
+                        $('a[href='+record_element+']').find("span").attr("class", "glyphicon glyphicon-exclamation-sign");
+                    } else {
+                        $( record_element ).html(task.errors.indicator);
+                        $('a[href='+record_element+']').find("span").attr("class", "glyphicon glyphicon-exclamation-sign");
+                    }
+                 } else {
                     poll_ajax(task.id, record_element);
-                }
+                 }
             }
         })
     );
@@ -109,14 +114,6 @@ function initialize_table(record_element) {
         });
 
     }  else if (record_element == '#WhoIsPanel') {
-
-        $('#CW_table').dataTable({
-            "iDisplayLength":  10,
-            "bInfo":            false,
-            "bLengthChange":   false,
-            "bFilter":         false,
-            "aaSorting":      [[0, "desc"]]
-        });
 
         $('#HW_table').dataTable({
             "iDisplayLength":  10,
