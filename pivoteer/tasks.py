@@ -148,7 +148,7 @@ def domain_whois(domain):
                                 'expiration_date': record['expiration_date'],
                                 'nameservers': record['nameservers'],
                                 'contacts': record['contacts']})
-            save_record(record_type, record_source, info, domain)
+            save_record(record_type, record_source, info, record['domain_name'])
         except Exception:
             logger.exception("Error saving %s (%s) record from %s",
                              record_type.name,
