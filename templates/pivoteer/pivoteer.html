@@ -63,12 +63,12 @@
             </a>
         </li>
 
-        <li role="presentation">
+ {#       <li role="presentation">
             <a href="#RecentCertPanel" data-toggle="pill" >
                 Certificate
                 <span class="glyphicon" aria-hidden="true"></span>
             </a>
-        </li>
+        </li>#}
 
 
         <li role="presentation">
@@ -139,7 +139,7 @@
                 <li><a href="{% url 'Pivoteer_Export' %}">All Records</a></li>
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=recent">Recent Records</a></li>
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=threatcrowd">ThreatCrowd Records</a></li>
-                <li><a href="{% url 'Pivoteer_Export' %}?filter=certificate">Certificate Records</a></li>
+{#                <li><a href="{% url 'Pivoteer_Export' %}?filter=certificate">Certificate Records</a></li>#}
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=whois">WhoIs Records</a></li>
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=historical">Historical Records</a></li>
                 <li><a href="{% url 'Pivoteer_Export' %}?filter=malware">Malware Records</a></li>
@@ -168,7 +168,7 @@
     <div class="tab-content col-sm-9">
         <div role="tabpanel" class="tab-pane fade in active" id="RecentPanel"></div>
         <div role="tabpanel" class="tab-pane fade" id="RecentThreatPanel"></div>
-        <div role="tabpanel" class="tab-pane fade" id="RecentCertPanel"></div>
+{#        <div role="tabpanel" class="tab-pane fade" id="RecentCertPanel"></div>#}
         <div role="tabpanel" class="tab-pane fade" id="WhoIsPanel"></div>
         <div role="tabpanel" class="tab-pane fade" id="HistoricalDNSPanel"></div>
         <div role="tabpanel" class="tab-pane fade" id="HistoricalPanel"></div>
