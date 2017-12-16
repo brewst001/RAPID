@@ -315,7 +315,7 @@ class IndicatorManager(models.Manager):
             indicator = get_base_domain(indicator)
 
         raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                 Q(indicator=indicator)).values('info_hash', 'info_date')
+                                                 Q(indicator=indicator)).values('info_hash', 'info_date', 'info')
 
         # raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                          Q(info_date__lt=time_frame),
@@ -323,31 +323,34 @@ class IndicatorManager(models.Manager):
         #                                          Q(info__at_domain_name__endswith=indicator)).values('info_hash',
         #                                                                                              'info_date')
 
-        if (raw_records.count() == 0):
-            self.get_queryset().filter(Q(record_type=record_type.name),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
 
-            raw_records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                                     Q(indicator=indicator)).values('info_hash', 'info_date')
+        latest = raw_records.latest('info_date')['info_date']
+        earliest = raw_records.earliest('info_date')['info_date']
+        span = str(earliest) + " / " + str(latest)
 
-
-        tracking = []
         unique_records = []
-        annotated_records = raw_records.annotate(latest=Max('info_date')).annotate(earliest=Min('info_date'))
 
-        for record in annotated_records:
-            hash_value = record['info_hash']
+        for record in raw_records:
+            new_record = {'latest': latest,
+                          'earliest': earliest,
+                          'info_date': span,
+                          'info': record['info']}
+            unique_records.append(new_record)
 
-            if hash_value not in tracking:
-                record_info = self.get_queryset().filter(info_hash=hash_value).values('info')[0]['info']
-                span = str(record['earliest']) + " / " + str(record['latest'])
-                new_record = {'latest': record['latest'],
-                              'earliest': record['earliest'],
-                              'info_date': span,
-                              'info': record_info}
-                unique_records.append(new_record)
-                tracking.append(hash_value)
+      #  annotated_records = raw_records.annotate(latest=Max('info_date')).annotate(earliest=Min('info_date'))
+
+       # for record in annotated_records:
+       #     hash_value = record['info_hash']
+
+       #     if hash_value not in tracking:
+        #        record_info = self.get_queryset().filter(info_hash=hash_value).values('info')[0]['info']
+        #        span = str(record['earliest']) + " / " + str(record['latest'])
+        #        new_record = {'latest': record['latest'],
+        #                      'earliest': record['earliest'],
+        #                      'info_date': span,
+        #                      'info': record_info}
+         #       unique_records.append(new_record)
+         #       tracking.append(hash_value)
 
         return unique_records
 
