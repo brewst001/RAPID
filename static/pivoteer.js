@@ -14,6 +14,7 @@ function run_records(form_data) {
 //    var records = [ "Recent", "RecentThreat",  "RecentCert", "WhoIs", "HistoricalDNS", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
     var records = [ "Recent", "RecentThreat", "WhoIs", "HistoricalDNS", "Historical", "Malware", "SafeBrowsing", "Search", "External", "DNSTwist" ];
 
+
     $.each(records, function( index, record ) {
         // Clear out old information from DOM elements and submit new ajax requests
         $(record).empty();
