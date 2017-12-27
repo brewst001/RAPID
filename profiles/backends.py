@@ -17,7 +17,10 @@ class CaseInsensitiveModelBackend(ModelBackend):
             email=kwargs.get(UserModel.email)
 
         try:
-            user=UserModel.objects.get(email__iexact=email)
+            if (type(email)==str):
+               user=UserModel.objects.get(email__iexact=email)
+            else:
+               user=UserModel.objects.get(email__exact=email)
             user.backend = 'profiles.backends.CaseInsensitiveModelBackend'
             if user.check_password(password):
                 return user
