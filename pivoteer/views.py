@@ -88,97 +88,70 @@ class CheckTask(LoginRequiredMixin, View):
     def __init__(self):
         self.template_vars = {}
 
-    def pds_data(self, indicator, request):
-
+    def get_pds_data(self, indicator, request):
+    # Subroutine to format PDNS data for the Historical hosts tab
         pds_data = []
         try:
-            pds_records = IndicatorRecord.objects.pds_hosts(indicator, request)
+            pds_records = IndicatorRecord.objects.pds_historical_hosts(indicator)
 
-    #        pds_count = len(pds_records)
-     #       LOGGER.warn("pds_count for indicator '%s': '%s' ", indicator, pds_count)
+            info = pds_records['info']
+            info_source = pds_records['info_source']
 
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
+            if discover_type(indicator) == "ip":
 
-            for record in pds_records.iterator():
-                info = record['info']
-               # info_source = record.info_source
-              #  info = getattr(record, 'info')
-             #   resultcount = len(info['results'])
-             #   LOGGER.warn("pds_records.info count for indicator & date '%s' on '%s': '%s' ", indicator,
-             #               record.info_date, resultcount)
+                location = geolocate_ip(indicator)
 
-                # Set dataset limit if it's too large
-                # if resultcount > 1000:
-                #    displaylist = info['results'][:500]
-                # else:
-                #displaylist = info['results']
+                for record in info['results']:
+                    record['info'] = record
+                    record['firstseen'] = dateutil.parser.parse(record['firstseen'])
+                    record['lastseen'] = dateutil.parser.parse(record['lastseen'])
+                    record['location'] = location
+                    record['info_source'] = info_source
+                    pds_data.append(record)
 
-                for result in info['results']:
+            elif discover_type(indicator) == "domain":
 
-                 #   info = getattr(record, 'info')
-                    result['location'] = geolocate_ip(result['ip'])
-                    result['firstseen'] = dateutil.parser.parse(result['firstseen'])
-                    result['lastseen'] = dateutil.parser.parse(result['lastseen'])
-                    result['info_source'] = record['info_source']
-                    pds_data.append(result)
+                for record in info['results']:
+                    record['info'] = record
+                    record['location'] = geolocate_ip(record['ip'])
+                    record['firstseen'] = dateutil.parser.parse(record['firstseen'])
+                    record['lastseen'] = dateutil.parser.parse(record['lastseen'])
+                    record['info_source'] = info_source
+                    pds_data.append(record)
 
+            # for result in info['results']:
+            #  #   info = getattr(record, 'info')
+            #     result['location'] = location
+            #     result['firstseen'] = dateutil.parser.parse(result['firstseen'])
+            #     result['lastseen'] = dateutil.parser.parse(result['lastseen'])
+            #     result['info_source'] = info_source
+            #     pds_data.append(result)
 
         except Exception as err:
             LOGGER.error("Historical PDS processing failed for indicator '%s': %s ", indicator, str(err))
 
-
         return pds_data
 
-    def pto_data(self, indicator, request):
-        pto_data = []
 
-        try:
-            pto_records = IndicatorRecord.objects.pto_hosts(indicator, request)
-
-          #  pto_count = len(pto_records)
-          #  LOGGER.warn("pto_count for indicator '%s': '%s' ", indicator, pto_count)
-
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in pto_records.iterator():
-                info = record['info']
-                record['location'] = geolocate_ip(info['ip'])
-              #  info = getattr(record, 'info')
-              #  record.location = geolocate_ip(info['ip'])
-              #  record['firstseen'] = dateutil.parser.parse(info['firstseen'])
-              #  record['lastseen'] = dateutil.parser.parse(info['lastseen'])
-                pto_data.append(record)
-
-        except Exception as err:
-            LOGGER.error("Historical PassiveTotal processing failed for indicator '%s': %s", indicator, str(err))
-
-        return pto_data
-
-
-    def dns_host_data(self, indicator, request):
+    def get_dns_host_data(self, indicator, request, type):
+    # Subroutine to format DNS hosts data for the Recent and Historical hosts tabs
         dnshost_data = []
 
         try:
-            dnshost_records = IndicatorRecord.objects.dns_historical_hosts(indicator, request)
+            if type == 'Recent':
+                dnshost_records = IndicatorRecord.objects.dns_recent_hosts(indicator)
 
-        #    host_count = len(host_records)
-        #    LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+            elif type =="Historical":
+                dnshost_records = IndicatorRecord.objects.dns_historical_hosts(indicator)
 
-            # Set dataset limit if it's too large
-            # if host_count > 1000:
-            #    recordsdisplay = host_records.order_by('-created')[:500]
-            # else:
-            #recordsdisplay = host_records
 
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in dnshost_records.iterator():
+            for record in dnshost_records:
                 info = record['info']
+                record['firstseen'] = record['info_date']
+                record['lastseen'] = ''
                 record['location'] = geolocate_ip(info['ip'])
-              #  record['info_source'] = record.info_source
-              #  info = getattr(record, 'info')
-              #  record.location = geolocate_ip(info['ip'])
                 dnshost_data.append(record)
 
         except Exception as err:
@@ -187,33 +160,56 @@ class CheckTask(LoginRequiredMixin, View):
         return dnshost_data
 
 
-    def host_data(self, indicator, request):
+    def get_host_data(self, indicator, request, type):
+    # Subroutine to format miscellaneous hosts data for the Recent and Historical hosts tabs
         host_data = []
 
         try:
-            host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
+            if type =="Recent":
+                host_records = IndicatorRecord.objects.recent_hosts(indicator)
 
-        #    host_count = len(host_records)
-        #    LOGGER.warn("host_count for indicator '%s': '%s' ", indicator, host_count)
+            elif type == "Historical":
+                host_records = IndicatorRecord.objects.historical_hosts(indicator, request)
 
-            # Set dataset limit if it's too large
-            # if host_count > 1000:
-            #    recordsdisplay = host_records.order_by('-created')[:500]
-            # else:
-            #recordsdisplay = host_records
 
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
-            for record in host_records.iterator():
-                info = record['info']
-                record['location'] = geolocate_ip(info['ip'])
-                if (record['info_source'] == "PT"):
+            if discover_type(indicator)== "ip":
+
+                location = geolocate_ip(indicator)
+
+                for record in host_records:
+                        info = record['info']
+                        record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+                        record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+                        record['location'] = location
+                        record['info_source'] = record['info_source']
+                        host_data.append(record)
+
+            elif discover_type(indicator)=="domain":
+
+                for record in host_records:
+                    info = record['info']
+                    record['location'] = geolocate_ip(info['ip'])
                     record['firstseen'] = dateutil.parser.parse(info['firstseen'])
                     record['lastseen'] = dateutil.parser.parse(info['lastseen'])
                     record['info_source'] = record['info_source']
-              #  info = getattr(record, 'info')
-              #  record.location = geolocate_ip(info['ip'])
-                host_data.append(record)
+
+                    host_data.append(record)
+
+
+            # We must lookup the country for each IP address for use in the template.
+            # We do this outside the task because we don't know the IP addresses until the task completes.
+            # for record in host_records.iterator():
+            #     info = record['info']
+            #     record['location'] = geolocate_ip(info['ip'])
+            #     record['info_source'] = record['info_source']
+            #
+            #     if (record['info_source'] == "PTO"):
+            #          record['firstseen'] = dateutil.parser.parse(info['firstseen'])
+            #          record['lastseen'] = dateutil.parser.parse(info['lastseen'])
+              #       record['info_source'] = record['info_source']
+
+
+             #   host_data.append(record)
 
         except Exception as err:
             LOGGER.error("Historical processing failed for indicator '%s': %s", indicator, str(err))
@@ -247,24 +243,14 @@ class CheckTask(LoginRequiredMixin, View):
 
         # Pull data according to the record type
         if record_type == "Recent":
-
+         #Recent tab should include recent DNS and other hosts data that have been retrieved from APIs within 24 hrs
             self.template_name = "pivoteer/RecentRecords.html"
 
-            # Current hosting records
-            host_record = IndicatorRecord.objects.recent_hosts(indicator)
+            dns_records = self.get_dns_host_data(indicator, request, 'Recent')
+            misc_records = self.get_host_data(indicator, request, 'Recent')
+            recent_records = dns_records + misc_records
 
-            # We must lookup the country for each IP address for use in the template.
-            # We do this outside the task because we don't know the IP addresses until the task completes.
-            host_records_complete = []
-            for record in host_record:
-                info = getattr(record, 'info')
-                record.firstseen = record.info_date
-                record.lastseen = ''
-                record.location = geolocate_ip(info['ip'])
-                host_records_complete.append(record)
-
-            self.template_vars["current_hosts"] = host_records_complete
-
+            self.template_vars["current_hosts"] = recent_records
 
             # Pull data according to the record type
         elif record_type == "RecentThreat":
@@ -282,7 +268,6 @@ class CheckTask(LoginRequiredMixin, View):
             #cert_info = IndicatorRecord.objects.recent_cert(indicator)
             self.template_vars["cert_info"] = cert_info
 
-
         elif record_type == "WhoIs":
 
             self.template_name = "pivoteer/WhoIsRecords.html"
@@ -291,19 +276,19 @@ class CheckTask(LoginRequiredMixin, View):
             self.template_vars["historical_whois"] = whois_record
 
         elif record_type == "HistoricalDNS":
-
-            self.template_name = "pivoteer/HistoricalRecordsDNS.html"
-            self.template_vars["hosting_records"] = self.dns_host_data(indicator, request)
+            # Historical DNS tab should include only DNS host data that have been retrieved from APIs beyond 24 hrs
+            self.template_name = "pivoteer/HistoricalRecords.html"
+            self.template_vars["host_records"] = self.get_dns_host_data(indicator, request, 'Historical')
 
         elif record_type == "Historical":
-
+            # Historical tab should include other hosts data that have been retrieved from APIs beyond 24 hrs and all PDNS host data
             self.template_name = "pivoteer/HistoricalRecords.html"
-         #   self.template_vars["pto_records"] = []
-       #     self.template_vars["pds_records"] = []
-          #  self.template_vars["hosting_records"] = []
 
-            self.template_vars["host_records"] = self.host_data(indicator, request)
-            self.template_vars["pds_records"] = self.pds_data(indicator, request)
+            misc_records = self.get_host_data(indicator, request, "Historical")
+            pds_records = self.get_pds_data(indicator, request)
+            historical_records = misc_records + pds_records
+
+            self.template_vars["host_records"] = historical_records
 
         elif record_type == "Malware":
 
@@ -376,11 +361,11 @@ class ExportRecords(LoginRequiredMixin, View):
             self.line_separator()
             self.export_recent_threatcrowd(indicator)
             self.line_separator()
-            self.export_recent_certificates(indicator)
-            self.line_separator()
+            #self.export_recent_certificates(indicator)
+            #self.line_separator()
             self.export_whois(indicator)
             self.line_separator()
-            self.export_historical(indicator, request)
+            self.export_historical_hosts(indicator, request)
             self.line_separator()
             self.export_malware(indicator)
             self.line_separator()
@@ -404,7 +389,7 @@ class ExportRecords(LoginRequiredMixin, View):
             #self.export_recent_whois(indicator)
 
         elif indicator and filtering == 'historical':
-            self.export_historical(indicator, request)
+            self.export_historical_hosts(indicator, request)
 
         elif indicator and filtering == 'malware':
             self.export_malware(indicator)
@@ -444,15 +429,21 @@ class ExportRecords(LoginRequiredMixin, View):
 
     def export_recent_hosts(self, indicator):
         """
-        Export recent 'HR' (Host Record) indicator records to CSV.
-
-        This method is called as part of 'export_recent.'
+        Export the recent Host Records (IndicatorRecords with record type "HR") for the following types:
+        1. DNS hosts records
+        2. Miscellaneous host records, excluding PDNS data
+        This method is called as part of 'export_recent_hosts.'
 
         :param indicator: The indicator to be exported
         :return: This method returns no values
         """
-        hosts = IndicatorRecord.objects.recent_hosts(indicator)
-        self._write_records(RecordType.HR, indicator, hosts)
+        dnshosts = IndicatorRecord.objects.dns_recent_hosts(indicator)
+        self._write_records(RecordType.HR, indicator, dnshosts)
+        recenthosts = IndicatorRecord.objects.recent_hosts(indicator)
+        self._write_records(RecordType.HR, indicator, recenthosts)
+
+      #  hosts = IndicatorRecord.objects.recent_hosts(indicator)
+      #  self._write_records(RecordType.HR, indicator, hosts)
 
 
     def export_whois(self, indicator):
@@ -506,36 +497,25 @@ class ExportRecords(LoginRequiredMixin, View):
         latest = IndicatorRecord.objects.recent_cert(indicator)
         self._write_records(RecordType.CE, indicator, [latest])
 
-    def export_recent(self, indicator):
-        """
-        Export all data from the "Recent Activity" tab to CSV.
-
-        This method calls the various 'export_recent_*' methods (with a call to 'line_separator' between each) to
-        perform the actual work of exporting to CSV.
-
-        :param indicator: The indicator to be exported
-        :return: This method returns no values
-        """
-        self.export_recent_hosts(indicator)
-        self.line_separator()
-        self.export_recent_whois(indicator)
-        self.line_separator()
-        self.export_recent_threatcrowd(indicator)
-        self.line_separator()
-        self.export_recent_certificates(indicator)
-
     def export_historical_hosts(self, indicator, request):
         """
-        Export historical Host Records (IndicatorRecords with record type "HR").
+        Export the historical Host Records (IndicatorRecords with record type "HR") for the following types:
+        1. All PDNS hosts records
+        2. DNS hosts records
+        3. Miscellaneous host records
+
 
         :param indicator: The indicator whose historical records are to be exported
         :param request: The request being processed
         :return: This method returns no values
         """
-        pdshosts = IndicatorRecord.objects.pds_hosts(indicator, request)
+        pdshosts = IndicatorRecord.objects.pds_historical_hosts(indicator)
         self._write_records(RecordType.HR, indicator, pdshosts)
         hosts = IndicatorRecord.objects.historical_hosts(indicator, request)
         self._write_records(RecordType.HR, indicator, hosts)
+        dnshosts = IndicatorRecord.objects.dns_historical_hosts(indicator)
+        self._write_records(RecordType.HR, indicator, dnshosts)
+
 
     def export_historical_whois(self, indicator):
         """
@@ -546,19 +526,6 @@ class ExportRecords(LoginRequiredMixin, View):
         """
         whois = IndicatorRecord.objects.historical_whois(indicator)
         self._write_records(RecordType.WR, indicator, whois)
-
-    def export_historical(self, indicator, request):
-        """
-        Export all data from the "Historical Activity" tab to CSV.
-
-        :param indicator: The indicator whose historical activity is to be exported
-        :param request: The request being processed
-        :return: This method returns no values
-        """
-        pdshosts = IndicatorRecord.objects.pds_hosts(indicator, request)
-        self._write_records(RecordType.HR, indicator, pdshosts)
-        hosts = IndicatorRecord.objects.historical_hosts(indicator, request)
-        self._write_records(RecordType.HR, indicator, hosts)
 
         #self.export_historical_hosts(indicator, request)
        # self.line_separator()

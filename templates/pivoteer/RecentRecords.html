@@ -8,10 +8,10 @@
           <tr>
             <th>Domain</th>
             <th>Resolve</th>
+            <th>Country</th>
             <th>First Seen</th>
             <th>Last Seen</th>
             <th>Source</th>
-            <th>SSL</th>
           </tr>
         </thead>
         <tbody>
@@ -27,33 +27,14 @@
                     <td>
                         {% if record.info.ip != origin %}
                             <span class="pivot">{{ record.info.ip }}</span>
-                            <br>
-                            {{ record.location.country }}
                         {% else %}
                             {{ record.info.ip }}
-                            <br>
-                            {{ record.location.country }}
                         {% endif %}
                     </td>
+                    <td>{{ record.location.country }}</td>
                     <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
                     <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
-                    <td>{{ record.get_info_source_display }}</td>
-                    <td>
-
-                        {% if 'status' in record.info.https_cert %}
-                            {{ record.info.https_cert.message }}
-                        {% else %}
-                            Subject: {{ record.info.https_cert.subject_dn }}<br />
-                            Issuer: {{ record.info.https_cert.issuer_dn }}<br />
-                            SHA-256:
-                            <a target="_blank" href="https://www.censys.io/ipv4?q={{ record.info.https_cert.fingerprint_sha256 }}">
-                                {{ record.info.https_cert.fingerprint_sha256 }}
-                                <span class="glyphicon glyphicon-new-window"></span>
-                            </a><br />
-                            Validity: {{ record.info.https_cert.validity }}<br />
-                            Alt. Names: {{ record.info.https_cert.extensions.subject_alt_name.dns_names }}
-                        {% endif %}
-                    </td>
+                    <td>{{ record.info_source }}</td>
                 </tr>
             {% endfor %}
         </tbody>

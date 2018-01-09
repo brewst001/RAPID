@@ -62,15 +62,27 @@ class PassiveTotal(object):
 
                 records = json_response['results']
                 results = []
+
                 for entry in records:
-                    results.append({
-                        'date': entry['collected'],
-                        'firstseen': entry['firstSeen'],
-                        'lastseen': entry['lastSeen'],
-                        'ip': entry['resolve'],
-                        'domain': entry['value'],
-                        'ip_location': {}
-                    })
+                    if entry['resolveType'] == 'domain':
+                       results.append({
+                           'date': entry['collected'],
+                           'firstseen': entry['firstSeen'],
+                           'lastseen': entry['lastSeen'],
+                           'ip': entry['value'],
+                           'domain': entry['resolve'],
+                           'ip_location': {}
+                       })
+
+                    elif entry['resolveType'] == 'ip':
+                       results.append({
+                            'date': entry['collected'],
+                            'firstseen': entry['firstSeen'],
+                            'lastseen': entry['lastSeen'],
+                            'ip': entry['resolve'],
+                            'domain': entry['value'],
+                            'ip_location': {}
+                       })
 
                 return results
 

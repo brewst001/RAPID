@@ -192,9 +192,8 @@ def domain_hosts(domain):
         record_source = RecordSource.DNS
         for host in hosts:
             ip_location = geolocate_ip(host)
-            https_cert = lookup_ip_censys_https(host)
+            #https_cert = lookup_ip_censys_https(host)
             info = OrderedDict({"geo_location": ip_location,
-                                "https_cert": https_cert,
                                 "ip": host, "domain": domain})
             try:
                 save_record(record_type,
@@ -213,7 +212,7 @@ def ip_hosts(ip_address):
     scraper = RobtexScraper()
     hosts = scraper.run(ip_address)
     ip_location = geolocate_ip(ip_address)
-    https_cert = lookup_ip_censys_https(ip_address)
+    #https_cert = lookup_ip_censys_https(ip_address)
 
     if type(hosts) == list:
         record_type = RecordType.HR
@@ -221,7 +220,6 @@ def ip_hosts(ip_address):
         for host in hosts:
             try:
                 info = OrderedDict({"geo_location": ip_location,
-                                    "https_cert": https_cert,
                                     "ip": ip_address, "domain": host})
                 save_record(record_type,
                             record_source,

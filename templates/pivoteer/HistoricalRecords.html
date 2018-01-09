@@ -15,30 +15,6 @@
         </thead>
 
         <tbody>
-        {% if pds_records %}
-            {% for record in pds_records %}
-                <tr>
-                    <td>
-                        {% if record.domain != origin %}
-                            <span class="pivot">{{ record.domain }}</span>
-                        {% else %}
-                            {{ record.domain }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if record.ip != origin %}
-                            <span class="pivot">{{ record.ip }}</span>
-                        {% else %}
-                            {{ record.ip }}
-                        {% endif %}
-                    </td>
-                    <td>{{ record.location.country }}</td>
-                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
-                    <td>{{ record.lastseen|date:"N d, Y h:i A"   }}</td>
-                    <td>{{ record.info_source }}</td>
-                </tr>
-            {% endfor %}
-        {% endif %}
         {% if host_records %}
             {% for record in host_records %}
                 <tr>
@@ -56,20 +32,8 @@
                         {% endif %}
                     </td>
                     <td>{{ record.location.country }}</td>
-                    <td>
-                        {% if record.info_source == "PT" %}
-                            {{ record.firstseen|date:"N d, Y h:i A"  }}
-                        {% else %}
-                            {{ record.info_date|date:"N d, Y h:i A"  }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if record.info_source == "PT" %}
-                            {{ record.lastseen|date:"N d, Y h:i A"  }}
-                        {% else %}
-
-                        {% endif %}
-                    </td>
+                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.lastseen|date:"N d, Y h:i A"  }}</td>
                     <td>{{ record.info_source }}</td>
                 </tr>
             {% endfor %}

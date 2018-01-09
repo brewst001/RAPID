@@ -112,7 +112,7 @@ function initialize_table(record_element) {
             "bInfo": false,
             "bLengthChange": false,
             "bFilter": true,
-            "aaSorting": [[2, "desc"]]
+            "aaSorting": [[3, "desc"]]
         });
 
     }  else if (record_element == '#WhoIsPanel') {
@@ -127,7 +127,7 @@ function initialize_table(record_element) {
 
 
     } else if (record_element == "#HistoricalDNSPanel") {
-        $('#HRD_table').dataTable({
+        $('#HR_table').dataTable({
             "iDisplayLength":  50,
             "bInfo":            false,
             "bLengthChange":   false,

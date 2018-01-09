@@ -81,44 +81,60 @@ class IndicatorManager(models.Manager):
         LOGGER.info("Failed to retrieve ThreatCrowd data for indicator %s" % indicator)
         return records
 
+
+    def dns_recent_hosts(self, indicator):
+        # Updated by LNguyen
+        # Date: 04Jan2018
+        # Description: Query to get recent DNS data where info_date is within 24 hrs
+        record_type = RecordType.HR
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+
+        records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(info_date__gte=time_frame),
+                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+
+        return records
+
+
     def recent_hosts(self, indicator):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-        # Date: 1Aug2017
-        # Description: Update query to exclude PDNS Data since it only contains passive DNS info
+        # Date: 4Jan2018
+        # Description: Query to get miscellaneous recent host data where first seen and last seen dates are within 24 hrs
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                             ~Q(info_source=RecordSource.PTO.name),
+                                             ~Q(info_source=RecordSource.DNS.name),
                                              Q(record_type=record_type.name),
-                                             Q(info_date__gte=time_frame),
-                                             Q(indicator=indicator))
+                                             Q(indicator=indicator),
+                                             Q(info__at_firstseen__gte=time_frame) |
+                                             Q(info__at_lastseen__gte=time_frame)
+                                             ).values('info', 'info_source')
 
         # records = self.get_queryset().filter(Q(record_type=record_type.name),
         #                                      Q(info_date__gte=time_frame),
         #                                      Q(info__at_domain__endswith=indicator) |
         #                                      Q(info__at_ip__endswith=indicator))
 
-
         return records
 
-    def dns_historical_hosts(self, indicator, request):
+    def dns_historical_hosts(self, indicator):
         # Updated by LNguyen
         # Date: 26April2017
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-        # Date: 1Aug2017
-        # Description: Update to include PDNS Data into Historical dataset
+        # Date: 4Jan2018
+        # Description: Query to get historical DNS data where info_date is beyond 24 hrs
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-        time_start = datetime.datetime.utcnow() - datetime.timedelta(days=366)
-
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+        #temp#
         if (records.count() == 0):
             self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
                                        Q(record_type=record_type.name),
@@ -139,76 +155,59 @@ class IndicatorManager(models.Manager):
         # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
         # Date: 1Aug2017
         # Description: Update to include PDNS Data into Historical dataset
+        # Date: 4Jan2018
+        # Description: Query to get miscellaneous host data where first seen and last seen dates are beyond 24 hrs
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-        time_start = datetime.datetime.utcnow() - datetime.timedelta(days=366)
 
         if request.user.is_staff:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  ~Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-
+                                                 Q(indicator=indicator),
+                                                 Q(info__at_firstseen__lt=time_frame),
+                                                 Q(info__at_lastseen__lt=time_frame)
+                                                 ).values('info', 'info_source')
         else:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  ~Q(info_source=RecordSource.IID.name),
                                                  ~Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+                                                 Q(indicator=indicator),
+                                                 Q(info__at_firstseen__lt=time_frame),
+                                                 Q(info__at_lastseen__lt=time_frame)
+                                                 ).values('info', 'info_source')
 
         if (records.count() == 0):
             self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                        ~Q(info_source=RecordSource.DNS.name),
                                        Q(record_type=record_type.name),
-                                       Q(info_date__lt=time_frame),
+                                       Q(info__at_firstseen__lt=time_frame),
+                                       Q(info__at_lastseen__lt=time_frame),
                                        Q(indicator__isnull=True),
                                        Q(info__contains=indicator)).update(indicator=indicator)
 
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                                  ~Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+                                                 Q(indicator=indicator),
+                                                 Q(info__at_firstseen__lt=time_frame),
+                                                 Q(info__at_lastseen__lt=time_frame)
+                                                 ).values('info', 'info_source')
 
         return records
 
 
-    def pto_hosts(self, indicator, request):
-        # Updated by LNguyenQ(
-        # Date: 24Oct2017
-        # Description: Update to include Passive Total Data into Historical dataset
-        record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
-
-        records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-        if (records.count() == 0):
-            self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(indicator__isnull=True),
-                                                 Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
-                                             Q(record_type=record_type.name),
-                                             Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-
-        return records
-
-    def pds_hosts(self, indicator, request):
+    def pds_historical_hosts(self, indicator):
         # Updated by LNguyen
-        # Date: 26April2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
         # Date: 1Aug2017
-        # Description: Update to include PDNS Data into Historical dataset
+        # Description: Update to get all PDNS historical data
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+                                                 Q(indicator=indicator)).values('info', 'info_source')
 
         if (records.count() == 0):
             self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
@@ -218,9 +217,10 @@ class IndicatorManager(models.Manager):
 
             records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                              Q(record_type=record_type.name),
-                                             Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+                                             Q(indicator=indicator)).values('info', 'info_source')
 
-        return records
+        return records.latest('info_date')
+        #return records
 
 
     def malware_records(self, indicator):
@@ -286,6 +286,7 @@ class IndicatorManager(models.Manager):
 
         if check_domain_valid(indicator):
             indicator = get_base_domain(indicator)
+
         record = self.get_queryset().filter(Q(record_type=record_type.name),
                                             Q(info_date__gte=time_frame),
                                             Q(indicator=indicator)).values('info', 'info_date')
@@ -323,19 +324,19 @@ class IndicatorManager(models.Manager):
         #                                          Q(info__at_domain_name__endswith=indicator)).values('info_hash',
         #                                                                                              'info_date')
 
-
-        latest = raw_records.latest('info_date')['info_date']
-        earliest = raw_records.earliest('info_date')['info_date']
-        span = str(earliest) + " / " + str(latest)
-
         unique_records = []
 
-        for record in raw_records:
-            new_record = {'latest': latest,
-                          'earliest': earliest,
-                          'info_date': span,
-                          'info': record['info']}
-            unique_records.append(new_record)
+        if (raw_records.count() > 0):
+            latest = raw_records.latest('info_date')['info_date']
+            earliest = raw_records.earliest('info_date')['info_date']
+            span = str(earliest) + " / " + str(latest)
+
+            for record in raw_records:
+                new_record = {'latest': latest,
+                              'earliest': earliest,
+                              'info_date': span,
+                              'info': record['info']}
+                unique_records.append(new_record)
 
       #  annotated_records = raw_records.annotate(latest=Max('info_date')).annotate(earliest=Min('info_date'))
 
@@ -354,43 +355,6 @@ class IndicatorManager(models.Manager):
 
         return unique_records
 
-
-    def get_threatlab_record(self, indicator):
-        """
-        Retrieve DNSTwist records for an indicator from the database.
-
-        :param indicator: The indicator value
-        :return:  The DNSTwist records for the indicator
-        """
-        import dateutil.parser
-
-        record_type = RecordType.TL
-
-        records = self.get_queryset().filter(Q(record_type=record_type.name),
-                                             Q(indicator=indicator)).values('info', 'info_date')
-
-
-        # records_complete = []
-        #
-        # for record in records:
-        #
-        #     for result in record['info']['results']:
-        #
-        #         new_record = {
-        #             'domain': result['domain'],
-        #             'ip': result['rdata'][0],
-        #             'timefirst': dateutil.parser.parse(result['timefirst']),
-        #             'timelast': dateutil.parser.parse(result['timelast']),
-        #             'type': result['type'],
-        #             'info_date':record['info_date']
-        #         }
-        #         records_complete.append(new_record)
-
-        # for record in records_complete:
-        #     print(record.info_date)
-        #     print(record.domain)
-
-        return records
 
     def safebrowsing_record(self, indicator):
         record_type = RecordType.SB
@@ -463,7 +427,6 @@ class IndicatorRecord(models.Model):
 
     class Meta:
         unique_together = (("indicator", "info_hash", "info_source", "info_date"),)
-
 
     def generate_hash(self):
         info_pickle = pickle.dumps(self.info)
