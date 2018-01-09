@@ -1,8 +1,7 @@
 {% load pivoteer_extras %}
 
 <span id="htop"></span>
-<h3>Hosting Beyond Last 24 Hours</h3>
-{% if hosting_records %}
+<h3>Hosting Beyond Last 48 Hours</h3>
     <table id="HRD_table" class="table display">
         <thead>
           <tr>
@@ -16,7 +15,8 @@
         </thead>
 
         <tbody>
-            {% for record in hosting_records %}
+        {% if dns_host_records %}
+            {% for record in dns_host_records %}
                 <tr>
                     <td>
                         {% if record.info.domain != origin %}
@@ -33,14 +33,12 @@
                         {% endif %}
                     </td>
                     <td>{{ record.location.country }}</td>
-                    <td>{{ record.info_date|date:"N d, Y h:i A"  }}</td>
-                    <td></td>
+                    <td>{{ record.firstseen|date:"N d, Y h:i A"  }}</td>
+                    <td>{{ record.lastseen|date:"N d, Y h:i A"  }}</td>
                     <td>{{ record.info_source }}</td>
                 </tr>
             {% endfor %}
+        {% endif %}
         </tbody>
     </table>
     <a href="#htop">Back to top</a><br><br>
-{% else %}
-    <h4>No Records Found</h4>
-{% endif %}

@@ -144,7 +144,6 @@ class CheckTask(LoginRequiredMixin, View):
             elif type =="Historical":
                 dnshost_records = IndicatorRecord.objects.dns_historical_hosts(indicator)
 
-
             # We must lookup the country for each IP address for use in the template.
             # We do this outside the task because we don't know the IP addresses until the task completes.
             for record in dnshost_records:
@@ -277,8 +276,8 @@ class CheckTask(LoginRequiredMixin, View):
 
         elif record_type == "HistoricalDNS":
             # Historical DNS tab should include only DNS host data that have been retrieved from APIs beyond 24 hrs
-            self.template_name = "pivoteer/HistoricalRecords.html"
-            self.template_vars["host_records"] = self.get_dns_host_data(indicator, request, 'Historical')
+            self.template_name = "pivoteer/HistoricalRecordsDNS.html"
+            self.template_vars["dns_host_records"] = self.get_dns_host_data(indicator, request, 'Historical')
 
         elif record_type == "Historical":
             # Historical tab should include other hosts data that have been retrieved from APIs beyond 24 hrs and all PDNS host data
