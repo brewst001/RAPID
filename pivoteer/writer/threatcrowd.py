@@ -21,7 +21,7 @@ class ThreatCrowdCsvWriter(CsvWriter):
         super(ThreatCrowdCsvWriter, self).__init__(writer)
 
     def create_title_rows(self, indicator, records):
-        return [["ThreatCrowd Records"]]
+        return [["ThreatCrowd Search Records"]]
 
     def create_header(self):
         return ["Type", "Data", "Date"]

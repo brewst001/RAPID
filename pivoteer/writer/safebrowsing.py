@@ -18,6 +18,10 @@ class SafeBrowsingCsvWriter(CsvWriter):
         super(SafeBrowsingCsvWriter, self).__init__(writer)
         self.__link = None
 
+
+    def create_title_rows(self, indiator, records):
+        yield ["Safebrowsing Search Results"]
+
     def write(self, indicator, records):
         # Note: Currently, the SafeBrowsing CSV format includes the permalink in every row.  This link is based upon the
         # indicator being processed, which is passed in during this method.  We therefore create and store the permalink

@@ -17,6 +17,9 @@ class WhoIsCsvWriter(CsvWriter):
         """
         super(WhoIsCsvWriter, self).__init__(writer)
 
+    def create_title_rows(self, indiator, records):
+        yield ["WhoIs Search Results"]
+
     def create_header(self):
         return ["Lookup Date", "WHOIS Information"]
 

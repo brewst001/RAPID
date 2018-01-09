@@ -117,14 +117,23 @@ class CsvWriter(Writer):
     def write(self, indicator, records):
         if not records:
             return
+
         titles = self.create_title_rows(indicator, records)
         for row in titles:
             self.writer.writerow(row)
+
         header_row = self.create_header()
         if header_row:
             self.writer.writerow(header_row)
-        for record in records:
-            rows = self.create_rows(record)
+
+        if (type(records) == dict):
+            rows = self.create_rows(records)
             for row in rows:
                 if (row is not None and len(row) > 0):
                     self.writer.writerow(row)
+        else:
+            for record in records:
+                rows = self.create_rows(record)
+                for row in rows:
+                    if (row is not None and len(row) > 0):
+                        self.writer.writerow(row)
