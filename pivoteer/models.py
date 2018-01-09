@@ -87,7 +87,7 @@ class IndicatorManager(models.Manager):
         # Date: 04Jan2018
         # Description: Query to get recent DNS data where info_date is within 24 hrs
         record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
@@ -104,7 +104,7 @@ class IndicatorManager(models.Manager):
         # Date: 4Jan2018
         # Description: Query to get miscellaneous recent host data where first seen and last seen dates are within 24 hrs
         record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
         records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
                                              ~Q(info_source=RecordSource.DNS.name),
@@ -128,7 +128,7 @@ class IndicatorManager(models.Manager):
         # Date: 4Jan2018
         # Description: Query to get historical DNS data where info_date is beyond 24 hrs
         record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
                                                  Q(record_type=record_type.name),
@@ -158,7 +158,7 @@ class IndicatorManager(models.Manager):
         # Date: 4Jan2018
         # Description: Query to get miscellaneous host data where first seen and last seen dates are beyond 24 hrs
         record_type = RecordType.HR
-        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
         if request.user.is_staff:
             records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
