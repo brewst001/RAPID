@@ -106,3 +106,36 @@ class PassiveTotal(object):
                 logging.warning("Unrecognized API resource or malformed query")
 
         return []
+
+
+class RobtexAPI(object):
+
+    def ip_query(self, query):
+        results = []
+
+        #data = '{"query": "' + query + '"}'
+
+        api_path = "https://freeapi.robtex.com/ipquery/" + query
+
+        response = requests.get(api_path)
+        logging.debug("response status:" + response.ok)
+        if response.ok:
+            try:
+                dataset = json.loads(response.text)
+                for entry in dataset['pas']:
+                    pas = entry['o'].encode('utf-8')
+                    results.append(pas)
+
+                return results
+
+            except ValueError:
+                logging.warning("Robtex api call failed".format(response.text))
+                #print [json.loads(entry) for entry in response.text.split("\r\n") if entry is not '']
+
+
+        else:
+            return []
+            # print information about the error
+            logging.warning("{} error retrieving {}: {}".format(response.status_code,
+                                                      api_path, response.text))
+

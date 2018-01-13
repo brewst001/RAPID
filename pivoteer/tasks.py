@@ -16,7 +16,7 @@ from core.lookups import lookup_ip_whois, lookup_domain_whois, resolve_domain, g
     lookup_google_safe_browsing, lookup_certs_censys, google_for_indicator, LookupException, lookup_dnstwist, lookup_threatlabs
 from pivoteer.collectors.scrape import RobtexScraper, InternetIdentityScraper
 from pivoteer.collectors.scrape import VirusTotalScraper, ThreatExpertScraper
-from pivoteer.collectors.api import PassiveTotal
+from pivoteer.collectors.api import PassiveTotal, RobtexAPI
 from pivoteer.records import RecordSource, RecordType
 from .models import IndicatorRecord
 
@@ -209,8 +209,9 @@ def domain_hosts(domain):
 
 @app.task
 def ip_hosts(ip_address):
-    scraper = RobtexScraper()
-    hosts = scraper.run(ip_address)
+    #scraper = RobtexScraper()
+    #hosts = scraper.run(ip_address)
+    hosts = RobtexAPI.ip_query(ip_address)
     ip_location = geolocate_ip(ip_address)
     #https_cert = lookup_ip_censys_https(ip_address)
 
