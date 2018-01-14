@@ -207,7 +207,7 @@ def domain_hosts(domain):
                                  record_source.title)
 
 
-#@app.task
+@app.task
 def ip_hosts(ip_address):
     #scraper = RobtexScraper()
     #hosts = scraper.run(ip_address)
