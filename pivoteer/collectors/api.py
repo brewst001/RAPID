@@ -110,6 +110,9 @@ class PassiveTotal(object):
 
 class RobtexAPI(object):
 
+    def __init__(self):
+        object.__init__(self)
+
     def ip_query(self, query):
         results = []
 

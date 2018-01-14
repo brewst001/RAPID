@@ -207,11 +207,12 @@ def domain_hosts(domain):
                                  record_source.title)
 
 
-@app.task
+#@app.task
 def ip_hosts(ip_address):
     #scraper = RobtexScraper()
     #hosts = scraper.run(ip_address)
-    hosts = RobtexAPI.ip_query(ip_address)
+    robtex = RobtexAPI()
+    hosts = robtex.ip_query(ip_address)
     ip_location = geolocate_ip(ip_address)
     #https_cert = lookup_ip_censys_https(ip_address)
 
