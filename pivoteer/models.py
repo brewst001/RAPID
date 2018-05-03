@@ -26,8 +26,6 @@ class IndicatorManager(models.Manager):
         """Retrieve the most recent censys.io certificate result for the provided indicator
         # Updated by LNguyen
         # Date: 05May2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-
             Args:
                 indicator (str): The indicator to search for
             
@@ -56,7 +54,6 @@ class IndicatorManager(models.Manager):
         """Retrieve the most recent ThreatCrowd record for the provided indicator
         # Updated by LNguyen
         # Date: 05May2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
 
             Args:
                 indicator (str): The indicator to search for
@@ -99,10 +96,9 @@ class IndicatorManager(models.Manager):
 
     def recent_hosts(self, indicator):
         # Updated by LNguyen
-        # Date: 26April2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-        # Date: 4Jan2018
         # Description: Query to get miscellaneous recent host data where first seen and last seen dates are within 24 hrs
+        # Date: 1Aug2017
+        # Description: Update query to return only recent DNS data and exclude PDNS and Passive Total Data
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
@@ -123,10 +119,10 @@ class IndicatorManager(models.Manager):
 
     def dns_historical_hosts(self, indicator):
         # Updated by LNguyen
-        # Date: 26April2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
         # Date: 4Jan2018
         # Description: Query to get historical DNS data where info_date is beyond 24 hrs
+        # Date: 1Aug2017
+        # Description: Query to retrieve Historical DNS dataset
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
@@ -134,29 +130,17 @@ class IndicatorManager(models.Manager):
                                                  Q(record_type=record_type.name),
                                                  Q(info_date__lt=time_frame),
                                                  Q(indicator=indicator)).values('info', 'info_date', 'info_source')
-        #temp#
-        if (records.count() == 0):
-            self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
-                                       Q(record_type=record_type.name),
-                                       Q(info_date__lt=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
 
-            records = self.get_queryset().filter(Q(info_source=RecordSource.DNS.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(info_date__lt=time_frame),
-                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
 
         return records
 
     def historical_hosts(self, indicator, request):
         # Updated by LNguyen
-        # Date: 26April2017
-        # Description: Former query was not correctly handling unicode characters in the info field so had to update where condition to use wildcard contains
-        # Date: 1Aug2017
         # Description: Update to include PDNS Data into Historical dataset
         # Date: 4Jan2018
         # Description: Query to get miscellaneous host data where first seen and last seen dates are beyond 24 hrs
+        # Description: Query to retrieve other Historical dataset (with exception of PDNS and DNS data because they're handled in separate queries) 
+        #         This query also includes Passive Total Data in the dataset. 
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-48)
 
@@ -178,46 +162,32 @@ class IndicatorManager(models.Manager):
                                                  Q(info__at_lastseen__lt=time_frame)
                                                  ).values('info', 'info_source')
 
-        if (records.count() == 0):
-            self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                       ~Q(info_source=RecordSource.DNS.name),
-                                       Q(record_type=record_type.name),
-                                       Q(info__at_firstseen__lt=time_frame),
-                                       Q(info__at_lastseen__lt=time_frame),
-                                       Q(indicator__isnull=True),
-                                       Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(~Q(info_source=RecordSource.PDS.name),
-                                                 ~Q(info_source=RecordSource.DNS.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(indicator=indicator),
-                                                 Q(info__at_firstseen__lt=time_frame),
-                                                 Q(info__at_lastseen__lt=time_frame)
-                                                 ).values('info', 'info_source')
-
         return records
 
 
-    def pds_historical_hosts(self, indicator):
+    def pto_hosts(self, indicator, request):
+        # Updated by LNguyenQ(
+        # Date: 24Oct2017
+        # Description: Query to retrieve Passive Total Data for Historical dataset
+        record_type = RecordType.HR
+        time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
+
+        records = self.get_queryset().filter(Q(info_source=RecordSource.PTO.name),
+                                                 Q(record_type=record_type.name),
+                                                 Q(indicator=indicator)).values('info', 'info_date', 'info_source')
+
+        return records
+
+    def pds_hosts(self, indicator, request):
         # Updated by LNguyen
         # Date: 1Aug2017
-        # Description: Update to get all PDNS historical data
+        # Description: Query to retrieve PDNS Data for Historical dataset
         record_type = RecordType.HR
         time_frame = datetime.datetime.utcnow() + datetime.timedelta(hours=-24)
 
         records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
                                                  Q(record_type=record_type.name),
                                                  Q(indicator=indicator)).values('info', 'info_source')
-
-        if (records.count() == 0):
-            self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-                                                 Q(record_type=record_type.name),
-                                                 Q(indicator__isnull=True),
-                                                 Q(info__contains=indicator)).update(indicator=indicator)
-
-            records = self.get_queryset().filter(Q(info_source=RecordSource.PDS.name),
-                                             Q(record_type=record_type.name),
-                                             Q(indicator=indicator)).values('info', 'info_source')
 
         return records.latest('info_date')
         #return records
