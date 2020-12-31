@@ -5,7 +5,7 @@ set -e
 
 # Directory where entire Django application is located
 #APPLICATION_DIR="/vagrant"
-APPLICATION_DIR="/home/lnguyen/RAPID"
+APPLICATION_DIR="/root/RAPID"
 
 # Default external configuration files
 CELERY_CONFIGS_DIR="$APPLICATION_DIR/external_configs/celery"
@@ -71,11 +71,4 @@ touch $APPLICATION_DIR/RAPID.log
 chmod 777 $APPLICATION_DIR/RAPID.log
 echo "Created RAPID application log"
 
-pushd $APPLICATION_DIR/core/
-if [ ! -f "GeoLite2-City.mmdb" ]
-then
-	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz"
-	gunzip GeoLite2-City.mmdb.gz
-	echo "Downloaded and extracted Maxmind DB"
-fi
-popd
+echo COMPLETE_REMEMBER_TO_USE_API_KEY_WITH_GEOLITE
