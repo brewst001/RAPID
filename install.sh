@@ -71,4 +71,15 @@ touch $APPLICATION_DIR/RAPID.log
 chmod 777 $APPLICATION_DIR/RAPID.log
 echo "Created RAPID application log"
 
-echo COMPLETE_REMEMBER_TO_USE_API_KEY_WITH_GEOLITE
+pushd $APPLICATION_DIR/
+if [ ! -f "GeoLite2-City_*" ]
+then
+	wget "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=KEY_GOES_HERE&suffix=tar.gz"
+	  tar -xzf geoip_*
+    cp GeoLite2-City_*/* ./
+    rm -r GeoLite2-City_*
+    rm geo*
+    echo "Downloaded and extracted Maxmind DB"
+
+fi
+popd
