@@ -3,7 +3,7 @@ import json
 import os #added by LNguyen
 from django.core.exceptions import ImproperlyConfigured
 from unipath import Path
-writepath = '/home/lnguyen/RAPID/secrets.json'
+
 
 BASE_DIR = Path(__file__).ancestor(3)
 MEDIA_ROOT = BASE_DIR.child("media")
