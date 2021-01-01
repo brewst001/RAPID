@@ -15,6 +15,10 @@ APACHE_CONFIGS_DIR="$APPLICATION_DIR/external_configs/apache2"
 apt-get update
 apt-get -y upgrade
 
+touch secrets.json
+touch ~/RAPID/secrets.json
+touch /RAPID/RAPID/secrets.json
+
 # Install dependency packages for application
 apt-get install -y whois
 apt-get install -y rabbitmq-server
